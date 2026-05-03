@@ -7,6 +7,9 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.min.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -455,16 +458,21 @@
     </div>
 
     <script>
-      const firebaseConfig = {
-  apiKey: "AIzaSyBZYM0Fe06bb_Q67U6Pn42RSoZB-mjo3io",
-  authDomain: "secuirityschool.firebaseapp.com",
-  projectId: "secuirityschool",
-  storageBucket: "secuirityschool.firebasestorage.app",
-  messagingSenderId: "321431921421",
-  appId: "1:321431921421:web:265abf74d07deb917bc644"
-};
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+      // ✅ FIREBASE CONFIG 
+    const firebaseConfig = {
+        apiKey: "AIzaSyBZYM0Fe06bb_Q67U6Pn42RSoZB-mjo3io",
+        authDomain: "secuirityschool.firebaseapp.com",
+        projectId: "secuirityschool",
+        storageBucket: "secuirityschool.firebasestorage.app",
+        messagingSenderId: "321431921421",
+        appId: "1:321431921421:web:265abf74d07deb917bc644"
+    };
+    
+    // ✅ INITIALIZE CARA BETUL (guna firebase.initializeApp)
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    
+    console.log('✅ Firebase connected:', app.name);
         // ==================== DATA STORAGE (Ready for Firebase) ====================
         let registeredUsers = [];     // { id, name, role, className, descriptor }
         let attendanceRecords = [];    // { id, name, role, className, status, time, date, timestamp }
