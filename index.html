@@ -588,7 +588,7 @@
             }
             
             if (statusEl) {
-                statusEl.innerHTML = '✅ AI Model sedia! Mengesan wajah...';
+                statusEl.innerHTML = ' AI Model sedia! Mengesan wajah...';
                 statusEl.className = 'camera-status status-active';
             }
             console.log('Face models loaded');
@@ -628,7 +628,7 @@
                 
                 const statusEl = document.getElementById('securityStatus');
                 if (statusEl) {
-                    statusEl.innerHTML = '✅ AI Security Aktif - Mengenal pasti wajah';
+                    statusEl.innerHTML = ' AI Security Aktif - Mengenal pasti wajah';
                     statusEl.className = 'camera-status status-active';
                 }
             } catch(err) {
@@ -732,7 +732,7 @@
             
             const recognizedEl = document.getElementById('recognizedNames');
             if (recognizedEl) {
-                recognizedEl.innerHTML = recognizedNames.length > 0 ? `✅ Dikenali: ${recognizedNames.join(', ')}` : '✅ Menunggu wajah dikenali';
+                recognizedEl.innerHTML = recognizedNames.length > 0 ? ` Dikenali: ${recognizedNames.join(', ')}` : 'Menunggu wajah dikenali';
             }
         }
 
@@ -774,7 +774,7 @@
                 
                 // Show toast notification
                 Swal.fire({
-                    title: '✅ Kehadiran Auto Dicatat!',
+                    title: ' Kehadiran Auto Dicatat!',
                     html: `<strong>${escapeHtml(user.name)}</strong><br>Status: ${status}<br>Sesi: ${sessionName}<br>Masa: ${getCurrentTime()}`,
                     icon: 'success',
                     toast: true,
@@ -1017,24 +1017,24 @@
                     </select>
                 </div>
                 <div class="stats-grid">
-                    <div class="stat-card"><div class="stat-info"><h3>👥 Pengguna</h3><div class="stat-number">${registeredUsers.length}</div></div><div class="stat-icon"><i data-lucide="users"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3>✅ Hadir Hari Ini</h3><div class="stat-number">${todayAttendance}</div></div><div class="stat-icon"><i data-lucide="check-circle"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3>🎓 Pelajar</h3><div class="stat-number">${totalStudents}</div></div><div class="stat-icon"><i data-lucide="graduation-cap"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3>👩‍🏫 Guru</h3><div class="stat-number">${totalTeachers}</div></div><div class="stat-icon"><i data-lucide="chalkboard"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3>😊 Hadir</h3><div class="stat-number">${presentToday}</div></div><div class="stat-icon"><i data-lucide="smile"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3>⏰ Lewat</h3><div class="stat-number">${lateToday}</div></div><div class="stat-icon"><i data-lucide="clock"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3>⚠️ Wajah Asing</h3><div class="stat-number">${strangerToday}</div></div><div class="stat-icon"><i data-lucide="alert-triangle"></i></div></div>
+                    <div class="stat-card"><div class="stat-info"><h3> Pengguna</h3><div class="stat-number">${registeredUsers.length}</div></div><div class="stat-icon"><i data-lucide="users"></i></div></div>
+                    <div class="stat-card"><div class="stat-info"><h3> Hadir Hari Ini</h3><div class="stat-number">${todayAttendance}</div></div><div class="stat-icon"><i data-lucide="check-circle"></i></div></div>
+                    <div class="stat-card"><div class="stat-info"><h3> Pelajar</h3><div class="stat-number">${totalStudents}</div></div><div class="stat-icon"><i data-lucide="graduation-cap"></i></div></div>
+                    <div class="stat-card"><div class="stat-info"><h3> Guru</h3><div class="stat-number">${totalTeachers}</div></div><div class="stat-icon"><i data-lucide="chalkboard"></i></div></div>
+                    <div class="stat-card"><div class="stat-info"><h3> Hadir</h3><div class="stat-number">${presentToday}</div></div><div class="stat-icon"><i data-lucide="smile"></i></div></div>
+                    <div class="stat-card"><div class="stat-info"><h3> Lewat</h3><div class="stat-number">${lateToday}</div></div><div class="stat-icon"><i data-lucide="clock"></i></div></div>
+                    <div class="stat-card"><div class="stat-info"><h3> Wajah Asing</h3><div class="stat-number">${strangerToday}</div></div><div class="stat-icon"><i data-lucide="alert-triangle"></i></div></div>
                 </div>
                 <div class="charts-row">
                     <div class="chart-card"><h3><i data-lucide="pie-chart"></i> Kehadiran Hari Ini</h3><canvas id="attendanceChartCanvas"></canvas></div>
                 </div>
                 <div class="data-table"><h3><i data-lucide="cpu"></i> Sistem AI Face Recognition</h3>
                     <p style="font-size: 13px; line-height: 1.5;">
-                    🔴 <strong>Tab AI Security</strong> - Kamera akan HAFAL semua muka yang didaftarkan<br>
-                    🟢 <strong>Wajah dikenali</strong> → AUTO rekod kehadiran (Kotak HIJAU + bunyi beep)<br>
-                    🔴 <strong>Wajah asing/stranger</strong> → ALERT + bunyi kuat + popup amaran (Kotak MERAH)<br>
-                    📱 <strong>QR Code</strong> - Alternatif jika muka tidak jelas<br>
-                    📋 <strong>Daftar Muka</strong> - Daftar muka baru untuk DIHAFAL sistem</p>
+                    <strong>Tab AI Security</strong> - Kamera akan HAFAL semua muka yang didaftarkan<br>
+                     <strong>Wajah dikenali</strong> → AUTO rekod kehadiran <br>
+                     <strong>Wajah asing/stranger</strong> → ALERT + bunyi kuat + popup amaran<br>
+                     <strong>QR Code</strong> - Alternatif jika muka tidak jelas<br>
+                     <strong>Daftar Muka</strong> - Daftar muka baru </p>
                 </div>
                 <div class="data-table"><h3>📋 Kehadiran Terkini (${selectedClass === "Semua Kelas" ? "Semua Kelas" : "Kelas " + selectedClass})</h3>
                 <div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Sesi</th><th>Status</th><th>Kaedah</th><th>Masa</th></thead><tbody>${attendanceRecords.filter(r => selectedClass === "Semua Kelas" || r.className === selectedClass).slice(-10).reverse().map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td>${r.sessionName || r.session}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td><span style="font-size:10px;">${r.method || 'Face Auto'}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="6">Tiada rekod</td></tr>'}</tbody></div></div>
@@ -1140,7 +1140,7 @@
                             <option value="Lain-lain">Kelas Lain (isi sendiri)</option>
                         </select>
                         <input type="text" id="regClassOther" placeholder="Atau masukkan kelas lain" style="display:none;">
-                        <button class="btn btn-success" id="registerBtn"><i data-lucide="camera"></i> 🧠 HAFAL Wajah Ini & Daftar</button>
+                        <button class="btn btn-success" id="registerBtn"><i data-lucide="camera"></i> Daftar</button>
                     </div>
                 </div>
                 <div class="data-table">
@@ -1245,13 +1245,13 @@
         loadFaceModels();
         
         setTimeout(() => {
-            showInfo('🤖 AI Face Recognition System', 
+            showInfo(' AI Face Recognition System', 
                 'Sistem Keselamatan Kelas Pintar\n\n' +
-                '✅ Daftar muka di tab "Daftar Muka" - AI akan HAFAL wajah anda\n' +
-                '✅ Buka tab "AI Security" - Kamera akan AUTO detect dan rekod kehadiran\n' +
-                '🟢 Kotak HIJAU = Wajah dikenali → Auto hadir + bunyi beep\n' +
-                '🔴 Kotak MERAH = Wajah asing → Alert + bunyi kuat\n' +
-                '📱 QR Code = Alternatif jika muka tidak jelas');
+                ' Daftar muka di tab "Daftar Muka" - AI akan HAFAL wajah anda\n' +
+                ' Buka tab "AI Security" - Kamera akan AUTO detect dan rekod kehadiran\n' +
+                ' Kotak HIJAU = Wajah dikenali → Auto hadir + bunyi beep\n' +
+                ' Kotak MERAH = Wajah asing → Alert + bunyi kuat\n' +
+                ' QR Code = Alternatif jika muka tidak jelas');
         }, 1500);
     </script>
 </body>
