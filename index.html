@@ -16,7 +16,6 @@
 
         :root {
             --primary: #007AFF;
-            --primary-dark: #005FC1;
             --success: #34C759;
             --warning: #FF9500;
             --danger: #FF3B30;
@@ -32,10 +31,49 @@
             background: var(--bg);
             color: var(--text-primary);
             min-height: 100vh;
-            padding-bottom: 20px;
         }
 
-        /* Bottom Navigation (Mobile Friendly) */
+        /* Header */
+        .header {
+            background: var(--card-bg);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 99;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-left img {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--primary);
+        }
+
+        .header-left h1 {
+            font-size: 18px;
+            margin: 0;
+        }
+
+        .live-clock {
+            background: var(--bg);
+            padding: 6px 12px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: monospace;
+        }
+
+        /* Bottom Navigation */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -46,7 +84,7 @@
             border-top: 1px solid var(--border);
             display: flex;
             justify-content: space-around;
-            padding: 10px 16px 20px;
+            padding: 8px 12px 20px;
             z-index: 100;
         }
 
@@ -140,7 +178,7 @@
             aspect-ratio: 4/3;
         }
 
-        #videoFeed {
+        #globalVideoFeed {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -284,48 +322,6 @@
             text-align: center;
         }
 
-        .header {
-            background: var(--card-bg);
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 99;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .header-left img {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-        }
-
-        .header-left h1 {
-            font-size: 18px;
-            margin: 0;
-        }
-
-        .live-clock {
-            background: var(--bg);
-            padding: 6px 12px;
-            border-radius: 25px;
-            font-size: 13px;
-            font-weight: 600;
-            font-family: monospace;
-        }
-
-        canvas {
-            max-height: 200px;
-        }
-
         .charts-row {
             display: grid;
             grid-template-columns: 1fr;
@@ -337,6 +333,20 @@
             background: var(--card-bg);
             border-radius: 24px;
             padding: 16px;
+        }
+
+        canvas {
+            max-height: 200px;
+        }
+
+        /* Mini preview for register page */
+        .mini-camera {
+            position: relative;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            aspect-ratio: 16/9;
         }
     </style>
 </head>
@@ -400,7 +410,6 @@
         let currentPage = 'dashboard';
         
         let attendanceChart = null;
-        let roleChart = null;
 
         // Helper Functions
         function getTodayDate() {
@@ -524,46 +533,36 @@
             updateAllStats();
         }
 
-        // Face Recognition Functions
-        async function loadFaceModels() {
-            const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
-            showNotification('Memuatkan model...', false);
-            await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
-            await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-            await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-            modelsLoaded = true;
-            showNotification('✅ Model sedia!', false);
-            console.log('Face models loaded');
-        }
-
-        // AUTO START CAMERA - Terus hidup bila page camera dibuka
-        async function startCamera() {
-            if (videoStream) return;
+        // ==================== GLOBAL CAMERA (Aktif di semua tab) ====================
+        async function initGlobalCamera() {
+            if (videoStream) return true;
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
                 videoStream = stream;
-                const video = document.getElementById('videoFeed');
-                if (video) {
+                
+                // Update all video elements that need camera
+                const videos = document.querySelectorAll('.camera-video');
+                videos.forEach(video => {
                     video.srcObject = stream;
-                    await video.play();
-                    isCameraActive = true;
-                }
+                    video.play().catch(e => console.log(e));
+                });
+                
+                isCameraActive = true;
                 
                 if (!modelsLoaded) await loadFaceModels();
                 
                 if (detectionInterval) clearInterval(detectionInterval);
-                detectionInterval = setInterval(runFaceDetection, 800);
+                detectionInterval = setInterval(runGlobalFaceDetection, 800);
                 
-                const statusEl = document.getElementById('cameraStatus');
-                if (statusEl) statusEl.innerHTML = '● Kamera Aktif - Mengesan wajah';
+                return true;
             } catch(err) {
                 console.error(err);
-                const statusEl = document.getElementById('cameraStatus');
-                if (statusEl) statusEl.innerHTML = '⚠️ Kamera tidak dapat diakses';
+                isCameraActive = false;
+                return false;
             }
         }
 
-        function stopCamera() {
+        function stopGlobalCamera() {
             if (videoStream) {
                 videoStream.getTracks().forEach(track => track.stop());
                 videoStream = null;
@@ -575,16 +574,25 @@
             isCameraActive = false;
         }
 
-        async function runFaceDetection() {
+        async function loadFaceModels() {
+            const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
+            showNotification('Memuatkan model...', false);
+            await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+            await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+            await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+            modelsLoaded = true;
+            showNotification('✅ Model sedia!', false);
+        }
+
+        async function runGlobalFaceDetection() {
             if (!isCameraActive || !modelsLoaded) return;
-            const video = document.getElementById('videoFeed');
-            const canvas = document.getElementById('faceCanvas');
+            
+            // Get the active video element
+            const video = document.getElementById('globalVideoFeed');
             if (!video || !video.videoWidth) return;
             
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Get all canvases to draw on
+            const canvases = document.querySelectorAll('.face-canvas');
             
             const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options())
                 .withFaceLandmarks()
@@ -606,27 +614,43 @@
                     }
                 }
                 
-                const box = detection.detection.box;
-                ctx.beginPath();
-                ctx.rect(box.x, box.y, box.width, box.height);
-                
-                if (bestMatch) {
-                    ctx.strokeStyle = '#34C759';
-                    ctx.lineWidth = 3;
-                    ctx.stroke();
-                    ctx.fillStyle = '#34C759';
-                    ctx.font = 'bold 14px system-ui';
-                    ctx.fillText(`${bestMatch.name}`, box.x, box.y - 5);
-                    markAttendance(bestMatch);
-                    recognizedCount++;
-                } else {
-                    ctx.strokeStyle = '#FF3B30';
-                    ctx.lineWidth = 3;
-                    ctx.stroke();
-                    ctx.fillStyle = '#FF3B30';
-                    ctx.font = 'bold 14px system-ui';
-                    ctx.fillText('Asing!', box.x, box.y - 5);
-                }
+                // Draw on all canvases
+                canvases.forEach(canvas => {
+                    if (canvas && canvas.width && canvas.height) {
+                        const ctx = canvas.getContext('2d');
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        
+                        const box = detection.detection.box;
+                        ctx.beginPath();
+                        ctx.rect(box.x, box.y, box.width, box.height);
+                        
+                        if (bestMatch) {
+                            ctx.strokeStyle = '#34C759';
+                            ctx.lineWidth = 3;
+                            ctx.stroke();
+                            ctx.fillStyle = '#34C759';
+                            ctx.font = 'bold 14px system-ui';
+                            ctx.fillText(`${bestMatch.name}`, box.x, box.y - 5);
+                            markAttendance(bestMatch);
+                            recognizedCount++;
+                        } else {
+                            ctx.strokeStyle = '#FF3B30';
+                            ctx.lineWidth = 3;
+                            ctx.stroke();
+                            ctx.fillStyle = '#FF3B30';
+                            ctx.font = 'bold 14px system-ui';
+                            ctx.fillText('Asing!', box.x, box.y - 5);
+                        }
+                    }
+                });
+            }
+            
+            // Clear canvases if no faces
+            if (detections.length === 0) {
+                canvases.forEach(canvas => {
+                    const ctx = canvas?.getContext('2d');
+                    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+                });
             }
             
             const unknownCount = detections.length - recognizedCount;
@@ -636,20 +660,22 @@
             }
         }
 
+        // Register Face function
         async function registerFace() {
             const name = document.getElementById('regName').value.trim();
             const role = document.getElementById('regRole').value;
             const className = document.getElementById('regClass').value.trim();
             
             if (!name) { alert('Sila masukkan nama'); return; }
-            if (!isCameraActive) { 
-                alert('Sila pergi ke tab Kamera dahulu untuk hidupkan kamera');
-                return; 
+            if (!isCameraActive || !videoStream) { 
+                alert('Kamera belum sedia. Sila pastikan kamera berfungsi.');
+                await initGlobalCamera();
+                return;
             }
             
-            const video = document.getElementById('videoFeed');
+            const video = document.getElementById('globalVideoFeed');
             if (!video || !video.videoWidth) {
-                alert('Kamera belum sedia. Pastikan anda di tab Kamera.');
+                alert('Kamera belum sedia. Tunggu sebentar...');
                 return;
             }
             
@@ -658,7 +684,7 @@
                 .withFaceDescriptor();
             
             if (!detection) {
-                alert('Tiada wajah dikesan. Pastikan muka anda jelas dalam frame.');
+                alert('Tiada wajah dikesan. Pastikan muka anda jelas dalam frame kamera.');
                 return;
             }
             
@@ -686,7 +712,7 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Render Functions
+        // ==================== RENDER FUNCTIONS ====================
         function renderDashboard() {
             const today = getTodayDate();
             const todayAttendance = attendanceRecords.filter(r => r.date === today).length;
@@ -726,25 +752,51 @@
                 <div id="alertContainer"></div>
                 <div class="camera-section">
                     <div class="camera-container">
-                        <video id="videoFeed" autoplay playsinline></video>
-                        <canvas id="faceCanvas" class="face-canvas"></canvas>
+                        <video id="globalVideoFeed" class="camera-video" autoplay playsinline></video>
+                        <canvas id="cameraCanvas" class="face-canvas"></canvas>
                     </div>
-                    <div class="camera-status" id="cameraStatus">● Memulakan kamera...</div>
+                    <div class="camera-status" id="cameraStatus">● Kamera aktif - Mengesan wajah</div>
                 </div>
                 <div class="data-table">
-                    <h3><i data-lucide="info"></i> Cara Guna</h3>
-                    <p style="font-size: 13px; color: var(--text-secondary);">✓ Wajah berdaftar akan auto rekod kehadiran<br>✓ Wajah asing akan trigger amaran<br>✓ Pastikan pencahayaan cukup</p>
+                    <h3><i data-lucide="info"></i> Maklumat</h3>
+                    <p style="font-size: 13px;">✓ Wajah berdaftar akan auto rekod kehadiran<br>✓ Wajah asing akan trigger amaran<br>✓ Pastikan pencahayaan cukup</p>
                 </div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
-            // Auto start camera when page loads
-            setTimeout(() => startCamera(), 100);
+            
+            // Attach video to global feed
+            if (videoStream) {
+                const video = document.getElementById('globalVideoFeed');
+                video.srcObject = videoStream;
+                video.play().catch(e => console.log(e));
+            }
+            
+            const canvas = document.getElementById('cameraCanvas');
+            if (canvas && videoStream) {
+                const video = document.getElementById('globalVideoFeed');
+                const updateCanvasSize = () => {
+                    if (video.videoWidth) {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                    }
+                };
+                video.addEventListener('loadedmetadata', updateCanvasSize);
+                setTimeout(updateCanvasSize, 100);
+            }
         }
 
         function renderRegisterPage() {
             const html = `
                 <div id="notificationContainer"></div>
+                <div class="camera-section">
+                    <h3><i data-lucide="camera"></i> Preview Kamera</h3>
+                    <div class="camera-container" style="aspect-ratio: 16/9;">
+                        <video id="globalVideoFeed" class="camera-video" autoplay playsinline></video>
+                        <canvas id="registerCanvas" class="face-canvas"></canvas>
+                    </div>
+                    <div class="camera-status">● Pastikan muka jelas dalam frame</div>
+                </div>
                 <div class="data-table">
                     <h3><i data-lucide="user-plus"></i> Daftar Wajah Baru</h3>
                     <div class="register-form">
@@ -764,6 +816,27 @@
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
+            
+            // Attach video stream
+            if (videoStream) {
+                const video = document.getElementById('globalVideoFeed');
+                video.srcObject = videoStream;
+                video.play().catch(e => console.log(e));
+            }
+            
+            const canvas = document.getElementById('registerCanvas');
+            if (canvas && videoStream) {
+                const video = document.getElementById('globalVideoFeed');
+                const updateSize = () => {
+                    if (video.videoWidth) {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                    }
+                };
+                video.addEventListener('loadedmetadata', updateSize);
+                setTimeout(updateSize, 100);
+            }
+            
             document.getElementById('registerFaceBtn').onclick = registerFace;
             renderUsersTable();
         }
@@ -771,7 +844,7 @@
         function renderUsersTable() {
             const container = document.getElementById('usersTableContainer');
             if (!container) return;
-            container.innerHTML = `<table><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th></thead><tbody>${registeredUsers.map(u => `<tr><td>${escapeHtml(u.name)}</td><td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Guru' : 'Pelajar'}</span></td><td>${escapeHtml(u.className)}</td></tr>`).join('') || '<tr><td colspan="3">Tiada pengguna</td></tr>'}</tbody> enpresak`;
+            container.innerHTML = `<table><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th></tr></thead><tbody>${registeredUsers.map(u => `<tr><td>${escapeHtml(u.name)}</td><td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Guru' : 'Pelajar'}</span></td><td>${escapeHtml(u.className)}</td></tr>`).join('') || '<tr><td colspan="3">Tiada pengguna</td></tr>'}</tbody></table>`;
             lucide.createIcons();
         }
 
@@ -782,11 +855,11 @@
                 <div id="notificationContainer"></div>
                 <div class="data-table">
                     <h3>📋 Kehadiran Hari Ini (${today})</h3>
-                    <div class="table-container"><table><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th><th>Status</th><th>Masa</th></thead><tbody>${filtered.map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${r.role === 'teacher' ? 'Guru' : 'Pelajar'}</td><td>${escapeHtml(r.className)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="5">Tiada kehadiran</td></tr>'}</tbody></table></div>
+                    <div class="table-container"><table><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th><th>Status</th><th>Masa</th></tr></thead><tbody>${filtered.map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${r.role === 'teacher' ? 'Guru' : 'Pelajar'}</td><td>${escapeHtml(r.className)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="5">Tiada kehadiran</td></tr>'}</tbody></table></div>
                 </div>
                 <div class="data-table">
                     <h3>📜 Semua Rekod</h3>
-                    <div class="table-container"><table><thead><tr><th>Nama</th><th>Status</th><th>Tarikh</th><th>Masa</th></thead><tbody>${attendanceRecords.slice().reverse().slice(0, 20).map(r => `<tr><td>${escapeHtml(r.name)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.date}</td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="4">Tiada rekod</td></tr>'}</tbody></table></div>
+                    <div class="table-container"><table><thead><tr><th>Nama</th><th>Status</th><th>Tarikh</th><th>Masa</th></tr></thead><tbody>${attendanceRecords.slice().reverse().slice(0, 20).map(r => `<tr><td>${escapeHtml(r.name)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.date}</td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="4">Tiada rekod</td></tr>'}</tbody></table></div>
                 </div>
             `;
             document.getElementById('mainContent').innerHTML = html;
@@ -798,11 +871,6 @@
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.toggle('active', item.dataset.page === page);
             });
-            
-            // Stop camera when leaving camera page
-            if (page !== 'camera') {
-                stopCamera();
-            }
             
             if (page === 'dashboard') renderDashboard();
             else if (page === 'camera') renderCameraPage();
@@ -822,12 +890,16 @@
             if (e.target === document.getElementById('alertModal')) document.getElementById('alertModal').style.display = 'none';
         });
 
-        // Initialize
-        loadData();
-        loadFaceModels();
-        renderDashboard();
-        lucide.createIcons();
-        console.log('✅ Sistem sedia - Kamera auto start di tab Kamera');
+        // Initialize - Start camera immediately
+        async function init() {
+            loadData();
+            await initGlobalCamera();
+            renderDashboard();
+            lucide.createIcons();
+            console.log('✅ Sistem sedia - Kamera global aktif');
+        }
+        
+        init();
     </script>
 </body>
 </html>
