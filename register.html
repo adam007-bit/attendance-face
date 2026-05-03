@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Semsira Smart Class - AI Face Recognition Attendance</title>
+    <title> Smart Class - AI Face Recognition Attendance</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Face API.js for face detection and recognition -->
@@ -485,6 +485,16 @@
 </div>
 
 <script>
+
+    const firebaseConfig = {
+  apiKey: "AIzaSyBZYM0Fe06bb_Q67U6Pn42RSoZB-mjo3io",
+  authDomain: "secuirityschool.firebaseapp.com",
+  projectId: "secuirityschool",
+  storageBucket: "secuirityschool.firebasestorage.app",
+  messagingSenderId: "321431921421",
+  appId: "1:321431921421:web:265abf74d07deb917bc644"
+};
+
     // ======================== FACE RECOGNITION SYSTEM ========================
     // Data Storage (simulated - ready for Firebase later)
     let registeredFaces = []; // { id, name, role, className, descriptor }
