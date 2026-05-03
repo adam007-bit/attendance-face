@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Smart Class - Complete Face Recognition & Dashboard</title>
+    <title>Smart Class - Face Recognition System</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.min.js"></script>
-      <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <style>
@@ -39,13 +39,11 @@
             min-height: 100vh;
         }
 
-        /* Dashboard Layout */
         .dashboard {
             display: flex;
             min-height: 100vh;
         }
 
-        /* Sidebar */
         .sidebar {
             width: var(--sidebar-width);
             background: var(--card-bg);
@@ -112,14 +110,12 @@
             color: white;
         }
 
-        /* Main Content */
         .main-content {
             flex: 1;
             margin-left: var(--sidebar-width);
             padding: 24px 32px;
         }
 
-        /* Stats Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -135,6 +131,12 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
         }
 
         .stat-info h3 {
@@ -160,7 +162,6 @@
             color: var(--primary);
         }
 
-        /* Charts */
         .charts-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -187,7 +188,6 @@
             max-height: 250px;
         }
 
-        /* Camera Section */
         .camera-section {
             background: var(--card-bg);
             border-radius: 28px;
@@ -223,6 +223,7 @@
             display: flex;
             gap: 12px;
             margin-top: 16px;
+            flex-wrap: wrap;
         }
 
         .btn {
@@ -234,7 +235,11 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            transition: transform 0.2s;
+            transition: all 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
         }
 
         .btn-primary {
@@ -252,34 +257,11 @@
             color: white;
         }
 
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border);
-        }
-
-        /* Tables */
         .data-table {
             background: var(--card-bg);
             border-radius: 28px;
             padding: 20px;
             margin-bottom: 24px;
-        }
-
-        .table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .filter-input {
-            padding: 10px 16px;
-            border-radius: 30px;
-            border: 1px solid var(--border);
-            font-size: 14px;
-            width: 250px;
         }
 
         .table-container {
@@ -308,6 +290,7 @@
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
+            display: inline-block;
         }
 
         .badge-hadir { background: #E8F5E9; color: #2E7D32; }
@@ -315,7 +298,6 @@
         .badge-teacher { background: #E3F2FD; color: #1565C0; }
         .badge-student { background: #F3E5F5; color: #6A1B9A; }
 
-        /* Alert Banner */
         .alert-banner {
             background: #FFE5E5;
             border-left: 4px solid var(--danger);
@@ -325,15 +307,19 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            animation: pulse 1s infinite;
+            animation: pulse 0.5s ease;
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.01); }
         }
 
-        /* Modal */
+        .success-banner {
+            background: #E8F5E9;
+            border-left: 4px solid var(--success);
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -364,9 +350,23 @@
             border: 1px solid var(--border);
             margin-bottom: 12px;
             font-size: 15px;
+            font-family: inherit;
         }
 
-        /* Mobile */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         .menu-toggle {
             display: none;
             position: fixed;
@@ -413,12 +413,11 @@
     </button>
 
     <div class="dashboard">
-        <!-- Sidebar Navigation -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23007AFF' rx='20'/%3E%3Cpath fill='white' d='M30 35 L45 28 L70 35 L65 68 L50 75 L35 68 L30 35Z'/%3E%3Ccircle cx='50' cy='48' r='8' fill='white'/%3E%3C/svg%3E">
                 <div>
-                    <h2> Smart Class</h2>
+                    <h2>Smart Class</h2>
                     <p>Face Recognition System</p>
                 </div>
             </div>
@@ -441,13 +440,9 @@
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="main-content" id="mainContent">
-            <!-- Dynamic pages will load here -->
-        </div>
+        <div class="main-content" id="mainContent"></div>
     </div>
 
-    <!-- Alert Modal -->
     <div id="alertModal" class="modal">
         <div class="modal-content">
             <i data-lucide="alert-triangle" style="width: 48px; height: 48px; color: var(--danger); margin-bottom: 12px;"></i>
@@ -458,24 +453,23 @@
     </div>
 
     <script>
-      // ✅ FIREBASE CONFIG 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBZYM0Fe06bb_Q67U6Pn42RSoZB-mjo3io",
-        authDomain: "secuirityschool.firebaseapp.com",
-        projectId: "secuirityschool",
-        storageBucket: "secuirityschool.firebasestorage.app",
-        messagingSenderId: "321431921421",
-        appId: "1:321431921421:web:265abf74d07deb917bc644"
-    };
-    
-    // ✅ INITIALIZE CARA BETUL (guna firebase.initializeApp)
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    
-    console.log('✅ Firebase connected:', app.name);
-        // ==================== DATA STORAGE (Ready for Firebase) ====================
-        let registeredUsers = [];     // { id, name, role, className, descriptor }
-        let attendanceRecords = [];    // { id, name, role, className, status, time, date, timestamp }
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZYM0Fe06bb_Q67U6Pn42RSoZB-mjo3io",
+            authDomain: "secuirityschool.firebaseapp.com",
+            projectId: "secuirityschool",
+            storageBucket: "secuirityschool.firebasestorage.app",
+            messagingSenderId: "321431921421",
+            appId: "1:321431921421:web:265abf74d07deb917bc644"
+        };
+        
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        console.log('✅ Firebase connected');
+
+        // Data variables
+        let registeredUsers = [];
+        let attendanceRecords = [];
         let strangerAlertCount = 0;
         let isCameraActive = false;
         let videoStream = null;
@@ -483,34 +477,8 @@
         let modelsLoaded = false;
         let currentPage = 'dashboard';
         
-        // Charts
         let attendanceChart = null;
         let roleChart = null;
-
-        // Load data from localStorage
-        function loadData() {
-            const savedUsers = localStorage.getItem('semsira_users');
-            if (savedUsers) registeredUsers = JSON.parse(savedUsers);
-            const savedAttendance = localStorage.getItem('semsira_attendance');
-            if (savedAttendance) attendanceRecords = JSON.parse(savedAttendance);
-            const savedAlerts = localStorage.getItem('semsira_stranger_count');
-            if (savedAlerts) strangerAlertCount = parseInt(savedAlerts);
-            updateAllStats();
-        }
-
-        function saveUsers() {
-            localStorage.setItem('semsira_users', JSON.stringify(registeredUsers));
-            updateAllStats();
-        }
-
-        function saveAttendance() {
-            localStorage.setItem('semsira_attendance', JSON.stringify(attendanceRecords));
-            updateAllStats();
-        }
-
-        function saveStrangerCount() {
-            localStorage.setItem('semsira_stranger_count', strangerAlertCount);
-        }
 
         // Helper Functions
         function getTodayDate() {
@@ -519,6 +487,52 @@
 
         function getCurrentTime() {
             return new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        function escapeHtml(str) { 
+            return String(str).replace(/[&<>]/g, function(m) { 
+                if (m === '&') return '&amp;'; 
+                if (m === '<') return '&lt;'; 
+                if (m === '>') return '&gt;'; 
+                return m; 
+            }); 
+        }
+
+        function showNotification(message, isError = false) {
+            const container = document.getElementById('notificationContainer');
+            if (!container) return;
+            const cls = isError ? 'alert-banner' : 'alert-banner success-banner';
+            container.innerHTML = `<div class="${cls}">
+                <i data-lucide="${isError ? 'alert-circle' : 'check-circle'}"></i>
+                <strong>${escapeHtml(message)}</strong>
+            </div>`;
+            setTimeout(() => { if(container.firstChild) container.firstChild.remove(); }, 3000);
+            lucide.createIcons();
+        }
+
+        // Load/Save from localStorage
+        function loadData() {
+            const savedUsers = localStorage.getItem('smartclass_users');
+            if (savedUsers) registeredUsers = JSON.parse(savedUsers);
+            const savedAttendance = localStorage.getItem('smartclass_attendance');
+            if (savedAttendance) attendanceRecords = JSON.parse(savedAttendance);
+            const savedAlerts = localStorage.getItem('smartclass_stranger_count');
+            if (savedAlerts) strangerAlertCount = parseInt(savedAlerts);
+            updateAllStats();
+        }
+
+        function saveUsers() {
+            localStorage.setItem('smartclass_users', JSON.stringify(registeredUsers));
+            updateAllStats();
+        }
+
+        function saveAttendance() {
+            localStorage.setItem('smartclass_attendance', JSON.stringify(attendanceRecords));
+            updateAllStats();
+        }
+
+        function saveStrangerCount() {
+            localStorage.setItem('smartclass_stranger_count', strangerAlertCount);
         }
 
         function updateAllStats() {
@@ -536,7 +550,7 @@
                 const hour = now.getHours();
                 const minute = now.getMinutes();
                 const timeValue = hour * 60 + minute;
-                const status = timeValue > 510 ? (timeValue > 540 ? 'Lewat' : 'Hadir') : 'Hadir'; // 8:30 = 510, 9:00 = 540
+                const status = timeValue > 510 ? (timeValue > 540 ? 'Lewat' : 'Hadir') : 'Hadir';
                 
                 attendanceRecords.push({
                     id: user.id,
@@ -549,20 +563,11 @@
                     timestamp: Date.now()
                 });
                 saveAttendance();
-                
-                // Show quick feedback
-                const alertDiv = document.getElementById('attendanceFeedback');
-                if (alertDiv) {
-                    alertDiv.innerHTML = `<div class="alert-banner" style="background:#E8F5E9; border-left-color: var(--success);">
-                        <i data-lucide="check-circle"></i> ✅ Kehadiran dicatat: ${user.name} (${status})
-                    </div>`;
-                    setTimeout(() => { if(alertDiv.firstChild) alertDiv.firstChild.remove(); }, 3000);
-                    lucide.createIcons();
-                }
+                showNotification(`✅ ${user.name} - ${status}`, false);
             }
         }
 
-        // Show stranger alert
+        // Stranger Alert
         function showStrangerAlert() {
             strangerAlertCount++;
             saveStrangerCount();
@@ -571,7 +576,7 @@
             if (alertContainer) {
                 alertContainer.innerHTML = `<div class="alert-banner">
                     <i data-lucide="alert-triangle"></i>
-                    <strong>⚠️ AMARAN: Wajah asing dikesan di dalam kelas!</strong>
+                    <strong>⚠️ AMARAN: Wajah asing dikesan!</strong>
                 </div>`;
                 setTimeout(() => { if(alertContainer.firstChild) alertContainer.firstChild.remove(); }, 5000);
             }
@@ -587,7 +592,7 @@
                 osc.connect(gain);
                 gain.connect(ctx.destination);
                 osc.frequency.value = 880;
-                gain.gain.value = 0.3;
+                gain.gain.value = 0.2;
                 osc.start();
                 gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.5);
                 setTimeout(() => osc.stop(), 500);
@@ -597,13 +602,15 @@
             updateAllStats();
         }
 
-        // ==================== FACE RECOGNITION ====================
+        // Face Recognition Functions
         async function loadFaceModels() {
             const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
+            showNotification('Memuatkan model face recognition...', false);
             await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
             await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
             await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
             modelsLoaded = true;
+            showNotification('✅ Model face recognition sedia!', false);
             console.log('Face models loaded');
         }
 
@@ -620,12 +627,14 @@
                 if (!modelsLoaded) await loadFaceModels();
                 
                 if (detectionInterval) clearInterval(detectionInterval);
-                detectionInterval = setInterval(runFaceDetection, 1000);
+                detectionInterval = setInterval(runFaceDetection, 800);
                 
-                document.getElementById('cameraStatus').innerHTML = '<span style="color: var(--success);">● Kamera Aktif</span>';
+                const statusEl = document.getElementById('cameraStatus');
+                if (statusEl) statusEl.innerHTML = '<span style="color: var(--success);">● Kamera Aktif</span>';
+                showNotification('✅ Kamera berjaya dimulakan', false);
             } catch(err) {
                 console.error(err);
-                alert('Kamera tidak dapat diakses');
+                alert('Kamera tidak dapat diakses. Sila pastikan kebenaran kamera diberikan.');
             }
         }
 
@@ -698,7 +707,7 @@
             }
             
             const unknownCount = detections.length - recognizedCount;
-            if (unknownCount > 0 && !window.lastAlertTime || Date.now() - window.lastAlertTime > 8000) {
+            if (unknownCount > 0 && (!window.lastAlertTime || Date.now() - window.lastAlertTime > 8000)) {
                 showStrangerAlert();
                 window.lastAlertTime = Date.now();
             }
@@ -710,15 +719,20 @@
             const className = document.getElementById('regClass').value.trim();
             
             if (!name) { alert('Sila masukkan nama'); return; }
-            if (!isCameraActive) { alert('Sila hidupkan kamera dahulu'); return; }
+            if (!isCameraActive) { alert('Sila hidupkan kamera dahulu (pergi ke tab Kamera & Kehadiran)'); return; }
             
             const video = document.getElementById('videoFeed');
+            if (!video || !video.videoWidth) {
+                alert('Kamera belum sedia. Pastikan kamera sudah dimulakan.');
+                return;
+            }
+            
             const detection = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options())
                 .withFaceLandmarks()
                 .withFaceDescriptor();
             
             if (!detection) {
-                alert('Tiada wajah dikesan. Pastikan muka anda dalam frame kamera.');
+                alert('Tiada wajah dikesan. Pastikan muka anda jelas dalam frame kamera.');
                 return;
             }
             
@@ -739,7 +753,7 @@
             renderUsersTable();
         }
 
-        // ==================== RENDER PAGES ====================
+        // Render Functions
         function renderDashboard() {
             const today = getTodayDate();
             const todayAttendance = attendanceRecords.filter(r => r.date === today).length;
@@ -749,25 +763,25 @@
             const lateToday = attendanceRecords.filter(r => r.date === today && r.status === 'Lewat').length;
             
             const html = `
+                <div id="notificationContainer"></div>
                 <div class="stats-grid">
                     <div class="stat-card"><div class="stat-info"><h3>Jumlah Pengguna</h3><div class="stat-number">${registeredUsers.length}</div></div><div class="stat-icon"><i data-lucide="users"></i></div></div>
                     <div class="stat-card"><div class="stat-info"><h3>Kehadiran Hari Ini</h3><div class="stat-number">${todayAttendance}</div></div><div class="stat-icon"><i data-lucide="check-circle"></i></div></div>
                     <div class="stat-card"><div class="stat-info"><h3>Pelajar</h3><div class="stat-number">${totalStudents}</div></div><div class="stat-icon"><i data-lucide="graduation-cap"></i></div></div>
                     <div class="stat-card"><div class="stat-info"><h3>Guru</h3><div class="stat-number">${totalTeachers}</div></div><div class="stat-icon"><i data-lucide="chalkboard"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3>Hadir (Hari Ini)</h3><div class="stat-number">${presentToday}</div></div><div class="stat-icon"><i data-lucide="smile"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3>Lewat (Hari Ini)</h3><div class="stat-number">${lateToday}</div></div><div class="stat-icon"><i data-lucide="clock"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3>Wajah Asing Dikesan</h3><div class="stat-number">${strangerAlertCount}</div></div><div class="stat-icon"><i data-lucide="alert-triangle"></i></div></div>
+                    <div class="stat-card"><div class="stat-info"><h3>Hadir Hari Ini</h3><div class="stat-number">${presentToday}</div></div><div class="stat-icon"><i data-lucide="smile"></i></div></div>
+                    <div class="stat-card"><div class="stat-info"><h3>Lewat Hari Ini</h3><div class="stat-number">${lateToday}</div></div><div class="stat-icon"><i data-lucide="clock"></i></div></div>
+                    <div class="stat-card"><div class="stat-info"><h3>Wajah Asing</h3><div class="stat-number">${strangerAlertCount}</div></div><div class="stat-icon"><i data-lucide="alert-triangle"></i></div></div>
                 </div>
                 <div class="charts-row">
                     <div class="chart-card"><h3><i data-lucide="pie-chart"></i> Statistik Kehadiran (Hari Ini)</h3><canvas id="attendanceChartCanvas"></canvas></div>
                     <div class="chart-card"><h3><i data-lucide="bar-chart"></i> Pengikut Mengikut Peranan</h3><canvas id="roleChartCanvas"></canvas></div>
                 </div>
-                <div class="data-table"><h3>📋 Kehadiran Terkini</h3><div class="table-container"><table><thead><tr><th>Nama</th><th>Peranan</th><th>Status</th><th>Masa</th><th>Tarikh</th></tr></thead><tbody>${attendanceRecords.slice(-10).reverse().map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${r.role === 'teacher' ? 'Guru' : 'Pelajar'}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td><td>${r.date}</td></tr>`).join('') || '<tr><td colspan="5">Tiada rekod</td></tr>'}</tbody></table></div></div>
+                <div class="data-table"><h3>📋 Kehadiran Terkini</h3><div class="table-container"><table><thead><tr><th>Nama</th><th>Peranan</th><th>Status</th><th>Masa</th><th>Tarikh</th></tr></thead><tbody>${attendanceRecords.slice(-10).reverse().map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${r.role === 'teacher' ? 'Guru' : 'Pelajar'}<td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}<td>${r.date}</tr>`).join('') || '<tr><td colspan="5">Tiada rekod kehadiran</td></tr>'}</tbody></table></div></div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
             
-            // Charts
             const ctx1 = document.getElementById('attendanceChartCanvas')?.getContext('2d');
             const ctx2 = document.getElementById('roleChartCanvas')?.getContext('2d');
             if (ctx1 && attendanceChart) attendanceChart.destroy();
@@ -782,10 +796,10 @@
 
         function renderCameraPage() {
             const html = `
+                <div id="notificationContainer"></div>
+                <div id="alertContainer"></div>
                 <div class="camera-section">
                     <h3><i data-lucide="camera"></i> Kamera Keselamatan Kelas</h3>
-                    <div id="alertContainer"></div>
-                    <div id="attendanceFeedback"></div>
                     <div class="camera-container">
                         <video id="videoFeed" autoplay playsinline></video>
                         <canvas id="faceCanvas" class="face-canvas"></canvas>
@@ -805,11 +819,15 @@
 
         function renderRegisterPage() {
             const html = `
+                <div id="notificationContainer"></div>
                 <div class="data-table">
                     <h3><i data-lucide="user-plus"></i> Daftar Wajah Baru</h3>
                     <div class="register-form">
                         <input type="text" id="regName" placeholder="Nama Penuh">
-                        <select id="regRole"><option value="student">Pelajar</option><option value="teacher">Guru</option></select>
+                        <select id="regRole">
+                            <option value="student">Pelajar</option>
+                            <option value="teacher">Guru</option>
+                        </select>
                         <input type="text" id="regClass" placeholder="Kelas (cth: 5A)">
                         <button class="btn btn-success" id="registerFaceBtn"><i data-lucide="camera"></i> Tangkap & Daftar Wajah</button>
                     </div>
@@ -828,7 +846,7 @@
         function renderUsersTable() {
             const container = document.getElementById('usersTableContainer');
             if (!container) return;
-            container.innerHTML = `<table><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th><th>ID</th></tr></thead><tbody>${registeredUsers.map(u => `<tr><td>${escapeHtml(u.name)}</td><td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Guru' : 'Pelajar'}</span></td><td>${escapeHtml(u.className)}</td><td style="font-size:11px;">${u.id.slice(-6)}</td></tr>`).join('') || '<tr><td colspan="4">Tiada pengguna berdaftar</td></tr>'}</tbody></table>`;
+            container.innerHTML = `<table><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th><th>ID</th></tr></thead><tbody>${registeredUsers.map(u => `<tr><td>${escapeHtml(u.name)}</td><td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Guru' : 'Pelajar'}</span></td><td>${escapeHtml(u.className)}<td style="font-size:11px;">${u.id.slice(-6)}</td></tr>`).join('') || '<tr><td colspan="4">Tiada pengguna berdaftar</td></tr>'}</tbody></table>`;
             lucide.createIcons();
         }
 
@@ -836,19 +854,20 @@
             const today = getTodayDate();
             const filtered = attendanceRecords.filter(r => r.date === today);
             const html = `
+                <div id="notificationContainer"></div>
                 <div class="data-table">
-                    <div class="table-header"><h3><i data-lucide="clipboard-list"></i> Rekod Kehadiran (Hari Ini)</h3></div>
+                    <h3><i data-lucide="clipboard-list"></i> Rekod Kehadiran (Hari Ini)</h3>
                     <div class="table-container"><table><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th><th>Status</th><th>Masa</th></tr></thead><tbody>${filtered.map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${r.role === 'teacher' ? 'Guru' : 'Pelajar'}</td><td>${escapeHtml(r.className)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="5">Tiada kehadiran hari ini</td></tr>'}</tbody></table></div>
                 </div>
-                <div class="data-table"><h3><i data-lucide="history"></i> Semua Rekod Kehadiran</h3><div class="table-container"><table><thead><tr><th>Nama</th><th>Status</th><th>Tarikh</th><th>Masa</th></tr></thead><tbody>${attendanceRecords.slice().reverse().map(r => `<tr><td>${escapeHtml(r.name)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.date}</td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="4">Tiada rekod</td></tr>'}</tbody></table></div></div>
+                <div class="data-table">
+                    <h3><i data-lucide="history"></i> Semua Rekod Kehadiran</h3>
+                    <div class="table-container"><table><thead><tr><th>Nama</th><th>Status</th><th>Tarikh</th><th>Masa</th></tr></thead><tbody>${attendanceRecords.slice().reverse().map(r => `<tr><td>${escapeHtml(r.name)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.date}</td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="4">Tiada rekod</td></tr>'}</tbody></table></div>
+                </div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
         }
 
-        function escapeHtml(str) { return String(str).replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
-
-        // Navigation
         function navigateTo(page) {
             currentPage = page;
             document.querySelectorAll('.nav-item').forEach(item => {
@@ -880,9 +899,7 @@
         loadFaceModels();
         renderDashboard();
         lucide.createIcons();
-
-        // Firebase ready - just add your config and replace localStorage with Firestore methods
-        console.log('✅ Sistem sedia. Firebase boleh disambungkan kemudian.');
+        console.log('✅ Sistem sedia digunakan');
     </script>
 </body>
 </html>
