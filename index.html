@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Smart Class - QR Attendance System</title>
+    <title>Smart Class - Face Registration First</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         * {
@@ -64,6 +63,11 @@
             margin: 0;
         }
 
+        .header-left p {
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
         .live-clock {
             background: var(--bg);
             padding: 6px 12px;
@@ -113,6 +117,11 @@
             color: white;
         }
 
+        .nav-item.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
         .main-content {
             padding: 16px 16px 80px;
             max-width: 600px;
@@ -159,24 +168,49 @@
             color: var(--primary);
         }
 
-        .qr-scanner-section, .camera-section {
+        .camera-section {
             background: var(--card-bg);
             border-radius: 24px;
             padding: 16px;
             margin-bottom: 20px;
         }
 
-        .qr-container {
+        .camera-container {
+            position: relative;
             background: #000;
             border-radius: 20px;
             overflow: hidden;
-            aspect-ratio: 1;
+            aspect-ratio: 4/3;
         }
 
-        #qr-reader {
+        #registerVideo, #attendanceVideo {
             width: 100%;
             height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
         }
+
+        .face-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .camera-status {
+            text-align: center;
+            margin-top: 12px;
+            font-size: 12px;
+            padding: 8px;
+            border-radius: 12px;
+        }
+
+        .status-active { background: #E8F5E9; color: #2E7D32; }
+        .status-warning { background: #FFF3E0; color: #E65100; }
+        .status-error { background: #FFEBEE; color: #C62828; }
+        .status-info { background: #E3F2FD; color: #1565C0; }
 
         .data-table {
             background: var(--card-bg);
@@ -226,6 +260,7 @@
         .badge-lewat { background: #FFF3E0; color: #E65100; }
         .badge-teacher { background: #E3F2FD; color: #1565C0; }
         .badge-student { background: #F3E5F5; color: #6A1B9A; }
+        .badge-warning { background: #FFF3E0; color: #E65100; }
 
         .register-form input, .register-form select {
             width: 100%;
@@ -276,24 +311,21 @@
             max-height: 200px;
         }
 
-        .qr-code-display {
-            text-align: center;
-            padding: 20px;
-            background: white;
-            border-radius: 20px;
+        .warning-banner {
+            background: #FFF3E0;
+            border-left: 4px solid var(--warning);
+            padding: 12px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
         }
 
-        .qr-code-display canvas {
-            max-width: 200px;
-            margin: 0 auto;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
+        .success-banner {
+            background: #E8F5E9;
+            border-left-color: var(--success);
         }
     </style>
 </head>
@@ -303,7 +335,7 @@
             <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23007AFF' rx='20'/%3E%3Cpath fill='white' d='M30 35 L45 28 L70 35 L65 68 L50 75 L35 68 L30 35Z'/%3E%3Ccircle cx='50' cy='48' r='8' fill='white'/%3E%3C/svg%3E">
             <div>
                 <h1>Smart Class</h1>
-                <p style="font-size: 10px; color: var(--text-secondary);">QR Code Attendance</p>
+                <p>Face Registration System</p>
             </div>
         </div>
         <div class="live-clock">
@@ -318,15 +350,15 @@
             <i data-lucide="layout-dashboard"></i>
             <span>Dashboard</span>
         </div>
-        <div class="nav-item" data-page="scanner">
-            <i data-lucide="qr-code"></i>
-            <span>Imbas QR</span>
-        </div>
         <div class="nav-item" data-page="register">
             <i data-lucide="user-plus"></i>
-            <span>Daftar</span>
+            <span>Daftar Muka</span>
         </div>
         <div class="nav-item" data-page="attendance">
+            <i data-lucide="camera"></i>
+            <span>Kehadiran</span>
+        </div>
+        <div class="nav-item" data-page="records">
             <i data-lucide="clipboard-list"></i>
             <span>Rekod</span>
         </div>
@@ -337,13 +369,22 @@
     </div>
 
     <script>
-        // Data variables
-        let registeredUsers = [];
-        let attendanceRecords = [];
+        // ==================== DATA STORAGE ====================
+        let registeredUsers = [];     // { id, name, role, className, faceDescriptor }
+        let attendanceRecords = [];    // { id, name, role, className, status, time, date }
         let currentPage = 'dashboard';
         let attendanceChart = null;
-        let html5QrCode = null;
-        let isScanning = false;
+        
+        // Camera variables
+        let registerStream = null;
+        let attendanceStream = null;
+        let isRegisterMode = false;
+        let isAttendanceMode = false;
+        let detectionInterval = null;
+        
+        // Simple face detection - using canvas skin tone detection
+        let lastFaceDetected = false;
+        let currentFaceImage = null;
 
         // Helper Functions
         function getTodayDate() {
@@ -400,167 +441,176 @@
             });
         }
 
+        async function showWarning(title, message) {
+            await Swal.fire({
+                title: title,
+                text: message,
+                icon: 'warning',
+                confirmButtonColor: '#FF9500',
+                confirmButtonText: 'OK',
+                background: 'white',
+                borderRadius: '20px'
+            });
+        }
+
         // Load/Save from localStorage
         function loadData() {
-            const savedUsers = localStorage.getItem('smartclass_users_qr');
+            const savedUsers = localStorage.getItem('face_registered_users');
             if (savedUsers) registeredUsers = JSON.parse(savedUsers);
-            const savedAttendance = localStorage.getItem('smartclass_attendance_qr');
+            const savedAttendance = localStorage.getItem('face_attendance_records');
             if (savedAttendance) attendanceRecords = JSON.parse(savedAttendance);
-            updateAllStats();
+            updateUI();
         }
 
         function saveUsers() {
-            localStorage.setItem('smartclass_users_qr', JSON.stringify(registeredUsers));
-            updateAllStats();
+            localStorage.setItem('face_registered_users', JSON.stringify(registeredUsers));
+            updateUI();
         }
 
         function saveAttendance() {
-            localStorage.setItem('smartclass_attendance_qr', JSON.stringify(attendanceRecords));
-            updateAllStats();
+            localStorage.setItem('face_attendance_records', JSON.stringify(attendanceRecords));
+            updateUI();
         }
 
-        function updateAllStats() {
+        function updateUI() {
             if (currentPage === 'dashboard') renderDashboard();
-            if (currentPage === 'attendance') renderAttendanceTable();
-            if (currentPage === 'users') renderUsersTable();
-        }
-
-        // Generate QR Code for user
-        function generateQRCodeForUser(user) {
-            const qrData = JSON.stringify({
-                id: user.id,
-                name: user.name,
-                role: user.role,
-                className: user.className,
-                timestamp: Date.now()
-            });
-            return qrData;
-        }
-
-        // Process QR scan
-        async function processQRScan(decodedText) {
-            if (!decodedText) return;
+            if (currentPage === 'records') renderRecordsPage();
+            if (currentPage === 'users') renderUsersPage();
             
-            try {
-                const qrData = JSON.parse(decodedText);
-                const user = registeredUsers.find(u => u.id === qrData.id);
-                
-                if (!user) {
-                    await showError('❌ Pengguna Tidak Dikenali', 'QR Code ini tidak berdaftar dalam sistem.');
-                    return;
+            // Update nav disable status - attendance only enabled if users exist
+            const attendanceNav = document.querySelector('.nav-item[data-page="attendance"]');
+            if (attendanceNav) {
+                if (registeredUsers.length === 0) {
+                    attendanceNav.classList.add('disabled');
+                    attendanceNav.title = 'Sila daftar muka dahulu';
+                } else {
+                    attendanceNav.classList.remove('disabled');
                 }
-                
-                const today = getTodayDate();
-                const alreadyLogged = attendanceRecords.find(rec => rec.id === user.id && rec.date === today);
-                
-                if (alreadyLogged) {
-                    await showError('⚠️ Kehadiran Dicatat Sebelum Ini', `${user.name} sudah mencatat kehadiran hari ini pada ${alreadyLogged.time}.`);
-                    return;
-                }
-                
-                const now = new Date();
-                const hour = now.getHours();
-                const minute = now.getMinutes();
-                const timeValue = hour * 60 + minute;
-                const status = timeValue > 510 ? (timeValue > 540 ? 'Lewat' : 'Hadir') : 'Hadir';
-                
-                attendanceRecords.push({
-                    id: user.id,
-                    name: user.name,
-                    role: user.role,
-                    className: user.className,
-                    status: status,
-                    time: getCurrentTime(),
-                    date: today,
-                    timestamp: Date.now()
-                });
-                saveAttendance();
-                
-                // Play beep
-                try {
-                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.frequency.value = 880;
-                    gain.gain.value = 0.2;
-                    osc.start();
-                    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.3);
-                    setTimeout(() => osc.stop(), 300);
-                } catch(e) {}
-                
-                if ('vibrate' in navigator) navigator.vibrate(100);
-                
-                await Swal.fire({
-                    title: '✅ Kehadiran Dicatat!',
-                    html: `<strong>${escapeHtml(user.name)}</strong><br>Status: ${status}<br>Masa: ${getCurrentTime()}<br>Tarikh: ${today}`,
-                    icon: 'success',
-                    confirmButtonColor: '#007AFF',
-                    confirmButtonText: 'OK',
-                    background: 'white',
-                    borderRadius: '20px'
-                });
-                
-                updateAllStats();
-                
-            } catch(err) {
-                await showError('QR Code Tidak Sah', 'Format QR Code tidak dikenali.');
             }
         }
 
-        // Start QR Scanner
-        async function startQRScanner() {
-            if (isScanning) return;
+        // ==================== FACE DETECTION (Skin Tone Based) ====================
+        function startRegisterCamera() {
+            if (registerStream) stopRegisterCamera();
             
-            const qrContainer = document.getElementById('qr-reader');
-            if (!qrContainer) return;
-            
-            try {
-                html5QrCode = new Html5Qrcode("qr-reader");
-                await html5QrCode.start(
-                    { facingMode: "environment" },
-                    {
-                        fps: 10,
-                        qrbox: { width: 250, height: 250 },
-                        aspectRatio: 1
-                    },
-                    (decodedText) => {
-                        if (decodedText && !window.isProcessingQR) {
-                            window.isProcessingQR = true;
-                            processQRScan(decodedText);
-                            setTimeout(() => { window.isProcessingQR = false; }, 2000);
-                        }
-                    },
-                    (error) => {
-                        // Silent error
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } })
+                .then(stream => {
+                    registerStream = stream;
+                    const video = document.getElementById('registerVideo');
+                    if (video) {
+                        video.srcObject = stream;
+                        video.play().catch(e => console.log(e));
                     }
-                );
-                isScanning = true;
-                const statusEl = document.getElementById('scannerStatus');
-                if (statusEl) statusEl.innerHTML = '● Scanner aktif - Hala QR Code ke kamera';
-            } catch(err) {
-                console.error(err);
-                await showError('Ralat Kamera', 'Kamera tidak dapat diakses. Sila berikan kebenaran kamera.');
+                    isRegisterMode = true;
+                    
+                    const statusEl = document.getElementById('registerStatus');
+                    if (statusEl) {
+                        statusEl.innerHTML = '● Kamera sedia - Letakkan muka dalam kotak';
+                        statusEl.className = 'camera-status status-info';
+                    }
+                    
+                    if (detectionInterval) clearInterval(detectionInterval);
+                    detectionInterval = setInterval(detectFaceForRegister, 300);
+                })
+                .catch(err => {
+                    console.error(err);
+                    const statusEl = document.getElementById('registerStatus');
+                    if (statusEl) {
+                        statusEl.innerHTML = '⚠️ Kamera tidak dapat diakses';
+                        statusEl.className = 'camera-status status-error';
+                    }
+                    showError('Ralat Kamera', 'Sila berikan kebenaran kamera.');
+                });
+        }
+
+        function stopRegisterCamera() {
+            if (registerStream) {
+                registerStream.getTracks().forEach(track => track.stop());
+                registerStream = null;
+            }
+            isRegisterMode = false;
+        }
+
+        function detectFaceForRegister() {
+            const video = document.getElementById('registerVideo');
+            const canvas = document.getElementById('registerCanvas');
+            if (!video || !video.videoWidth || !canvas) return;
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Detect face in center area
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            
+            const centerX = Math.floor(canvas.width / 4);
+            const centerY = Math.floor(canvas.height / 4);
+            const boxW = Math.floor(canvas.width / 2);
+            const boxH = Math.floor(canvas.height / 2);
+            
+            let skinPixelCount = 0;
+            for (let y = centerY; y < centerY + boxH; y++) {
+                for (let x = centerX; x < centerX + boxW; x++) {
+                    const idx = (y * canvas.width + x) * 4;
+                    const r = data[idx];
+                    const g = data[idx+1];
+                    const b = data[idx+2];
+                    if (r > 80 && g > 40 && b > 40 && r > g && Math.abs(r - g) > 15) {
+                        skinPixelCount++;
+                    }
+                }
+            }
+            
+            const totalPixels = boxW * boxH;
+            const skinPercentage = skinPixelCount / totalPixels;
+            const faceDetected = skinPercentage > 0.15;
+            
+            // Draw box
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.rect(centerX, centerY, boxW, boxH);
+            
+            if (faceDetected) {
+                ctx.strokeStyle = '#34C759';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.fillStyle = '#34C759';
+                ctx.font = 'bold 14px system-ui';
+                ctx.fillText('✓ Wajah Dikesan!', centerX, centerY - 5);
+                lastFaceDetected = true;
+                
+                const statusEl = document.getElementById('registerStatus');
+                if (statusEl) {
+                    statusEl.innerHTML = '✅ Wajah dikesan! Anda boleh daftar sekarang.';
+                    statusEl.className = 'camera-status status-active';
+                }
+            } else {
+                ctx.strokeStyle = '#FF9500';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.fillStyle = '#FF9500';
+                ctx.font = 'bold 14px system-ui';
+                ctx.fillText('Letakkan muka di sini', centerX, centerY - 5);
+                lastFaceDetected = false;
+                
+                const statusEl = document.getElementById('registerStatus');
+                if (statusEl) {
+                    statusEl.innerHTML = '● Letakkan muka dalam kotak untuk daftar';
+                    statusEl.className = 'camera-status status-info';
+                }
+            }
+            
+            // Capture current face image
+            if (faceDetected) {
+                currentFaceImage = canvas.toDataURL('image/jpeg');
             }
         }
 
-        function stopQRScanner() {
-            if (html5QrCode && isScanning) {
-                html5QrCode.stop().catch(e => console.log(e));
-                isScanning = false;
-            }
-        }
-
-        // Clock update
-        function updateClock() {
-            document.getElementById('currentTime').innerText = new Date().toLocaleTimeString('en-GB');
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        // Register User (with QR)
-        async function registerUser() {
+        // Register face function
+        async function registerFace() {
             const name = document.getElementById('regName').value.trim();
             const role = document.getElementById('regRole').value;
             const className = document.getElementById('regClass').value.trim();
@@ -570,71 +620,257 @@
                 return;
             }
             
+            if (!lastFaceDetected) {
+                await showWarning('Tiada Wajah Dikesan', 'Sila pastikan muka anda jelas dalam kotak hijau sebelum daftar.');
+                return;
+            }
+            
+            // Check if name already exists
+            if (registeredUsers.some(u => u.name.toLowerCase() === name.toLowerCase())) {
+                await showError('Nama Sudah Wujud', `Pengguna dengan nama "${name}" sudah berdaftar. Sila guna nama lain.`);
+                return;
+            }
+            
             const newUser = {
                 id: Date.now().toString(),
                 name: name,
                 role: role,
                 className: className || '-',
-                registeredAt: new Date().toISOString()
+                registeredAt: new Date().toISOString(),
+                faceImage: currentFaceImage
             };
             
             registeredUsers.push(newUser);
             saveUsers();
             
-            const qrData = generateQRCodeForUser(newUser);
+            await showSuccess('✅ Pendaftaran Berjaya!', `${name} telah berdaftar sebagai ${role === 'teacher' ? 'Guru' : 'Pelajar'}.\n\nKelas: ${className || '-'}\nSekarang boleh gunakan tab Kehadiran.`);
+            
+            document.getElementById('regName').value = '';
+            document.getElementById('regClass').value = '';
+            renderUsersPage();
+        }
+
+        // ==================== ATTENDANCE WITH FACE ====================
+        function startAttendanceCamera() {
+            if (attendanceStream) stopAttendanceCamera();
+            
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } })
+                .then(stream => {
+                    attendanceStream = stream;
+                    const video = document.getElementById('attendanceVideo');
+                    if (video) {
+                        video.srcObject = stream;
+                        video.play().catch(e => console.log(e));
+                    }
+                    isAttendanceMode = true;
+                    
+                    const statusEl = document.getElementById('attendanceStatus');
+                    if (statusEl) {
+                        statusEl.innerHTML = '● Kamera sedia - Mengesan wajah untuk kehadiran';
+                        statusEl.className = 'camera-status status-info';
+                    }
+                    
+                    if (detectionInterval) clearInterval(detectionInterval);
+                    detectionInterval = setInterval(detectFaceForAttendance, 500);
+                })
+                .catch(err => {
+                    console.error(err);
+                    showError('Ralat Kamera', 'Kamera tidak dapat diakses.');
+                });
+        }
+
+        function stopAttendanceCamera() {
+            if (attendanceStream) {
+                attendanceStream.getTracks().forEach(track => track.stop());
+                attendanceStream = null;
+            }
+            if (detectionInterval) {
+                clearInterval(detectionInterval);
+                detectionInterval = null;
+            }
+            isAttendanceMode = false;
+        }
+
+        let lastDetectedUserId = null;
+        let lastDetectionTime = 0;
+
+        function detectFaceForAttendance() {
+            const video = document.getElementById('attendanceVideo');
+            const canvas = document.getElementById('attendanceCanvas');
+            if (!video || !video.videoWidth || !canvas) return;
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Face detection in center
+            const centerX = Math.floor(canvas.width / 4);
+            const centerY = Math.floor(canvas.height / 4);
+            const boxW = Math.floor(canvas.width / 2);
+            const boxH = Math.floor(canvas.height / 2);
+            
+            const imageData = ctx.getImageData(centerX, centerY, boxW, boxH);
+            const data = imageData.data;
+            
+            let skinPixelCount = 0;
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i+1];
+                const b = data[i+2];
+                if (r > 80 && g > 40 && b > 40 && r > g && Math.abs(r - g) > 15) {
+                    skinPixelCount++;
+                }
+            }
+            
+            const totalPixels = boxW * boxH;
+            const skinPercentage = skinPixelCount / totalPixels;
+            const faceDetected = skinPercentage > 0.15;
+            
+            // Draw box
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.rect(centerX, centerY, boxW, boxH);
+            
+            if (faceDetected) {
+                ctx.strokeStyle = '#34C759';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.fillStyle = '#34C759';
+                ctx.font = 'bold 14px system-ui';
+                ctx.fillText('✓ Wajah Dikesan!', centerX, centerY - 5);
+                
+                const statusEl = document.getElementById('attendanceStatus');
+                if (statusEl) {
+                    statusEl.innerHTML = '✅ Wajah dikesan! Pilih nama anda untuk rekod kehadiran.';
+                    statusEl.className = 'camera-status status-active';
+                }
+                
+                // Auto show user selection after face detected
+                if (Date.now() - lastDetectionTime > 2000) {
+                    lastDetectionTime = Date.now();
+                    // Don't auto-popup, let user click button
+                }
+            } else {
+                ctx.strokeStyle = '#FF9500';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.fillStyle = '#FF9500';
+                ctx.font = 'bold 14px system-ui';
+                ctx.fillText('Letakkan muka di sini', centerX, centerY - 5);
+                
+                const statusEl = document.getElementById('attendanceStatus');
+                if (statusEl) {
+                    statusEl.innerHTML = '● Letakkan muka dalam kotak, kemudian klik Sahkan';
+                    statusEl.className = 'camera-status status-info';
+                }
+            }
+        }
+
+        async function confirmAttendance() {
+            if (!lastFaceDetected && !isAttendanceMode) {
+                await showWarning('Tiada Wajah Dikesan', 'Sila pastikan muka anda dalam frame kamera.');
+                return;
+            }
+            
+            if (registeredUsers.length === 0) {
+                await showError('Tiada Pengguna', 'Sila daftar muka terlebih dahulu di tab "Daftar Muka".');
+                return;
+            }
+            
+            // Show user selection
+            const userOptions = {};
+            registeredUsers.forEach(u => {
+                userOptions[u.id] = `${u.name} (${u.role === 'teacher' ? 'Guru' : 'Pelajar'} - ${u.className})`;
+            });
+            
+            const { value: selectedUserId } = await Swal.fire({
+                title: 'Pengesahan Wajah',
+                text: 'Pilih nama anda:',
+                icon: 'question',
+                input: 'select',
+                inputOptions: userOptions,
+                inputPlaceholder: 'Pilih nama',
+                showCancelButton: true,
+                confirmButtonColor: '#007AFF',
+                confirmButtonText: 'Sahkan Kehadiran',
+                cancelButtonText: 'Batal'
+            });
+            
+            if (selectedUserId) {
+                const selectedUser = registeredUsers.find(u => u.id === selectedUserId);
+                if (selectedUser) {
+                    await markAttendance(selectedUser);
+                }
+            }
+        }
+
+        async function markAttendance(user) {
+            const today = getTodayDate();
+            const alreadyLogged = attendanceRecords.find(rec => rec.id === user.id && rec.date === today);
+            
+            if (alreadyLogged) {
+                await showWarning('⚠️ Kehadiran Dicatat Sebelum Ini', `${user.name} sudah mencatat kehadiran hari ini pada ${alreadyLogged.time}.`);
+                return false;
+            }
+            
+            const now = new Date();
+            const hour = now.getHours();
+            const minute = now.getMinutes();
+            const timeValue = hour * 60 + minute;
+            const status = timeValue > 510 ? (timeValue > 540 ? 'Lewat' : 'Hadir') : 'Hadir';
+            
+            attendanceRecords.push({
+                id: user.id,
+                name: user.name,
+                role: user.role,
+                className: user.className,
+                status: status,
+                time: getCurrentTime(),
+                date: today,
+                timestamp: Date.now()
+            });
+            saveAttendance();
+            
+            // Beep sound
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = 880;
+                gain.gain.value = 0.2;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.3);
+                setTimeout(() => osc.stop(), 300);
+            } catch(e) {}
+            
+            if ('vibrate' in navigator) navigator.vibrate(100);
             
             await Swal.fire({
-                title: '✅ Pendaftaran Berjaya!',
-                html: `${escapeHtml(name)} telah didaftarkan.<br><br>Sila ambil gambar QR Code ini untuk kegunaan hadapan.`,
+                title: '✅ Kehadiran Dicatat!',
+                html: `<strong>${escapeHtml(user.name)}</strong><br>Status: ${status}<br>Masa: ${getCurrentTime()}<br>Tarikh: ${today}`,
                 icon: 'success',
                 confirmButtonColor: '#007AFF',
                 confirmButtonText: 'OK',
                 background: 'white',
-                borderRadius: '20px'
+                borderRadius: '20px',
+                timer: 3000,
+                timerProgressBar: true
             });
             
-            document.getElementById('regName').value = '';
-            document.getElementById('regClass').value = '';
-            renderUsersTable();
+            updateUI();
+            return true;
         }
 
-        // Show user's QR Code
-        async function showUserQR(user) {
-            const qrData = generateQRCodeForUser(user);
-            
-            // Simple QR display using canvas
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = `
-                <div style="text-align: center; padding: 20px;">
-                    <h3>QR Code - ${escapeHtml(user.name)}</h3>
-                    <div id="tempQR" style="display: flex; justify-content: center; margin: 20px 0;"></div>
-                    <p style="color: gray; font-size: 12px;">Gunakan QR Code ini untuk mencatat kehadiran</p>
-                </div>
-            `;
-            
-            Swal.fire({
-                title: 'QR Code Pengguna',
-                html: tempDiv.innerHTML,
-                confirmButtonColor: '#007AFF',
-                confirmButtonText: 'Tutup',
-                background: 'white',
-                borderRadius: '20px',
-                didOpen: () => {
-                    // Create simple QR using canvas (without external library)
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 200;
-                    canvas.height = 200;
-                    const ctx = canvas.getContext('2d');
-                    ctx.fillStyle = 'white';
-                    ctx.fillRect(0, 0, 200, 200);
-                    ctx.fillStyle = 'black';
-                    ctx.font = '12px monospace';
-                    ctx.fillText(qrData.substring(0, 50), 20, 100);
-                    ctx.fillText('...', 20, 120);
-                    document.getElementById('tempQR').appendChild(canvas);
-                }
-            });
+        // Clock update
+        function updateClock() {
+            document.getElementById('currentTime').innerText = new Date().toLocaleTimeString('en-GB');
         }
+        setInterval(updateClock, 1000);
+        updateClock();
 
         // ==================== RENDER FUNCTIONS ====================
         function renderDashboard() {
@@ -646,6 +882,12 @@
             const lateToday = attendanceRecords.filter(r => r.date === today && r.status === 'Lewat').length;
             
             const html = `
+                ${registeredUsers.length === 0 ? `
+                <div class="warning-banner">
+                    <i data-lucide="alert-triangle"></i>
+                    <strong>⚠️ Tiada Pengguna Berdaftar!</strong> Sila daftar muka dahulu di tab "Daftar Muka".
+                </div>
+                ` : ''}
                 <div class="stats-grid">
                     <div class="stat-card"><div class="stat-info"><h3>Pengguna</h3><div class="stat-number">${registeredUsers.length}</div></div><div class="stat-icon"><i data-lucide="users"></i></div></div>
                     <div class="stat-card"><div class="stat-info"><h3>Hadir Hari Ini</h3><div class="stat-number">${todayAttendance}</div></div><div class="stat-icon"><i data-lucide="check-circle"></i></div></div>
@@ -657,14 +899,13 @@
                 <div class="charts-row">
                     <div class="chart-card"><h3><i data-lucide="pie-chart"></i> Kehadiran Hari Ini</h3><canvas id="attendanceChartCanvas"></canvas></div>
                 </div>
-                <div class="data-table"><h3><i data-lucide="qr-code"></i> Cara Penggunaan</h3>
-                    <p style="font-size: 13px; line-height: 1.5;">1. Pergi ke tab <strong>"Daftar"</strong> untuk daftar pengguna baru<br>
-                    2. Setiap pengguna akan dapat <strong>QR Code unik</strong><br>
-                    3. Pergi ke tab <strong>"Imbas QR"</strong> dan scan QR Code<br>
-                    4. Sistem akan catat kehadiran secara automatik<br>
-                    5. Semak rekod di tab <strong>"Rekod"</strong></p>
+                <div class="data-table"><h3><i data-lucide="info"></i> Cara Penggunaan</h3>
+                    <p style="font-size: 13px; line-height: 1.5;">1️⃣ <strong>Daftar Muka</strong> - Daftar wajah anda terlebih dahulu<br>
+                    2️⃣ <strong>Kehadiran</strong> - Gunakan kamera untuk pengesahan wajah<br>
+                    3️⃣ Pilih nama dan sistem akan rekod kehadiran anda<br>
+                    4️⃣ Semak rekod di tab <strong>Rekod</strong></p>
                 </div>
-                <div class="data-table"><h3>📋 Kehadiran Terkini</h3><div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Status</th><th>Masa</th></thead><tbody>${attendanceRecords.slice(-8).reverse().map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="4">Tiada rekod</td></tr>'}</tbody></table></div></div>
+                <div class="data-table"><h3>📋 Kehadiran Terkini</h3><div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Status</th><th>Masa</th></thead><tbody>${attendanceRecords.slice(-8).reverse().map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="4">Tiada rekod kehadiran</td></tr>'}</tbody></table></div></div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
@@ -676,27 +917,17 @@
             }
         }
 
-        function renderScannerPage() {
-            const html = `
-                <div class="qr-scanner-section">
-                    <h3><i data-lucide="qr-code"></i> Imbas QR Code</h3>
-                    <div class="qr-container" id="qr-reader"></div>
-                    <div class="camera-status" id="scannerStatus" style="margin-top: 12px; text-align: center;">● Memulakan scanner...</div>
-                </div>
-                <div class="data-table">
-                    <h3><i data-lucide="info"></i> Cara Imbas</h3>
-                    <p style="font-size: 13px;">✓ Hala kamera ke QR Code<br>✓ Pastikan pencahayaan cukup<br>✓ Sistem akan auto rekod kehadiran</p>
-                </div>
-            `;
-            document.getElementById('mainContent').innerHTML = html;
-            lucide.createIcons();
-            setTimeout(() => startQRScanner(), 100);
-        }
-
         function renderRegisterPage() {
             const html = `
+                <div class="camera-section">
+                    <h3><i data-lucide="user-plus"></i> Daftar Wajah Baru</h3>
+                    <div class="camera-container">
+                        <video id="registerVideo" autoplay playsinline></video>
+                        <canvas id="registerCanvas" class="face-canvas"></canvas>
+                    </div>
+                    <div class="camera-status" id="registerStatus">● Memulakan kamera...</div>
+                </div>
                 <div class="data-table">
-                    <h3><i data-lucide="user-plus"></i> Daftar Pengguna Baru</h3>
                     <div class="register-form">
                         <input type="text" id="regName" placeholder="Nama Penuh *">
                         <select id="regRole">
@@ -704,56 +935,101 @@
                             <option value="teacher">👩‍🏫 Guru</option>
                         </select>
                         <input type="text" id="regClass" placeholder="Kelas (cth: 5A)">
-                        <button class="btn btn-success" id="registerBtn"><i data-lucide="save"></i> Daftar & Jana QR</button>
+                        <button class="btn btn-success" id="registerBtn"><i data-lucide="camera"></i> Daftar Wajah Sekarang</button>
                     </div>
                 </div>
                 <div class="data-table">
-                    <h3><i data-lucide="users"></i> Senarai Pengguna</h3>
+                    <h3><i data-lucide="users"></i> Senarai Pengguna Berdaftar</h3>
                     <div class="table-container" id="usersTableContainer"></div>
                 </div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
-            document.getElementById('registerBtn').onclick = registerUser;
+            startRegisterCamera();
+            document.getElementById('registerBtn').onclick = registerFace;
+            renderUsersTable();
+        }
+
+        function renderAttendancePage() {
+            if (registeredUsers.length === 0) {
+                renderNoUserWarning();
+                return;
+            }
+            
+            const html = `
+                <div class="camera-section">
+                    <h3><i data-lucide="camera"></i> Pengesahan Wajah untuk Kehadiran</h3>
+                    <div class="camera-container">
+                        <video id="attendanceVideo" autoplay playsinline></video>
+                        <canvas id="attendanceCanvas" class="face-canvas"></canvas>
+                    </div>
+                    <div class="camera-status" id="attendanceStatus">● Memulakan kamera...</div>
+                    <button class="btn btn-primary" id="confirmAttendanceBtn" style="margin-top: 12px;"><i data-lucide="check-circle"></i> Sahkan Kehadiran</button>
+                </div>
+                <div class="data-table">
+                    <h3><i data-lucide="info"></i> Cara Pengesahan</h3>
+                    <p style="font-size: 13px;">✓ Hadapkan muka ke kamera<br>✓ Tunggu 'Wajah Dikesan'<br>✓ Klik Sahkan dan pilih nama anda</p>
+                </div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+            lucide.createIcons();
+            startAttendanceCamera();
+            document.getElementById('confirmAttendanceBtn').onclick = confirmAttendance;
+        }
+
+        function renderNoUserWarning() {
+            const html = `
+                <div class="warning-banner">
+                    <i data-lucide="alert-triangle"></i>
+                    <strong>⚠️ Tiada Pengguna Berdaftar!</strong>
+                </div>
+                <div class="data-table">
+                    <h3><i data-lucide="info"></i> Perlu Daftar Muka Dahulu</h3>
+                    <p style="font-size: 14px; text-align: center; padding: 20px;">
+                        Sila pergi ke tab <strong>"Daftar Muka"</strong> untuk mendaftar wajah anda terlebih dahulu sebelum boleh merekod kehadiran.
+                    </p>
+                    <button class="btn btn-primary" id="goToRegisterBtn"><i data-lucide="user-plus"></i> Pergi ke Daftar Muka</button>
+                </div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+            lucide.createIcons();
+            document.getElementById('goToRegisterBtn').onclick = () => navigateTo('register');
+        }
+
+        function renderRecordsPage() {
+            const today = getTodayDate();
+            const filtered = attendanceRecords.filter(r => r.date === today);
+            const html = `
+                <div class="data-table">
+                    <h3>📋 Kehadiran Hari Ini (${today})</h3>
+                    <div class="table-container"><tr><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th><th>Status</th><th>Masa</th></thead><tbody>${filtered.map(r => `<table><td>${escapeHtml(r.name)}</td> <td>${r.role === 'teacher' ? 'Guru' : 'Pelajar'}</td> <td>${escapeHtml(r.className)}</td> <td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td> <td>${r.time}</td> </tr>`).join('') || '<tr><td colspan="5">Tiada kehadiran hari ini</td></tr>'}</tbody> </div>
+                </div>
+                <div class="data-table">
+                    <h3>📜 Semua Rekod Kehadiran</h3>
+                    <div class="table-container"> <table> <thead> <tr><th>Nama</th><th>Kelas</th><th>Status</th><th>Tarikh</th><th>Masa</th></tr></thead><tbody>${attendanceRecords.slice().reverse().slice(0, 30).map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.date}</td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="5">Tiada rekod</td></tr>'}</tbody> </div>
+                </div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function renderUsersPage() {
+            const html = `
+                <div class="data-table">
+                    <h3><i data-lucide="users"></i> Senarai Pengguna Berdaftar</h3>
+                    <div class="table-container" id="usersTableContainer"></div>
+                </div>
+                ${registeredUsers.length === 0 ? '<div class="warning-banner"><i data-lucide="alert-triangle"></i><strong>Tiada pengguna berdaftar.</strong> Sila daftar muka di tab "Daftar Muka".</div>' : ''}
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+            lucide.createIcons();
             renderUsersTable();
         }
 
         function renderUsersTable() {
             const container = document.getElementById('usersTableContainer');
             if (!container) return;
-            container.innerHTML = `<table><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th><th>Tindakan</th></thead><tbody>${registeredUsers.map(u => `
-                <tr>
-                    <td>${escapeHtml(u.name)}</td>
-                    <td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Guru' : 'Pelajar'}</span></td>
-                    <td>${escapeHtml(u.className)}</td>
-                    <td><button class="btn-qr-${u.id}" style="background: none; border: none; color: var(--primary); cursor: pointer;"><i data-lucide="qr-code"></i></button></td>
-                </tr>
-            `).join('') || '<tr><td colspan="4">Tiada pengguna berdaftar</td></tr>'}</tbody></table>`;
-            lucide.createIcons();
-            
-            registeredUsers.forEach(user => {
-                const btn = document.querySelector(`.btn-qr-${user.id}`);
-                if (btn) {
-                    btn.onclick = () => showUserQR(user);
-                }
-            });
-        }
-
-        function renderAttendanceTable() {
-            const today = getTodayDate();
-            const filtered = attendanceRecords.filter(r => r.date === today);
-            const html = `
-                <div class="data-table">
-                    <h3>📋 Kehadiran Hari Ini (${today})</h3>
-                    <div class="table-container"><table><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th><th>Status</th><th>Masa</th></thead><tbody>${filtered.map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${r.role === 'teacher' ? 'Guru' : 'Pelajar'}</td><td>${escapeHtml(r.className)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="5">Tiada kehadiran hari ini</td></tr>'}</tbody></table></div>
-                </div>
-                <div class="data-table">
-                    <h3>📜 Semua Rekod Kehadiran</h3>
-                    <div class="table-container"><tr><thead><tr><th>Nama</th><th>Kelas</th><th>Status</th><th>Tarikh</th><th>Masa</th></thead><tbody>${attendanceRecords.slice().reverse().slice(0, 30).map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.date}</td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="5">Tiada rekod</td></tr>'}</tbody>}</div>
-                </div>
-            `;
-            document.getElementById('mainContent').innerHTML = html;
-            lucide.createIcons();
+            container.innerHTML = `<table><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th><th>Tarikh Daftar</th></thead><tbody>${registeredUsers.map(u => `<tr><td>${escapeHtml(u.name)}</td><td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Guru' : 'Pelajar'}</span></td><td>${escapeHtml(u.className)}</td><td>${new Date(u.registeredAt).toLocaleDateString()}</td></tr>`).join('') || '<tr><td colspan="4">Tiada pengguna berdaftar</td></tr>'}</tbody></table>`;
         }
 
         function navigateTo(page) {
@@ -762,15 +1038,15 @@
                 item.classList.toggle('active', item.dataset.page === page);
             });
             
-            if (page !== 'scanner') {
-                stopQRScanner();
-            }
+            // Stop all cameras
+            stopRegisterCamera();
+            stopAttendanceCamera();
             
             if (page === 'dashboard') renderDashboard();
-            else if (page === 'scanner') renderScannerPage();
             else if (page === 'register') renderRegisterPage();
-            else if (page === 'attendance') renderAttendanceTable();
-            else if (page === 'users') renderUsersTable();
+            else if (page === 'attendance') renderAttendancePage();
+            else if (page === 'records') renderRecordsPage();
+            else if (page === 'users') renderUsersPage();
         }
 
         // Event Listeners
@@ -784,7 +1060,11 @@
         lucide.createIcons();
         
         setTimeout(() => {
-            showInfo('👋 Selamat Datang', 'Sistem Kehadiran QR Code\n\n✓ Daftar pengguna di tab "Daftar"\n✓ Setiap pengguna dapat QR Code\n✓ Scan QR untuk catat kehadiran');
+            if (registeredUsers.length === 0) {
+                showInfo('👋 Selamat Datang', 'Sistem ini memerlukan anda DAFTAR MUKA terlebih dahulu.\n\nPergi ke tab "Daftar Muka" untuk mendaftar wajah anda.');
+            } else {
+                showInfo('👋 Selamat Datang', `${registeredUsers.length} pengguna telah berdaftar.\n\nGunakan tab "Kehadiran" untuk rekod kehadiran dengan wajah.`);
+            }
         }, 1000);
     </script>
 </body>
