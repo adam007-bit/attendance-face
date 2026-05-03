@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Semsira Smart Class - AI Face Recognition Attendance</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Face API.js for face detection and recognition -->
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.min.js"></script>
+    <style>
+        * {
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #007AFF;
+            --primary-dark: #005FC1;
+            --success: #34C759;
+            --error: #FF3B30;
+            --warning: #FF9500;
+            --danger: #FF3B30;
+            --bg: #F2F2F7;
+            --card-bg: #FFFFFF;
+            --text-primary: #1C1C1E;
+            --text-secondary: #8E8E93;
+            --border: #E5E5EA;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding-bottom: 20px;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--card-bg);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-left img {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            background: var(--primary);
+        }
+
+        .live-clock {
+            background: var(--bg);
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: monospace;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: var(--card-bg);
+            padding: 8px 16px;
+            gap: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-radius: 30px;
+            transition: all 0.2s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab-pane {
+            display: none;
+            padding: 16px;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* Camera */
+        .camera-container {
+            position: relative;
+            background: #000;
+            border-radius: 28px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        #videoFeed {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        .canvas-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* Stats */
+        .stats-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            flex: 1;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        /* Alert Banner */
+        .alert-banner {
+            background: #FFE5E5;
+            border-left: 4px solid var(--danger);
+            padding: 12px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; background: #FFD6D6; }
+        }
+
+        /* Registration Form */
+        .register-form {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 14px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            font-size: 15px;
+            background: var(--card-bg);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        /* Person List */
+        .person-list {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 16px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .person-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .person-info h4 {
+            margin: 0;
+            font-size: 15px;
+        }
+
+        .person-info p {
+            margin: 4px 0 0;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-student { background: #E3F2FD; color: #1976D2; }
+        .badge-teacher { background: #E8F5E9; color: #388E3C; }
+
+        /* Attendance Log */
+        .attendance-log {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 16px;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .log-item {
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            width: 85%;
+            max-width: 320px;
+            border-radius: 32px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .settings-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+        }
+
+        /* Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 51px;
+            height: 31px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #E5E5EA;
+            transition: 0.25s;
+            border-radius: 34px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 27px; width: 27px;
+            left: 2px; bottom: 2px;
+            background-color: white;
+            transition: 0.25s;
+            border-radius: 50%;
+        }
+        input:checked + .toggle-slider { background-color: var(--primary); }
+        input:checked + .toggle-slider:before { transform: translateX(20px); }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-left">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23007AFF' rx='20'/%3E%3Cpath fill='white' d='M30 35 L45 28 L70 35 L65 68 L50 75 L35 68 L30 35Z'/%3E%3Ccircle cx='50' cy='48' r='8' fill='white'/%3E%3C/svg%3E">
+        <div>
+            <h1 style="margin:0; font-size:16px;">Semsira Smart Class</h1>
+            <p style="margin:0; font-size:10px;">AI Face Recognition · Keselamatan Kelas</p>
+        </div>
+    </div>
+    <div class="live-clock">
+        <i data-lucide="clock"></i>
+        <span id="currentTime">--:--:--</span>
+    </div>
+</div>
+
+<div class="tabs">
+    <button class="tab-btn active" data-tab="camera">
+        <i data-lucide="camera"></i> Kamera Keselamatan
+    </button>
+    <button class="tab-btn" data-tab="register">
+        <i data-lucide="user-plus"></i> Daftar Wajah
+    </button>
+    <button class="tab-btn" data-tab="logs">
+        <i data-lucide="clipboard-list"></i> Rekod Kehadiran
+    </button>
+    <button class="tab-btn" data-tab="settings">
+        <i data-lucide="settings"></i> Tetapan
+    </button>
+</div>
+
+<!-- Tab: Camera -->
+<div id="camera-tab" class="tab-pane active">
+    <div class="stats-row">
+        <div class="stat-card">
+            <i data-lucide="users"></i>
+            <div class="number" id="totalRegistered">0</div>
+            <div>Berdaftar</div>
+        </div>
+        <div class="stat-card">
+            <i data-lucide="check-circle"></i>
+            <div class="number" id="todayAttendance">0</div>
+            <div>Hadir Hari Ini</div>
+        </div>
+        <div class="stat-card">
+            <i data-lucide="alert-triangle"></i>
+            <div class="number" id="strangerCount">0</div>
+            <div>Wajah Asing</div>
+        </div>
+    </div>
+
+    <div id="alertContainer"></div>
+
+    <div class="camera-container">
+        <video id="videoFeed" autoplay playsinline></video>
+        <canvas id="faceCanvas" class="canvas-overlay"></canvas>
+    </div>
+
+    <button id="toggleCameraBtn" class="btn" style="background: var(--warning);">
+        <i data-lucide="play"></i> Mula Kamera Keselamatan
+    </button>
+    <p style="font-size:12px; color:var(--text-secondary); text-align:center; margin-top:12px;">
+        <i data-lucide="shield"></i> Sistem akan mengesan wajah dan mencatat kehadiran secara automatik
+    </p>
+</div>
+
+<!-- Tab: Registration -->
+<div id="register-tab" class="tab-pane">
+    <div class="register-form">
+        <h3>Daftar Wajah Baru</h3>
+        <div class="form-group">
+            <input type="text" id="regName" placeholder="Nama Penuh">
+        </div>
+        <div class="form-group">
+            <select id="regRole">
+                <option value="student">Pelajar</option>
+                <option value="teacher">Guru</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <input type="text" id="regClass" placeholder="Kelas (cth: 5A)">
+        </div>
+        <button id="captureFaceBtn" class="btn">
+            <i data-lucide="camera"></i> Tangkap & Daftar Wajah
+        </button>
+    </div>
+
+    <div class="person-list">
+        <h3>👥 Senarai Wajah Berdaftar</h3>
+        <div id="registeredList"></div>
+    </div>
+</div>
+
+<!-- Tab: Logs -->
+<div id="logs-tab" class="tab-pane">
+    <div class="attendance-log">
+        <h3>📋 Rekod Kehadiran Hari Ini</h3>
+        <div id="attendanceList"></div>
+    </div>
+    <button id="clearLogsBtn" class="btn btn-danger" style="margin-top:16px;">
+        <i data-lucide="trash-2"></i> Kosongkan Rekod Demo
+    </button>
+</div>
+
+<!-- Tab: Settings -->
+<div id="settings-tab" class="tab-pane">
+    <div class="register-form">
+        <h3>⚙️ Tetapan Sistem</h3>
+        <div class="setting-item">
+            <span><i data-lucide="bell"></i> Pemberitahuan Wajah Asing</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="alertToggle" checked>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="setting-item">
+            <span><i data-lucide="volume-2"></i> Bunyi & Getaran</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="soundToggle" checked>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="info-text" style="margin-top:20px; padding:12px; background:#F2F2F7; border-radius:16px;">
+            <i data-lucide="database"></i> Data disimpan secara tempatan (localStorage).<br>
+            🔥 Firebase akan disambungkan kemudian untuk penyimpanan awan.
+        </div>
+    </div>
+</div>
+
+<!-- Modal Alert -->
+<div id="alertModal" class="modal">
+    <div class="modal-content">
+        <i data-lucide="alert-triangle" style="width:48px; height:48px; color:var(--danger); margin-bottom:12px;"></i>
+        <h3>⚠️ Amaran Keselamatan</h3>
+        <p id="alertMessage">Wajah tidak dikenali dikesan!</p>
+        <button id="closeAlertBtn" class="btn" style="margin-top:16px;">Tutup</button>
+    </div>
+</div>
+
+<script>
+    // ======================== FACE RECOGNITION SYSTEM ========================
+    // Data Storage (simulated - ready for Firebase later)
+    let registeredFaces = []; // { id, name, role, className, descriptor }
+    let attendanceLog = []; // { name, role, time, date }
+    let strangerAlertCount = 0;
+    let isCameraActive = false;
+    let videoStream = null;
+    let detectionInterval = null;
+    let modelsLoaded = false;
+
+    // Load Face-API models
+    async function loadModels() {
+        const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
+        await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+        modelsLoaded = true;
+        console.log("Face detection models loaded");
+    }
+
+    // Load data from localStorage
+    function loadData() {
+        const saved = localStorage.getItem('semsira_faces');
+        if (saved) registeredFaces = JSON.parse(saved);
+        const savedLogs = localStorage.getItem('semsira_attendance');
+        if (savedLogs) attendanceLog = JSON.parse(savedLogs);
+        updateUI();
+    }
+
+    function saveFaces() {
+        localStorage.setItem('semsira_faces', JSON.stringify(registeredFaces));
+        updateUI();
+    }
+
+    function saveAttendance() {
+        localStorage.setItem('semsira_attendance', JSON.stringify(attendanceLog));
+        updateUI();
+    }
+
+    function updateUI() {
+        document.getElementById('totalRegistered').innerText = registeredFaces.length;
+        const today = new Date().toDateString();
+        const todayCount = attendanceLog.filter(log => log.date === today).length;
+        document.getElementById('todayAttendance').innerText = todayCount;
+        document.getElementById('strangerCount').innerText = strangerAlertCount;
+        
+        // Render registered list
+        const listDiv = document.getElementById('registeredList');
+        if (listDiv) {
+            listDiv.innerHTML = registeredFaces.map(face => `
+                <div class="person-item">
+                    <div class="person-info">
+                        <h4>${escapeHtml(face.name)}</h4>
+                        <p>${face.role === 'teacher' ? '👨‍🏫 Guru' : '🎓 Pelajar'} | Kelas: ${face.className || '-'}</p>
+                    </div>
+                    <span class="badge ${face.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${face.role}</span>
+                </div>
+            `).join('');
+            if (registeredFaces.length === 0) listDiv.innerHTML = '<p style="text-align:center; padding:20px;">Tiada wajah berdaftar. Sila daftar.</p>';
+        }
+        
+        // Render attendance
+        const attDiv = document.getElementById('attendanceList');
+        if (attDiv) {
+            const todayLogs = attendanceLog.filter(log => log.date === new Date().toDateString());
+            attDiv.innerHTML = todayLogs.length === 0 ? '<p style="text-align:center; padding:20px;">Tiada rekod kehadiran hari ini.</p>' :
+                todayLogs.map(log => `<div class="log-item"><span>${escapeHtml(log.name)} (${log.role === 'teacher' ? 'Guru' : 'Pelajar'})</span><span>${log.time}</span></div>`).join('');
+        }
+        lucide.createIcons();
+    }
+
+    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+    // Show stranger alert
+    function showStrangerAlert(faceCount = 1) {
+        if (!document.getElementById('alertToggle').checked) return;
+        strangerAlertCount++;
+        updateUI();
+        const alertDiv = document.getElementById('alertContainer');
+        const msg = `⚠️ AMARAN: ${faceCount} wajah asing dikesan di dalam kelas!`;
+        alertDiv.innerHTML = `<div class="alert-banner"><i data-lucide="alert-triangle"></i><strong>${msg}</strong></div>`;
+        setTimeout(() => { if(alertDiv.firstChild) alertDiv.firstChild.remove(); }, 5000);
+        
+        // Show modal
+        document.getElementById('alertMessage').innerText = msg;
+        document.getElementById('alertModal').style.display = 'flex';
+        
+        // Play sound & vibrate
+        if (document.getElementById('soundToggle').checked) {
+            const audio = new Audio();
+            // beep using Web Audio
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = ctx.createOscillator();
+                const gain = ctx.createGain();
+                oscillator.connect(gain);
+                gain.connect(ctx.destination);
+                oscillator.frequency.value = 880;
+                gain.gain.value = 0.5;
+                oscillator.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.5);
+                setTimeout(() => oscillator.stop(), 500);
+            } catch(e) {}
+            if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+        }
+        lucide.createIcons();
+    }
+
+    // Mark attendance for recognized face
+    function markAttendance(person) {
+        const today = new Date().toDateString();
+        const now = new Date().toLocaleTimeString('ms-MY', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+        const already = attendanceLog.find(log => log.name === person.name && log.date === today);
+        if (!already) {
+            attendanceLog.push({
+                id: person.id,
+                name: person.name,
+                role: person.role,
+                className: person.className,
+                time: now,
+                date: today,
+                timestamp: Date.now()
+            });
+            saveAttendance();
+            // Visual feedback on detection
+            console.log(`✅ Kehadiran dicatat: ${person.name}`);
+        }
+    }
+
+    // Face detection & recognition loop
+    async function startDetection() {
+        if (!modelsLoaded || !isCameraActive) return;
+        const video = document.getElementById('videoFeed');
+        const canvas = document.getElementById('faceCanvas');
+        if (!video.videoWidth) return;
+        
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        
+        const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options())
+            .withFaceLandmarks()
+            .withFaceDescriptors();
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        if (detections.length === 0) return;
+        
+        // For each detected face, compare with registered faces
+        let recognizedCount = 0;
+        for (const detection of detections) {
+            let bestMatch = null;
+            let bestDistance = 0.6; // threshold
+            
+            for (const reg of registeredFaces) {
+                if (reg.descriptor) {
+                    const distance = faceapi.euclideanDistance(detection.descriptor, reg.descriptor);
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        bestMatch = reg;
+                    }
+                }
+            }
+            
+            // Draw bounding box
+            const box = detection.detection.box;
+            ctx.beginPath();
+            ctx.rect(box.x, box.y, box.width, box.height);
+            if (bestMatch) {
+                ctx.strokeStyle = '#34C759';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.fillStyle = '#34C759';
+                ctx.font = '16px system-ui';
+                ctx.fillText(`${bestMatch.name} (${bestMatch.role})`, box.x, box.y - 5);
+                // Mark attendance
+                markAttendance(bestMatch);
+                recognizedCount++;
+            } else {
+                ctx.strokeStyle = '#FF3B30';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.fillStyle = '#FF3B30';
+                ctx.font = '16px system-ui';
+                ctx.fillText('Wajah Asing!', box.x, box.y - 5);
+            }
+        }
+        
+        // If any unknown face and not recognized at all, trigger alert (but not too frequent)
+        const unknownFaces = detections.length - recognizedCount;
+        if (unknownFaces > 0) {
+            if (!window.lastAlertTime || Date.now() - window.lastAlertTime > 10000) {
+                showStrangerAlert(unknownFaces);
+                window.lastAlertTime = Date.now();
+            }
+        }
+    }
+
+    // Start camera & detection loop
+    async function startCamera() {
+        if (videoStream) {
+            stopCamera();
+        }
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            videoStream = stream;
+            const video = document.getElementById('videoFeed');
+            video.srcObject = stream;
+            await video.play();
+            isCameraActive = true;
+            
+            // Wait for models if not loaded
+            if (!modelsLoaded) {
+                await loadModels();
+            }
+            
+            if (detectionInterval) clearInterval(detectionInterval);
+            detectionInterval = setInterval(() => {
+                if (isCameraActive) startDetection();
+            }, 800);
+            
+            document.getElementById('toggleCameraBtn').innerHTML = '<i data-lucide="stop-circle"></i> Hentikan Kamera';
+            lucide.createIcons();
+        } catch (err) {
+            console.error(err);
+            alert('Kamera tidak dapat diakses. Sila pastikan kebenaran diberikan.');
+        }
+    }
+
+    function stopCamera() {
+        if (videoStream) {
+            videoStream.getTracks().forEach(track => track.stop());
+            videoStream = null;
+        }
+        if (detectionInterval) {
+            clearInterval(detectionInterval);
+            detectionInterval = null;
+        }
+        isCameraActive = false;
+        const video = document.getElementById('videoFeed');
+        if (video) video.srcObject = null;
+        document.getElementById('toggleCameraBtn').innerHTML = '<i data-lucide="play"></i> Mula Kamera Keselamatan';
+        lucide.createIcons();
+    }
+
+    // Capture face for registration
+    async function captureAndRegister() {
+        const name = document.getElementById('regName').value.trim();
+        const role = document.getElementById('regRole').value;
+        const className = document.getElementById('regClass').value.trim();
+        if (!name) {
+            alert('Sila masukkan nama');
+            return;
+        }
+        if (!isCameraActive) {
+            alert('Sila hidupkan kamera dahulu');
+            return;
+        }
+        
+        const video = document.getElementById('videoFeed');
+        const detection = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options())
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+        
+        if (!detection) {
+            alert('Tiada wajah dikesan. Sila pastikan muka anda dalam frame kamera.');
+            return;
+        }
+        
+        const descriptor = Array.from(detection.descriptor);
+        const newFace = {
+            id: Date.now().toString(),
+            name: name,
+            role: role,
+            className: className || 'Tiada',
+            descriptor: descriptor
+        };
+        registeredFaces.push(newFace);
+        saveFaces();
+        alert(`Wajah ${name} berjaya didaftarkan!`);
+        document.getElementById('regName').value = '';
+        document.getElementById('regClass').value = '';
+        updateUI();
+    }
+
+    // Clear demo logs
+    function clearLogs() {
+        if (confirm('Kosongkan semua rekod kehadiran?')) {
+            attendanceLog = [];
+            saveAttendance();
+            updateUI();
+        }
+    }
+
+    // Tab switching
+    function initTabs() {
+        const btns = document.querySelectorAll('.tab-btn');
+        btns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.getAttribute('data-tab');
+                document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+                btns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                lucide.createIcons();
+            });
+        });
+    }
+
+    // Clock
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('currentTime').innerText = now.toLocaleTimeString('en-GB');
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Event listeners
+    document.getElementById('toggleCameraBtn').addEventListener('click', () => {
+        if (isCameraActive) stopCamera();
+        else startCamera();
+    });
+    document.getElementById('captureFaceBtn').addEventListener('click', captureAndRegister);
+    document.getElementById('clearLogsBtn').addEventListener('click', clearLogs);
+    document.getElementById('closeAlertBtn').addEventListener('click', () => {
+        document.getElementById('alertModal').style.display = 'none';
+    });
+    // Close modal on background click
+    document.getElementById('alertModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('alertModal')) document.getElementById('alertModal').style.display = 'none';
+    });
+
+    // Initialize
+    async function init() {
+        initTabs();
+        loadData();
+        await loadModels();
+        // Auto-start camera on camera tab (optional)
+        lucide.createIcons();
+        // Preload models
+        console.log('Sistem Keselamatan Kelas Sedia. Firebase akan disambungkan kemudian.');
+    }
+    init();
+</script>
+</body>
+</html>
