@@ -8,6 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- html2canvas untuk tangkap gambar dari video -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- Face-api.js untuk face recognition sebenar -->
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.min.js"></script>
     <style>
@@ -141,7 +143,11 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            cursor: pointer;
+            transition: transform 0.2s;
         }
+
+        .stat-card:hover { transform: translateY(-2px); }
 
         .stat-info h3 {
             font-size: 11px;
@@ -276,7 +282,6 @@
 
         .badge-hadir { background: #E8F5E9; color: #2E7D32; }
         .badge-lewat { background: #FFF3E0; color: #E65100; }
-        .badge-pulang { background: #E3F2FD; color: #1565C0; }
         .badge-teacher { background: #F3E5F5; color: #6A1B9A; }
         .badge-student { background: #E8F5E9; color: #2E7D32; }
 
@@ -371,6 +376,28 @@
             font-size: 14px;
             background: var(--card-bg);
         }
+
+        .stranger-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+            cursor: pointer;
+            border: 1px solid var(--border);
+        }
+
+        .image-modal {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 11px;
+            width: auto;
+            margin-left: 8px;
+        }
     </style>
 </head>
 <body>
@@ -414,12 +441,11 @@
 
     <script>
         // ==================== DATA STORAGE ====================
-        let registeredUsers = [];     // { id, name, role, className, descriptor }
-        let attendanceRecords = [];    // { id, name, role, className, status, time, date, session }
-        let strangerAlerts = [];       // { time, date, className }
+        let registeredUsers = [];
+        let attendanceRecords = [];
+        let strangerAlerts = [];       // { id, time, date, className, session, imageData }
         let selectedClass = "Semua Kelas";
         
-        // Available classes
         let availableClasses = ["5A", "5B", "5C", "4A", "4B", "4C", "3A", "3B", "2A", "2B", "1A", "1B"];
         
         let currentPage = 'dashboard';
@@ -439,8 +465,8 @@
         let html5QrCode = null;
         let isScanning = false;
         
-        // Audio context for beep
         let audioCtx = null;
+        let lastStrangerAlertTime = 0;
 
         function playBeep() {
             try {
@@ -477,7 +503,6 @@
             if ('vibrate' in navigator) navigator.vibrate([300, 200, 300]);
         }
 
-        // Helper Functions
         function getTodayDate() {
             return new Date().toLocaleDateString('en-CA');
         }
@@ -512,32 +537,54 @@
             await Swal.fire({ title, text: message, icon: 'warning', confirmButtonColor: '#FF9500', confirmButtonText: 'OK', background: 'white', borderRadius: '20px' });
         }
 
+        async function showInfo(title, message) {
+            await Swal.fire({ title, text: message, icon: 'info', confirmButtonColor: '#007AFF', confirmButtonText: 'OK', background: 'white', borderRadius: '20px' });
+        }
+
+        // Capture image from video element
+        async function captureImageFromVideo(videoElement) {
+            if (!videoElement || !videoElement.videoWidth) return null;
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            return canvas.toDataURL('image/jpeg', 0.8);
+        }
+
         // Load/Save
         function loadData() {
             const savedUsers = localStorage.getItem('face_recognition_users');
             if (savedUsers) {
                 registeredUsers = JSON.parse(savedUsers);
-                // Rebuild face matcher after loading
-                if (registeredUsers.length > 0 && modelsLoaded) {
-                    buildFaceMatcher();
-                }
             }
             const savedAttendance = localStorage.getItem('face_recognition_attendance');
             if (savedAttendance) attendanceRecords = JSON.parse(savedAttendance);
-            const savedAlerts = localStorage.getItem('face_recognition_stranger');
+            const savedAlerts = localStorage.getItem('face_recognition_stranger_alerts');
             if (savedAlerts) strangerAlerts = JSON.parse(savedAlerts);
             const savedClass = localStorage.getItem('selected_class');
             if (savedClass) selectedClass = savedClass;
+            
+            // Load descriptors
+            const savedDescriptors = localStorage.getItem('face_recognition_descriptors');
+            if (savedDescriptors) {
+                const descriptors = JSON.parse(savedDescriptors);
+                registeredUsers.forEach(user => {
+                    if (descriptors[user.id]) {
+                        user.descriptor = descriptors[user.id];
+                    }
+                });
+            }
             updateUI();
         }
 
         function saveUsers() {
-            // Don't save descriptors to localStorage (too big), save without them
             const usersToSave = registeredUsers.map(u => ({
                 id: u.id, name: u.name, role: u.role, className: u.className, registeredAt: u.registeredAt
             }));
             localStorage.setItem('face_recognition_users', JSON.stringify(usersToSave));
-            // Save descriptors separately
+            
             const descriptorsToSave = {};
             registeredUsers.forEach(u => {
                 if (u.descriptor) descriptorsToSave[u.id] = u.descriptor;
@@ -553,7 +600,7 @@
 
         function saveStrangerAlert(alert) {
             strangerAlerts.push(alert);
-            localStorage.setItem('face_recognition_stranger', JSON.stringify(strangerAlerts));
+            localStorage.setItem('face_recognition_stranger_alerts', JSON.stringify(strangerAlerts));
         }
 
         function updateUI() {
@@ -575,20 +622,10 @@
             await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
             modelsLoaded = true;
             
-            // Load saved descriptors
-            const savedDescriptors = localStorage.getItem('face_recognition_descriptors');
-            if (savedDescriptors) {
-                const descriptors = JSON.parse(savedDescriptors);
-                registeredUsers.forEach(user => {
-                    if (descriptors[user.id]) {
-                        user.descriptor = descriptors[user.id];
-                    }
-                });
-                buildFaceMatcher();
-            }
+            buildFaceMatcher();
             
             if (statusEl) {
-                statusEl.innerHTML = ' AI Model sedia! Mengesan wajah...';
+                statusEl.innerHTML = '✅ AI Model sedia! Mengesan wajah...';
                 statusEl.className = 'camera-status status-active';
             }
             console.log('Face models loaded');
@@ -628,7 +665,7 @@
                 
                 const statusEl = document.getElementById('securityStatus');
                 if (statusEl) {
-                    statusEl.innerHTML = ' AI Security Aktif - Mengenal pasti wajah';
+                    statusEl.innerHTML = '✅ AI Security Aktif - Mengenal pasti wajah';
                     statusEl.className = 'camera-status status-active';
                 }
             } catch(err) {
@@ -653,9 +690,6 @@
             isSecurityActive = false;
         }
 
-        let lastRecognizedTime = {};
-        let lastStrangerAlertTime = 0;
-
         async function detectAndProcessFaces() {
             if (!isSecurityActive || !modelsLoaded) return;
             
@@ -675,6 +709,7 @@
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
             let recognizedNames = [];
+            let strangerDetected = false;
             
             for (const detection of detections) {
                 let bestMatch = null;
@@ -694,37 +729,25 @@
                 ctx.rect(box.x, box.y, box.width, box.height);
                 
                 if (bestMatch) {
-                    // Recognized face - GREEN box
                     ctx.strokeStyle = '#34C759';
                     ctx.lineWidth = 3;
                     ctx.stroke();
                     ctx.fillStyle = '#34C759';
                     ctx.font = 'bold 14px system-ui';
                     ctx.fillText(`${bestMatch.name} (${bestMatch.role === 'teacher' ? 'Guru' : 'Pelajar'})`, box.x, box.y - 5);
-                    
                     recognizedNames.push(bestMatch.name);
-                    
-                    // Auto mark attendance
                     await autoMarkAttendance(bestMatch);
                 } else {
-                    // Stranger face - RED box with alert
                     ctx.strokeStyle = '#FF3B30';
                     ctx.lineWidth = 3;
                     ctx.stroke();
                     ctx.fillStyle = '#FF3B30';
                     ctx.font = 'bold 14px system-ui';
                     ctx.fillText('⚠️ STRANGER - Wajah Asing!', box.x, box.y - 5);
-                    
-                    // Alert for stranger
-                    const now = Date.now();
-                    if (now - lastStrangerAlertTime > 8000) {
-                        lastStrangerAlertTime = now;
-                        await reportStrangerFace();
-                    }
+                    strangerDetected = true;
                 }
             }
             
-            // Update detection count
             const detectCountEl = document.getElementById('detectCount');
             if (detectCountEl) {
                 detectCountEl.innerHTML = detections.length > 0 ? `👤 ${detections.length} wajah dikesan` : '👤 Tiada wajah';
@@ -732,7 +755,19 @@
             
             const recognizedEl = document.getElementById('recognizedNames');
             if (recognizedEl) {
-                recognizedEl.innerHTML = recognizedNames.length > 0 ? ` Dikenali: ${recognizedNames.join(', ')}` : 'Menunggu wajah dikenali';
+                recognizedEl.innerHTML = recognizedNames.length > 0 ? `✅ Dikenali: ${recognizedNames.join(', ')}` : '✅ Menunggu wajah dikenali';
+            }
+            
+            // Report stranger with photo capture
+            if (strangerDetected) {
+                const now = Date.now();
+                if (now - lastStrangerAlertTime > 10000) {
+                    lastStrangerAlertTime = now;
+                    
+                    // Capture image of the stranger
+                    const imageData = await captureImageFromVideo(video);
+                    await reportStrangerFace(imageData);
+                }
             }
         }
 
@@ -741,7 +776,6 @@
             const session = getCurrentSession();
             const sessionName = session === 'pagi' ? 'Sesi Pagi' : 'Sesi Petang';
             
-            // Check if already logged for this session (only once per session)
             const alreadyLogged = attendanceRecords.find(rec => rec.id === user.id && rec.date === today && rec.session === session);
             
             if (!alreadyLogged) {
@@ -751,8 +785,8 @@
                 const timeValue = hours * 60 + minutes;
                 
                 let status = "Hadir";
-                if (session === 'pagi' && timeValue > 510) status = "Lewat"; // 8:30
-                if (session === 'petang' && timeValue > 810) status = "Lewat"; // 13:30
+                if (session === 'pagi' && timeValue > 510) status = "Lewat";
+                if (session === 'petang' && timeValue > 810) status = "Lewat";
                 
                 attendanceRecords.push({
                     id: user.id,
@@ -768,13 +802,10 @@
                     method: 'Face Auto'
                 });
                 saveAttendance();
-                
-                // Play success beep
                 playBeep();
                 
-                // Show toast notification
                 Swal.fire({
-                    title: ' Kehadiran Auto Dicatat!',
+                    title: '✅ Kehadiran Auto Dicatat!',
                     html: `<strong>${escapeHtml(user.name)}</strong><br>Status: ${status}<br>Sesi: ${sessionName}<br>Masa: ${getCurrentTime()}`,
                     icon: 'success',
                     toast: true,
@@ -784,41 +815,100 @@
                     background: 'white',
                     borderRadius: '16px'
                 });
-                
                 updateUI();
             }
         }
 
-        async function reportStrangerFace() {
+        async function reportStrangerFace(imageData) {
             const alert = {
                 id: Date.now(),
-                className: selectedClass,
+                className: selectedClass === "Semua Kelas" ? "Tidak Diketahui" : selectedClass,
                 time: getCurrentTime(),
                 date: getTodayDate(),
-                session: getCurrentSession()
+                session: getCurrentSession(),
+                imageData: imageData
             };
             saveStrangerAlert(alert);
-            
-            // Play alert sound
             playAlertBeep();
             
-            // Show alert popup
+            // Show stranger image in alert
+            const imageHtml = imageData ? `<img src="${imageData}" style="width: 150px; border-radius: 12px; margin: 10px 0; border: 2px solid red;">` : '';
+            
             await Swal.fire({
                 title: '⚠️ AMARAN KESELAMATAN!',
-                html: `Wajah asing dikesan di dalam kelas!<br><br>Kelas: ${selectedClass}<br>Masa: ${getCurrentTime()}<br><br>Sistem akan merekodkan kejadian ini.`,
+                html: `Wajah asing dikesan di dalam kelas!<br><br>${imageHtml}<strong>Kelas:</strong> ${alert.className}<br><strong>Masa:</strong> ${getCurrentTime()}<br><br>Gambar wajah asing telah disimpan.`,
                 icon: 'warning',
                 confirmButtonColor: '#FF3B30',
                 confirmButtonText: 'OK, Faham',
                 background: 'white',
-                borderRadius: '20px',
-                timer: 5000,
-                timerProgressBar: true
+                borderRadius: '20px'
             });
             
             updateUI();
         }
 
-        // ==================== QR SCANNER (Backup) ====================
+        async function viewStrangerImage(imageData) {
+            Swal.fire({
+                title: 'Gambar Wajah Asing',
+                imageUrl: imageData,
+                imageWidth: 300,
+                imageAlt: 'Wajah Asing',
+                confirmButtonColor: '#007AFF',
+                confirmButtonText: 'Tutup',
+                background: 'white',
+                borderRadius: '20px'
+            });
+        }
+
+        async function exportStrangerData() {
+            const todayStrangers = strangerAlerts.filter(a => a.date === getTodayDate());
+            if (todayStrangers.length === 0) {
+                await showWarning('Tiada Data', 'Tiada laporan wajah asing untuk hari ini.');
+                return;
+            }
+            
+            // Create HTML report
+            let reportHtml = `
+                <html>
+                <head><title>Laporan Wajah Asing - ${getTodayDate()}</title>
+                <style>
+                    body { font-family: Arial; padding: 20px; }
+                    .stranger-item { border: 1px solid #ccc; margin: 10px 0; padding: 10px; border-radius: 8px; }
+                    img { max-width: 200px; border-radius: 8px; }
+                </style>
+                </head>
+                <body>
+                <h1>Laporan Wajah Asing</h1>
+                <p>Tarikh: ${getTodayDate()}</p>
+                <p>Jumlah Kejadian: ${todayStrangers.length}</p>
+                <hr>
+            `;
+            
+            for (const alert of todayStrangers) {
+                reportHtml += `
+                    <div class="stranger-item">
+                        <p><strong>Masa:</strong> ${alert.time}</p>
+                        <p><strong>Kelas:</strong> ${alert.className}</p>
+                        <p><strong>Sesi:</strong> ${alert.session === 'pagi' ? 'Pagi' : 'Petang'}</p>
+                        ${alert.imageData ? `<img src="${alert.imageData}"><br><a href="${alert.imageData}" download="stranger_${alert.id}.jpg">Download Gambar</a>` : '<p>Tiada gambar</p>'}
+                    </div>
+                `;
+            }
+            
+            reportHtml += `</body></html>`;
+            
+            const blob = new Blob([reportHtml], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `laporan_wajah_asing_${getTodayDate()}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            await showSuccess('Eksport Berjaya', 'Laporan wajah asing telah dimuat turun.');
+        }
+
+        // ==================== QR SCANNER ====================
         async function startQRScanner() {
             if (isScanning) return;
             
@@ -966,7 +1056,6 @@
             if (!className) { await showError('Ralat', 'Sila pilih kelas.'); return; }
             if (!registerFaceDetected || !registerDescriptor) { await showWarning('Tiada Wajah Dikesan', 'Sila pastikan muka anda dalam kotak hijau.'); return; }
             
-            // Check if name already exists
             if (registeredUsers.some(u => u.name.toLowerCase() === name.toLowerCase())) {
                 await showError('Nama Sudah Wujud', `Pengguna "${name}" sudah berdaftar.`);
                 return;
@@ -984,8 +1073,6 @@
             
             registeredUsers.push(newUser);
             saveUsers();
-            
-            // Rebuild face matcher
             buildFaceMatcher();
             
             await showSuccess('✅ Pendaftaran Berjaya!', `${name} (${role === 'teacher' ? 'Guru' : 'Pelajar'})\nKelas: ${className}\n\n✅ Muka telah dihafal oleh sistem AI!\n✅ Sekarang auto detect untuk kehadiran`);
@@ -1017,13 +1104,13 @@
                     </select>
                 </div>
                 <div class="stats-grid">
-                    <div class="stat-card"><div class="stat-info"><h3> Pengguna</h3><div class="stat-number">${registeredUsers.length}</div></div><div class="stat-icon"><i data-lucide="users"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3> Hadir Hari Ini</h3><div class="stat-number">${todayAttendance}</div></div><div class="stat-icon"><i data-lucide="check-circle"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3> Pelajar</h3><div class="stat-number">${totalStudents}</div></div><div class="stat-icon"><i data-lucide="graduation-cap"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3> Guru</h3><div class="stat-number">${totalTeachers}</div></div><div class="stat-icon"><i data-lucide="chalkboard"></i></div></div>
+                    <div class="stat-card"><div class="stat-info"><h3>👥 Pengguna</h3><div class="stat-number">${registeredUsers.length}</div></div><div class="stat-icon"><i data-lucide="users"></i></div></div>
+                    <div class="stat-card"><div class="stat-info"><h3>✅ Hadir Hari Ini</h3><div class="stat-number">${todayAttendance}</div></div><div class="stat-icon"><i data-lucide="check-circle"></i></div></div>
+                    <div class="stat-card"><div class="stat-info"><h3>🎓 Pelajar</h3><div class="stat-number">${totalStudents}</div></div><div class="stat-icon"><i data-lucide="graduation-cap"></i></div></div>
+                    <div class="stat-card"><div class="stat-info"><h3>👩‍🏫 Guru</h3><div class="stat-number">${totalTeachers}</div></div><div class="stat-icon"><i data-lucide="chalkboard"></i></div></div>
                     <div class="stat-card"><div class="stat-info"><h3> Hadir</h3><div class="stat-number">${presentToday}</div></div><div class="stat-icon"><i data-lucide="smile"></i></div></div>
                     <div class="stat-card"><div class="stat-info"><h3> Lewat</h3><div class="stat-number">${lateToday}</div></div><div class="stat-icon"><i data-lucide="clock"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3> Wajah Asing</h3><div class="stat-number">${strangerToday}</div></div><div class="stat-icon"><i data-lucide="alert-triangle"></i></div></div>
+                    <div class="stat-card" onclick="navigateTo('records')"><div class="stat-info"><h3>⚠️ Wajah Asing</h3><div class="stat-number">${strangerToday}</div></div><div class="stat-icon"><i data-lucide="alert-triangle"></i></div></div>
                 </div>
                 <div class="charts-row">
                     <div class="chart-card"><h3><i data-lucide="pie-chart"></i> Kehadiran Hari Ini</h3><canvas id="attendanceChartCanvas"></canvas></div>
@@ -1031,13 +1118,13 @@
                 <div class="data-table"><h3><i data-lucide="cpu"></i> Sistem AI Face Recognition</h3>
                     <p style="font-size: 13px; line-height: 1.5;">
                     <strong>Tab AI Security</strong> - Kamera akan HAFAL semua muka yang didaftarkan<br>
-                     <strong>Wajah dikenali</strong> → AUTO rekod kehadiran <br>
-                     <strong>Wajah asing/stranger</strong> → ALERT + bunyi kuat + popup amaran<br>
-                     <strong>QR Code</strong> - Alternatif jika muka tidak jelas<br>
-                     <strong>Daftar Muka</strong> - Daftar muka baru </p>
+                    <strong>Wajah dikenali</strong> → AUTO rekod kehadiran (Kotak HIJAU + bunyi beep)<br>
+                    <strong>Wajah asing/stranger</strong> → ALERT + bunyi kuat + popup amaran + GAMBAR DISIMPAN<br>
+                    📱 <strong>QR Code</strong> - Alternatif jika muka tidak jelas<br>
+                    📋 <strong>Rekod</strong> - Lihat semua gambar wajah asing yang dikesan</p>
                 </div>
                 <div class="data-table"><h3>📋 Kehadiran Terkini (${selectedClass === "Semua Kelas" ? "Semua Kelas" : "Kelas " + selectedClass})</h3>
-                <div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Sesi</th><th>Status</th><th>Kaedah</th><th>Masa</th></thead><tbody>${attendanceRecords.filter(r => selectedClass === "Semua Kelas" || r.className === selectedClass).slice(-10).reverse().map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td>${r.sessionName || r.session}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td><span style="font-size:10px;">${r.method || 'Face Auto'}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="6">Tiada rekod</td></tr>'}</tbody></div></div>
+                <div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Sesi</th><th>Status</th><th>Kaedah</th><th>Masa</th></thead><tbody>${attendanceRecords.filter(r => selectedClass === "Semua Kelas" || r.className === selectedClass).slice(-10).reverse().map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td>${r.sessionName || r.session}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td><span style="font-size:10px;">${r.method || 'Face Auto'}</span></td><td>${r.time}</td><tr>`).join('') || '<tr><td colspan="6">Tiada rekod</tr>'}</tbody></div></div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
@@ -1075,28 +1162,12 @@
                     <p style="font-size: 13px; line-height: 1.5;">
                     🤖 <strong>AI Face Recognition:</strong><br>
                     ✓ <span style="color:#34C759;">Kotak HIJAU</span> = Wajah DIKENALI → Auto rekod kehadiran + bunyi beep<br>
-                    ✓ <span style="color:#FF3B30;">Kotak MERAH</span> = Wajah ASING → Alert bunyi kuat + popup amaran<br>
-                    ✓ Sistem HAFAL semua muka yang didaftarkan di tab "Daftar Muka"<br>
-                    ✓ Setiap orang hanya direkod SEKALI setiap sesi (pagi/petang)</p>
-                </div>
-                <div class="data-table">
-                    <h3>⚠️ Laporan Wajah Asing Hari Ini</h3>
-                    <div id="strangerListContainer"></div>
+                    ✓ <span style="color:#FF3B30;">Kotak MERAH</span> = Wajah ASING → Alert bunyi kuat + popup amaran + GAMBAR DISIMPAN<br>
+                    ✓ Sistem HAFAL semua muka yang didaftarkan di tab "Daftar Muka"</p>
                 </div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
-            
-            // Load stranger alerts
-            const todayStrangers = strangerAlerts.filter(a => a.date === getTodayDate());
-            const strangerContainer = document.getElementById('strangerListContainer');
-            if (strangerContainer) {
-                strangerContainer.innerHTML = todayStrangers.length === 0 ? 
-                    '<p style="text-align:center; padding:20px;">✅ Tiada laporan wajah asing untuk hari ini</p>' :
-                    todayStrangers.map(a => `<div class="danger-banner" style="margin-bottom:8px;"><i data-lucide="alert-triangle"></i><div><strong>⚠️ Wajah Asing Dikesan</strong><br><small>Kelas: ${a.className} | Masa: ${a.time}</small></div></div>`).join('');
-                lucide.createIcons();
-            }
-            
             startSecurityCamera();
         }
 
@@ -1140,7 +1211,7 @@
                             <option value="Lain-lain">Kelas Lain (isi sendiri)</option>
                         </select>
                         <input type="text" id="regClassOther" placeholder="Atau masukkan kelas lain" style="display:none;">
-                        <button class="btn btn-success" id="registerBtn"><i data-lucide="camera"></i> Daftar</button>
+                        <button class="btn btn-success" id="registerBtn"><i data-lucide="camera"></i> 🧠 HAFAL Wajah Ini & Daftar</button>
                     </div>
                 </div>
                 <div class="data-table">
@@ -1177,12 +1248,13 @@
         function renderUsersTable() {
             const container = document.getElementById('usersTableContainer');
             if (!container) return;
-            container.innerHTML = `<table><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th><th>Status AI</th></thead><tbody>${registeredUsers.map(u => `<tr><td>${escapeHtml(u.name)}</td><td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Guru' : 'Pelajar'}</span></td><td>${escapeHtml(u.className)}</td><td><span style="color:#34C759;">✅ Muka Dihafal</span></td></tr>`).join('') || '<tr><td colspan="4">Tiada pengguna berdaftar</td></tr>'}</tbody></table>`;
+            container.innerHTML = `<table><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th><th>Status AI</th></thead><tbody>${registeredUsers.map(u => `<tr><td>${escapeHtml(u.name)}</td><td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Guru' : 'Pelajar'}</span></td><td>${escapeHtml(u.className)}</td><td><span style="color:#34C759;">✅ Muka Dihafal</span></td></tr>`).join('') || '<tr><td colspan="4">Tiada pengguna berdaftar</tr>'}</tbody></table>`;
         }
 
         function renderRecordsPage() {
             const today = getTodayDate();
             const filtered = attendanceRecords.filter(r => r.date === today && (selectedClass === "Semua Kelas" || r.className === selectedClass));
+            const todayStrangers = strangerAlerts.filter(a => a.date === today && (selectedClass === "Semua Kelas" || a.className === selectedClass));
             
             const html = `
                 <div class="class-selector">
@@ -1192,27 +1264,72 @@
                     </select>
                 </div>
                 <div class="data-table">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3><i data-lucide="alert-triangle"></i> Laporan Wajah Asing (Dengan Gambar)</h3>
+                        <button class="btn-small btn-warning" id="exportStrangerBtn" style="width: auto; padding: 8px 16px;"><i data-lucide="download"></i> Eksport</button>
+                    </div>
+                    <div id="strangerListContainer"></div>
+                </div>
+                <div class="data-table">
                     <h3>📋 Kehadiran Hari Ini - Sesi Pagi</h3>
-                    <div class="table-container"><tr><thead><tr><th>Nama</th><th>Kelas</th><th>Status</th><th>Kaedah</th><th>Masa</th></thead><tbody>${filtered.filter(r => r.session === 'pagi').map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td><span style="font-size:10px;">${r.method || 'Face Auto'}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="5">Tiada rekod sesi pagi</td></tr>'}</tbody></div>
+                    <div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Status</th><th>Masa</th></thead><tbody>${filtered.filter(r => r.session === 'pagi').map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="4">Tiada rekod sesi pagi</tr>'}</tbody></div>
                 </div>
                 <div class="data-table">
                     <h3>📋 Kehadiran Hari Ini - Sesi Petang</h3>
-                    <div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Status</th><th>Kaedah</th><th>Masa</th></thead><tbody>${filtered.filter(r => r.session === 'petang').map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td><span style="font-size:10px;">${r.method || 'Face Auto'}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="5">Tiada rekod sesi petang</td></tr>'}</tbody></div>
-                </div>
-                <div class="data-table">
-                    <h3>⚠️ Laporan Keselamatan (Wajah Asing)</h3>
-                    <div class="table-container"><table><thead><tr><th>Kelas</th><th>Sesi</th><th>Masa</th><th>Tarikh</th></thead><tbody>${strangerAlerts.slice().reverse().slice(0, 30).map(a => `<tr><td>${escapeHtml(a.className)}</td><td>${a.session === 'pagi' ? 'Pagi' : 'Petang'}</td><td>${a.time}</td><td>${a.date}</td></tr>`).join('') || '<tr><td colspan="4">Tiada laporan</td></tr>'}</tbody></div>
+                    <div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Status</th><th>Masa</th></thead><tbody>${filtered.filter(r => r.session === 'petang').map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="4">Tiada rekod sesi petang</tr>'}</tbody></div>
                 </div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
+            
+            // Load stranger alerts with images
+            const strangerContainer = document.getElementById('strangerListContainer');
+            if (strangerContainer) {
+                strangerContainer.innerHTML = todayStrangers.length === 0 ? 
+                    '<p style="text-align:center; padding:20px;">✅ Tiada laporan wajah asing untuk hari ini</p>' :
+                    todayStrangers.map(a => `
+                        <div class="danger-banner" style="margin-bottom:12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <div style="flex-shrink: 0;">
+                                ${a.imageData ? `<img src="${a.imageData}" class="stranger-image" onclick="viewStrangerImage('${a.imageData}')" style="cursor: pointer;">` : '<div style="width:60px;height:60px;background:#ddd;border-radius:10px;display:flex;align-items:center;justify-content:center;">📷</div>'}
+                            </div>
+                            <div style="flex:1;">
+                                <strong>⚠️ Wajah Asing Dikesan</strong><br>
+                                <small>Kelas: ${a.className} | Masa: ${a.time} | Sesi: ${a.session === 'pagi' ? 'Pagi' : 'Petang'}</small>
+                            </div>
+                            ${a.imageData ? `<button class="btn-small btn-primary" onclick="downloadStrangerImage('${a.imageData}', ${a.id})" style="width: auto; padding: 6px 12px;"><i data-lucide="download"></i> Simpan</button>` : ''}
+                        </div>
+                    `).join('');
+                lucide.createIcons();
+            }
             
             document.getElementById('recordClassFilter').onchange = (e) => {
                 selectedClass = e.target.value;
                 localStorage.setItem('selected_class', selectedClass);
                 renderRecordsPage();
             };
+            
+            document.getElementById('exportStrangerBtn').onclick = () => exportStrangerData();
         }
+
+        window.viewStrangerImage = function(imageData) {
+            Swal.fire({
+                title: 'Gambar Wajah Asing',
+                imageUrl: imageData,
+                imageWidth: 300,
+                imageAlt: 'Wajah Asing',
+                confirmButtonColor: '#007AFF',
+                confirmButtonText: 'Tutup',
+                background: 'white',
+                borderRadius: '20px'
+            });
+        };
+        
+        window.downloadStrangerImage = function(imageData, id) {
+            const a = document.createElement('a');
+            a.href = imageData;
+            a.download = `stranger_${id}_${getTodayDate()}.jpg`;
+            a.click();
+        };
 
         function navigateTo(page) {
             currentPage = page;
@@ -1231,7 +1348,6 @@
             else if (page === 'records') renderRecordsPage();
         }
 
-        // Event Listeners
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', () => navigateTo(item.dataset.page));
         });
@@ -1240,18 +1356,17 @@
         loadData();
         renderDashboard();
         lucide.createIcons();
-        
-        // Load face models in background
         loadFaceModels();
         
         setTimeout(() => {
-            showInfo(' AI Face Recognition System', 
+            showInfo('🤖 AI Face Recognition System', 
                 'Sistem Keselamatan Kelas Pintar\n\n' +
-                ' Daftar muka di tab "Daftar Muka" - AI akan HAFAL wajah anda\n' +
+                '✅ Daftar muka di tab "Daftar Muka" - AI akan HAFAL wajah anda\n' +
                 ' Buka tab "AI Security" - Kamera akan AUTO detect dan rekod kehadiran\n' +
                 ' Kotak HIJAU = Wajah dikenali → Auto hadir + bunyi beep\n' +
-                ' Kotak MERAH = Wajah asing → Alert + bunyi kuat\n' +
-                ' QR Code = Alternatif jika muka tidak jelas');
+                ' Kotak MERAH = Wajah asing → Alert + bunyi kuat + GAMBAR DISIMPAN\n' +
+                ' QR Code = Alternatif jika muka tidak jelas\n' +
+                '📋 Tab "Rekod" - Lihat semua gambar wajah asing yang dikesan');
         }, 1500);
     </script>
 </body>
