@@ -3,22 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Smart Class - AI Face Recognition Security</title>
+    <title>Smart Class - Fast AI Face Recognition</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- html2canvas untuk tangkap gambar dari video -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- Face-api.js untuk face recognition sebenar -->
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --primary: #007AFF;
             --success: #34C759;
@@ -30,374 +23,64 @@
             --text-secondary: #8E8E93;
             --border: #E5E5EA;
         }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text-primary);
-            min-height: 100vh;
-        }
-
-        .header {
-            background: var(--card-bg);
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 99;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .header-left img {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            background: var(--primary);
-        }
-
-        .header-left h1 {
-            font-size: 18px;
-            margin: 0;
-        }
-
-        .header-left p {
-            font-size: 10px;
-            color: var(--text-secondary);
-        }
-
-        .live-clock {
-            background: var(--bg);
-            padding: 6px 12px;
-            border-radius: 25px;
-            font-size: 13px;
-            font-weight: 600;
-            font-family: monospace;
-        }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: space-around;
-            padding: 8px 12px 20px;
-            z-index: 100;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            padding: 8px 12px;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--text-secondary);
-            font-size: 11px;
-            font-weight: 500;
-            flex: 1;
-            text-align: center;
-        }
-
-        .nav-item i {
-            width: 24px;
-            height: 24px;
-        }
-
-        .nav-item.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .main-content {
-            padding: 16px 16px 80px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; }
+        .header { background: var(--card-bg); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 99; }
+        .header-left { display: flex; align-items: center; gap: 10px; }
+        .header-left img { width: 40px; height: 40px; border-radius: 12px; background: var(--primary); }
+        .header-left h1 { font-size: 18px; margin: 0; }
+        .header-left p { font-size: 10px; color: var(--text-secondary); }
+        .live-clock { background: var(--bg); padding: 6px 12px; border-radius: 25px; font-size: 13px; font-weight: 600; font-family: monospace; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 12px 20px; z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; border-radius: 30px; cursor: pointer; transition: all 0.2s; color: var(--text-secondary); font-size: 11px; font-weight: 500; flex: 1; text-align: center; }
+        .nav-item i { width: 24px; height: 24px; }
+        .nav-item.active { background: var(--primary); color: white; }
+        .main-content { padding: 16px 16px 80px; max-width: 600px; margin: 0 auto; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: var(--card-bg); border-radius: 20px; padding: 14px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); cursor: pointer; transition: transform 0.2s; }
         .stat-card:hover { transform: translateY(-2px); }
-
-        .stat-info h3 {
-            font-size: 11px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            margin-bottom: 4px;
-        }
-
-        .stat-number {
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        .stat-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0,122,255,0.1);
-            color: var(--primary);
-        }
-
-        .camera-section {
-            background: var(--card-bg);
-            border-radius: 24px;
-            padding: 16px;
-            margin-bottom: 20px;
-        }
-
-        .camera-container {
-            position: relative;
-            background: #000;
-            border-radius: 20px;
-            overflow: hidden;
-            aspect-ratio: 4/3;
-        }
-
-        #securityVideo, #registerVideo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1);
-        }
-
-        .face-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        .qr-container {
-            background: #000;
-            border-radius: 20px;
-            overflow: hidden;
-            aspect-ratio: 1;
-            max-width: 300px;
-            margin: 0 auto;
-        }
-
-        #qr-reader {
-            width: 100%;
-            height: 100%;
-        }
-
-        .camera-status {
-            text-align: center;
-            margin-top: 12px;
-            font-size: 12px;
-            padding: 8px;
-            border-radius: 12px;
-        }
-
+        .stat-info h3 { font-size: 11px; font-weight: 500; color: var(--text-secondary); margin-bottom: 4px; }
+        .stat-number { font-size: 24px; font-weight: 700; }
+        .stat-icon { width: 40px; height: 40px; border-radius: 25px; display: flex; align-items: center; justify-content: center; background: rgba(0,122,255,0.1); color: var(--primary); }
+        .camera-section { background: var(--card-bg); border-radius: 24px; padding: 16px; margin-bottom: 20px; }
+        .camera-container { position: relative; background: #000; border-radius: 20px; overflow: hidden; aspect-ratio: 4/3; }
+        #securityVideo, #registerVideo { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        .face-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .qr-container { background: #000; border-radius: 20px; overflow: hidden; aspect-ratio: 1; max-width: 300px; margin: 0 auto; }
+        #qr-reader { width: 100%; height: 100%; }
+        .camera-status { text-align: center; margin-top: 12px; font-size: 12px; padding: 8px; border-radius: 12px; }
         .status-active { background: #E8F5E9; color: #2E7D32; }
         .status-warning { background: #FFF3E0; color: #E65100; }
         .status-error { background: #FFEBEE; color: #C62828; }
         .status-info { background: #E3F2FD; color: #1565C0; }
         .status-danger { background: #FFEBEE; color: #C62828; animation: pulse 0.5s infinite; }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.01); }
-        }
-
-        .data-table {
-            background: var(--card-bg);
-            border-radius: 24px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-
-        .data-table h3 {
-            font-size: 16px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-
-        th, td {
-            padding: 10px 8px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-
-        th {
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-
-        .badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            display: inline-block;
-        }
-
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.01); } }
+        .data-table { background: var(--card-bg); border-radius: 24px; padding: 16px; margin-bottom: 16px; }
+        .data-table h3 { font-size: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-weight: 600; color: var(--text-secondary); }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
         .badge-hadir { background: #E8F5E9; color: #2E7D32; }
         .badge-lewat { background: #FFF3E0; color: #E65100; }
         .badge-teacher { background: #F3E5F5; color: #6A1B9A; }
         .badge-student { background: #E8F5E9; color: #2E7D32; }
-
-        .register-form input, .register-form select {
-            width: 100%;
-            padding: 14px;
-            border-radius: 14px;
-            border: 1px solid var(--border);
-            margin-bottom: 12px;
-            font-size: 15px;
-            font-family: inherit;
-            background: var(--card-bg);
-        }
-
-        .btn {
-            padding: 14px 20px;
-            border-radius: 30px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-            transition: all 0.2s;
-        }
-
+        .register-form input, .register-form select { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid var(--border); margin-bottom: 12px; font-size: 15px; font-family: inherit; background: var(--card-bg); }
+        .btn { padding: 14px 20px; border-radius: 30px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; transition: all 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-success { background: var(--success); color: white; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-warning { background: var(--warning); color: white; }
-
         .btn:active { transform: scale(0.97); }
-
-        .charts-row {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        .chart-card {
-            background: var(--card-bg);
-            border-radius: 24px;
-            padding: 16px;
-        }
-
-        canvas {
-            max-height: 200px;
-        }
-
-        .warning-banner {
-            background: #FFF3E0;
-            border-left: 4px solid var(--warning);
-            padding: 12px;
-            border-radius: 14px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 13px;
-        }
-
-        .danger-banner {
-            background: #FFEBEE;
-            border-left: 4px solid var(--danger);
-            animation: pulse 1s infinite;
-        }
-
-        .detected-face {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            z-index: 10;
-        }
-
-        .class-selector {
-            margin-bottom: 16px;
-        }
-
-        .class-selector select {
-            width: 100%;
-            padding: 12px;
-            border-radius: 14px;
-            border: 1px solid var(--border);
-            font-size: 14px;
-            background: var(--card-bg);
-        }
-
-        .stranger-image {
-            width: 60px;
-            height: 60px;
-            border-radius: 10px;
-            object-fit: cover;
-            cursor: pointer;
-            border: 1px solid var(--border);
-        }
-
-        .image-modal {
-            max-width: 90%;
-            max-height: 90%;
-            object-fit: contain;
-        }
-
-        .btn-small {
-            padding: 6px 12px;
-            font-size: 11px;
-            width: auto;
-            margin-left: 8px;
-        }
+        .charts-row { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 20px; }
+        .chart-card { background: var(--card-bg); border-radius: 24px; padding: 16px; }
+        canvas { max-height: 200px; }
+        .detected-face { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 4px 10px; border-radius: 20px; font-size: 11px; z-index: 10; }
+        .class-selector { margin-bottom: 16px; }
+        .class-selector select { width: 100%; padding: 12px; border-radius: 14px; border: 1px solid var(--border); font-size: 14px; background: var(--card-bg); }
+        .stranger-image { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; cursor: pointer; border: 1px solid var(--border); }
+        .btn-small { padding: 6px 12px; font-size: 11px; width: auto; margin-left: 8px; }
+        .danger-banner { background: #FFEBEE; border-left: 4px solid var(--danger); animation: pulse 1s infinite; padding: 12px; border-radius: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     </style>
 </head>
 <body>
@@ -406,7 +89,7 @@
             <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23007AFF' rx='20'/%3E%3Cpath fill='white' d='M30 35 L45 28 L70 35 L65 68 L50 75 L35 68 L30 35Z'/%3E%3Ccircle cx='50' cy='48' r='8' fill='white'/%3E%3C/svg%3E">
             <div>
                 <h1>Smart Class Security</h1>
-                <p>AI Face Recognition | Auto Attendance | Anti-Stranger</p>
+                <p>Fast AI Face Recognition</p>
             </div>
         </div>
         <div class="live-clock">
@@ -417,37 +100,20 @@
     <div class="main-content" id="mainContent"></div>
 
     <div class="bottom-nav">
-        <div class="nav-item active" data-page="dashboard">
-            <i data-lucide="layout-dashboard"></i>
-            <span>Dashboard</span>
-        </div>
-        <div class="nav-item" data-page="security">
-            <i data-lucide="shield-check"></i>
-            <span>AI Security</span>
-        </div>
-        <div class="nav-item" data-page="qrcode">
-            <i data-lucide="qr-code"></i>
-            <span>QR Scan</span>
-        </div>
-        <div class="nav-item" data-page="register">
-            <i data-lucide="user-plus"></i>
-            <span>Daftar Muka</span>
-        </div>
-        <div class="nav-item" data-page="records">
-            <i data-lucide="clipboard-list"></i>
-            <span>Rekod</span>
-        </div>
+        <div class="nav-item active" data-page="dashboard"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></div>
+        <div class="nav-item" data-page="security"><i data-lucide="shield-check"></i><span>AI Security</span></div>
+        <div class="nav-item" data-page="qrcode"><i data-lucide="qr-code"></i><span>QR Scan</span></div>
+        <div class="nav-item" data-page="register"><i data-lucide="user-plus"></i><span>Daftar Muka</span></div>
+        <div class="nav-item" data-page="records"><i data-lucide="clipboard-list"></i><span>Rekod</span></div>
     </div>
 
     <script>
         // ==================== DATA STORAGE ====================
         let registeredUsers = [];
         let attendanceRecords = [];
-        let strangerAlerts = [];       // { id, time, date, className, session, imageData }
+        let strangerAlerts = [];
         let selectedClass = "Semua Kelas";
-        
         let availableClasses = ["5A", "5B", "5C", "4A", "4B", "4C", "3A", "3B", "2A", "2B", "1A", "1B"];
-        
         let currentPage = 'dashboard';
         let attendanceChart = null;
         
@@ -457,7 +123,7 @@
         let securityInterval = null;
         let isSecurityActive = false;
         
-        // Face recognition variables
+        // Face recognition
         let modelsLoaded = false;
         let faceMatcher = null;
         
@@ -467,6 +133,15 @@
         
         let audioCtx = null;
         let lastStrangerAlertTime = 0;
+        let lastAttendanceTime = {};
+
+        // FAST DETECTION - Parameters optimized
+        const DETECTION_INTERVAL = 250; // Cepat - 250ms (dari 800ms)
+        const INPUT_SIZE = 320; // Kecilkan input untuk speed
+        const SCORE_THRESHOLD = 0.5;
+        
+        // Pre-load model immediately
+        let modelLoadPromise = null;
 
         function playBeep() {
             try {
@@ -478,8 +153,8 @@
                 osc.frequency.value = 880;
                 gain.gain.value = 0.3;
                 osc.start();
-                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
-                setTimeout(() => osc.stop(), 500);
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+                setTimeout(() => osc.stop(), 300);
             } catch(e) { console.log(e); }
         }
 
@@ -495,56 +170,26 @@
                         osc.frequency.value = 880;
                         gain.gain.value = 0.4;
                         osc.start();
-                        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
-                        setTimeout(() => osc.stop(), 300);
-                    }, i * 300);
+                        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
+                        setTimeout(() => osc.stop(), 200);
+                    }, i * 200);
                 }
             } catch(e) { console.log(e); }
-            if ('vibrate' in navigator) navigator.vibrate([300, 200, 300]);
+            if ('vibrate' in navigator) navigator.vibrate([200, 150, 200]);
         }
 
-        function getTodayDate() {
-            return new Date().toLocaleDateString('en-CA');
-        }
+        function getTodayDate() { return new Date().toLocaleDateString('en-CA'); }
+        function getCurrentTime() { return new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
+        function getCurrentSession() { return new Date().getHours() < 13 ? "pagi" : "petang"; }
+        function escapeHtml(str) { return String(str).replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
 
-        function getCurrentTime() {
-            return new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        }
+        async function showSuccess(title, message) { await Swal.fire({ title, text: message, icon: 'success', confirmButtonColor: '#007AFF', confirmButtonText: 'OK', background: 'white', borderRadius: '20px' }); }
+        async function showError(title, message) { await Swal.fire({ title, text: message, icon: 'error', confirmButtonColor: '#007AFF', confirmButtonText: 'OK', background: 'white', borderRadius: '20px' }); }
+        async function showWarning(title, message) { await Swal.fire({ title, text: message, icon: 'warning', confirmButtonColor: '#FF9500', confirmButtonText: 'OK', background: 'white', borderRadius: '20px' }); }
+        async function showInfo(title, message) { await Swal.fire({ title, text: message, icon: 'info', confirmButtonColor: '#007AFF', confirmButtonText: 'OK', background: 'white', borderRadius: '20px' }); }
 
-        function getCurrentSession() {
-            const hours = new Date().getHours();
-            return hours < 13 ? "pagi" : "petang";
-        }
-
-        function escapeHtml(str) { 
-            return String(str).replace(/[&<>]/g, function(m) { 
-                if (m === '&') return '&amp;'; 
-                if (m === '<') return '&lt;'; 
-                if (m === '>') return '&gt;'; 
-                return m; 
-            }); 
-        }
-
-        async function showSuccess(title, message) {
-            await Swal.fire({ title, text: message, icon: 'success', confirmButtonColor: '#007AFF', confirmButtonText: 'OK', background: 'white', borderRadius: '20px' });
-        }
-
-        async function showError(title, message) {
-            await Swal.fire({ title, text: message, icon: 'error', confirmButtonColor: '#007AFF', confirmButtonText: 'OK', background: 'white', borderRadius: '20px' });
-        }
-
-        async function showWarning(title, message) {
-            await Swal.fire({ title, text: message, icon: 'warning', confirmButtonColor: '#FF9500', confirmButtonText: 'OK', background: 'white', borderRadius: '20px' });
-        }
-
-        async function showInfo(title, message) {
-            await Swal.fire({ title, text: message, icon: 'info', confirmButtonColor: '#007AFF', confirmButtonText: 'OK', background: 'white', borderRadius: '20px' });
-        }
-
-        // Capture image from video element
         async function captureImageFromVideo(videoElement) {
             if (!videoElement || !videoElement.videoWidth) return null;
-            
             const canvas = document.createElement('canvas');
             canvas.width = videoElement.videoWidth;
             canvas.height = videoElement.videoHeight;
@@ -553,82 +198,59 @@
             return canvas.toDataURL('image/jpeg', 0.8);
         }
 
-        // Load/Save
         function loadData() {
-            const savedUsers = localStorage.getItem('face_recognition_users');
-            if (savedUsers) {
-                registeredUsers = JSON.parse(savedUsers);
-            }
-            const savedAttendance = localStorage.getItem('face_recognition_attendance');
+            const savedUsers = localStorage.getItem('fast_face_users');
+            if (savedUsers) registeredUsers = JSON.parse(savedUsers);
+            const savedAttendance = localStorage.getItem('fast_face_attendance');
             if (savedAttendance) attendanceRecords = JSON.parse(savedAttendance);
-            const savedAlerts = localStorage.getItem('face_recognition_stranger_alerts');
+            const savedAlerts = localStorage.getItem('fast_face_stranger');
             if (savedAlerts) strangerAlerts = JSON.parse(savedAlerts);
             const savedClass = localStorage.getItem('selected_class');
             if (savedClass) selectedClass = savedClass;
             
-            // Load descriptors
-            const savedDescriptors = localStorage.getItem('face_recognition_descriptors');
+            const savedDescriptors = localStorage.getItem('fast_face_descriptors');
             if (savedDescriptors) {
                 const descriptors = JSON.parse(savedDescriptors);
-                registeredUsers.forEach(user => {
-                    if (descriptors[user.id]) {
-                        user.descriptor = descriptors[user.id];
-                    }
-                });
+                registeredUsers.forEach(user => { if (descriptors[user.id]) user.descriptor = descriptors[user.id]; });
             }
             updateUI();
         }
 
         function saveUsers() {
-            const usersToSave = registeredUsers.map(u => ({
-                id: u.id, name: u.name, role: u.role, className: u.className, registeredAt: u.registeredAt
-            }));
-            localStorage.setItem('face_recognition_users', JSON.stringify(usersToSave));
-            
+            const usersToSave = registeredUsers.map(u => ({ id: u.id, name: u.name, role: u.role, className: u.className, registeredAt: u.registeredAt }));
+            localStorage.setItem('fast_face_users', JSON.stringify(usersToSave));
             const descriptorsToSave = {};
-            registeredUsers.forEach(u => {
-                if (u.descriptor) descriptorsToSave[u.id] = u.descriptor;
-            });
-            localStorage.setItem('face_recognition_descriptors', JSON.stringify(descriptorsToSave));
+            registeredUsers.forEach(u => { if (u.descriptor) descriptorsToSave[u.id] = u.descriptor; });
+            localStorage.setItem('fast_face_descriptors', JSON.stringify(descriptorsToSave));
             updateUI();
         }
 
-        function saveAttendance() {
-            localStorage.setItem('face_recognition_attendance', JSON.stringify(attendanceRecords));
-            updateUI();
-        }
+        function saveAttendance() { localStorage.setItem('fast_face_attendance', JSON.stringify(attendanceRecords)); updateUI(); }
+        function saveStrangerAlert(alert) { strangerAlerts.push(alert); localStorage.setItem('fast_face_stranger', JSON.stringify(strangerAlerts)); }
+        function updateUI() { if (currentPage === 'dashboard') renderDashboard(); if (currentPage === 'records') renderRecordsPage(); }
 
-        function saveStrangerAlert(alert) {
-            strangerAlerts.push(alert);
-            localStorage.setItem('face_recognition_stranger_alerts', JSON.stringify(strangerAlerts));
-        }
-
-        function updateUI() {
-            if (currentPage === 'dashboard') renderDashboard();
-            if (currentPage === 'records') renderRecordsPage();
-        }
-
-        // ==================== FACE RECOGNITION CORE ====================
+        // ==================== FAST FACE RECOGNITION ====================
         async function loadFaceModels() {
-            const statusEl = document.getElementById('securityStatus');
-            if (statusEl) {
-                statusEl.innerHTML = '⏳ Memuatkan model AI wajah...';
-                statusEl.className = 'camera-status status-info';
-            }
+            if (modelLoadPromise) return modelLoadPromise;
             
-            const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
-            await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
-            await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-            await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-            modelsLoaded = true;
+            modelLoadPromise = (async () => {
+                const statusEl = document.getElementById('securityStatus');
+                if (statusEl) { statusEl.innerHTML = '⚡ Memuatkan AI (cepat)...'; statusEl.className = 'camera-status status-info'; }
+                
+                const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
+                await Promise.all([
+                    faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+                ]);
+                modelsLoaded = true;
+                buildFaceMatcher();
+                
+                if (statusEl) { statusEl.innerHTML = '✅ AI Sedia! Mengesan wajah...'; statusEl.className = 'camera-status status-active'; }
+                console.log('Face models loaded fast');
+            })();
             
-            buildFaceMatcher();
-            
-            if (statusEl) {
-                statusEl.innerHTML = '✅ AI Model sedia! Mengesan wajah...';
-                statusEl.className = 'camera-status status-active';
-            }
-            console.log('Face models loaded');
+            return modelLoadPromise;
         }
 
         function buildFaceMatcher() {
@@ -644,49 +266,44 @@
             }
         }
 
-        // ==================== AUTO ATTENDANCE WITH FACE ====================
+        // ==================== FAST CAMERA START ====================
         async function startSecurityCamera() {
             if (securityStream) stopSecurityCamera();
             
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } });
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'user', 
+                        width: { ideal: INPUT_SIZE }, 
+                        height: { ideal: INPUT_SIZE },
+                        frameRate: { ideal: 30 }
+                    } 
+                });
                 securityStream = stream;
                 const video = document.getElementById('securityVideo');
                 if (video) {
                     video.srcObject = stream;
-                    await video.play();
+                    video.onloadedmetadata = () => video.play();
                 }
                 isSecurityActive = true;
                 
-                if (!modelsLoaded) await loadFaceModels();
+                await loadFaceModels();
                 
                 if (securityInterval) clearInterval(securityInterval);
-                securityInterval = setInterval(detectAndProcessFaces, 800);
+                securityInterval = setInterval(detectAndProcessFaces, DETECTION_INTERVAL);
                 
                 const statusEl = document.getElementById('securityStatus');
-                if (statusEl) {
-                    statusEl.innerHTML = '✅ AI Security Aktif - Mengenal pasti wajah';
-                    statusEl.className = 'camera-status status-active';
-                }
+                if (statusEl) { statusEl.innerHTML = '✅ AI Aktif - Mengesan wajah dengan pantas'; statusEl.className = 'camera-status status-active'; }
             } catch(err) {
                 console.error(err);
                 const statusEl = document.getElementById('securityStatus');
-                if (statusEl) {
-                    statusEl.innerHTML = '⚠️ Kamera tidak dapat diakses';
-                    statusEl.className = 'camera-status status-error';
-                }
+                if (statusEl) { statusEl.innerHTML = '⚠️ Kamera tidak dapat diakses'; statusEl.className = 'camera-status status-error'; }
             }
         }
 
         function stopSecurityCamera() {
-            if (securityStream) {
-                securityStream.getTracks().forEach(track => track.stop());
-                securityStream = null;
-            }
-            if (securityInterval) {
-                clearInterval(securityInterval);
-                securityInterval = null;
-            }
+            if (securityStream) { securityStream.getTracks().forEach(track => track.stop()); securityStream = null; }
+            if (securityInterval) { clearInterval(securityInterval); securityInterval = null; }
             isSecurityActive = false;
         }
 
@@ -700,7 +317,8 @@
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             
-            const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options())
+            // Fast detection with smaller input
+            const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 }))
                 .withFaceLandmarks()
                 .withFaceDescriptors();
             
@@ -718,9 +336,7 @@
                     const bestMatchResult = faceMatcher.findBestMatch(detection.descriptor);
                     if (bestMatchResult.label !== 'unknown') {
                         const matchedUser = registeredUsers.find(u => u.id === bestMatchResult.label);
-                        if (matchedUser) {
-                            bestMatch = matchedUser;
-                        }
+                        if (matchedUser) bestMatch = matchedUser;
                     }
                 }
                 
@@ -734,7 +350,7 @@
                     ctx.stroke();
                     ctx.fillStyle = '#34C759';
                     ctx.font = 'bold 14px system-ui';
-                    ctx.fillText(`${bestMatch.name} (${bestMatch.role === 'teacher' ? 'Guru' : 'Pelajar'})`, box.x, box.y - 5);
+                    ctx.fillText(`${bestMatch.name}`, box.x, box.y - 5);
                     recognizedNames.push(bestMatch.name);
                     await autoMarkAttendance(bestMatch);
                 } else {
@@ -743,28 +359,21 @@
                     ctx.stroke();
                     ctx.fillStyle = '#FF3B30';
                     ctx.font = 'bold 14px system-ui';
-                    ctx.fillText('⚠️ STRANGER - Wajah Asing!', box.x, box.y - 5);
+                    ctx.fillText('⚠️ ASING!', box.x, box.y - 5);
                     strangerDetected = true;
                 }
             }
             
             const detectCountEl = document.getElementById('detectCount');
-            if (detectCountEl) {
-                detectCountEl.innerHTML = detections.length > 0 ? `👤 ${detections.length} wajah dikesan` : '👤 Tiada wajah';
-            }
+            if (detectCountEl) detectCountEl.innerHTML = detections.length > 0 ? `👤 ${detections.length} wajah` : '👤 Tiada wajah';
             
             const recognizedEl = document.getElementById('recognizedNames');
-            if (recognizedEl) {
-                recognizedEl.innerHTML = recognizedNames.length > 0 ? `✅ Dikenali: ${recognizedNames.join(', ')}` : '✅ Menunggu wajah dikenali';
-            }
+            if (recognizedEl) recognizedEl.innerHTML = recognizedNames.length > 0 ? `✅ Dikenali: ${recognizedNames.join(', ')}` : '✅ Menunggu wajah...';
             
-            // Report stranger with photo capture
             if (strangerDetected) {
                 const now = Date.now();
-                if (now - lastStrangerAlertTime > 10000) {
+                if (now - lastStrangerAlertTime > 8000) {
                     lastStrangerAlertTime = now;
-                    
-                    // Capture image of the stranger
                     const imageData = await captureImageFromVideo(video);
                     await reportStrangerFace(imageData);
                 }
@@ -775,218 +384,93 @@
             const today = getTodayDate();
             const session = getCurrentSession();
             const sessionName = session === 'pagi' ? 'Sesi Pagi' : 'Sesi Petang';
+            const key = `${user.id}_${today}_${session}`;
+            
+            if (lastAttendanceTime[key] && Date.now() - lastAttendanceTime[key] < 5000) return;
             
             const alreadyLogged = attendanceRecords.find(rec => rec.id === user.id && rec.date === today && rec.session === session);
             
             if (!alreadyLogged) {
+                lastAttendanceTime[key] = Date.now();
                 const now = new Date();
-                const hours = now.getHours();
-                const minutes = now.getMinutes();
-                const timeValue = hours * 60 + minutes;
-                
+                const timeValue = now.getHours() * 60 + now.getMinutes();
                 let status = "Hadir";
                 if (session === 'pagi' && timeValue > 510) status = "Lewat";
                 if (session === 'petang' && timeValue > 810) status = "Lewat";
                 
                 attendanceRecords.push({
-                    id: user.id,
-                    name: user.name,
-                    role: user.role,
-                    className: user.className,
-                    status: status,
-                    session: session,
-                    sessionName: sessionName,
-                    time: getCurrentTime(),
-                    date: today,
-                    timestamp: Date.now(),
-                    method: 'Face Auto'
+                    id: user.id, name: user.name, role: user.role, className: user.className,
+                    status: status, session: session, sessionName: sessionName,
+                    time: getCurrentTime(), date: today, timestamp: Date.now(), method: 'Face Auto'
                 });
                 saveAttendance();
                 playBeep();
                 
                 Swal.fire({
-                    title: '✅ Kehadiran Auto Dicatat!',
-                    html: `<strong>${escapeHtml(user.name)}</strong><br>Status: ${status}<br>Sesi: ${sessionName}<br>Masa: ${getCurrentTime()}`,
-                    icon: 'success',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    background: 'white',
-                    borderRadius: '16px'
+                    title: '✅ Kehadiran!',
+                    html: `<strong>${escapeHtml(user.name)}</strong><br>${status} | ${sessionName}<br>${getCurrentTime()}`,
+                    icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000
                 });
                 updateUI();
             }
         }
 
         async function reportStrangerFace(imageData) {
-            const alert = {
-                id: Date.now(),
-                className: selectedClass === "Semua Kelas" ? "Tidak Diketahui" : selectedClass,
-                time: getCurrentTime(),
-                date: getTodayDate(),
-                session: getCurrentSession(),
-                imageData: imageData
-            };
+            const alert = { id: Date.now(), className: selectedClass === "Semua Kelas" ? "Unknown" : selectedClass, time: getCurrentTime(), date: getTodayDate(), session: getCurrentSession(), imageData: imageData };
             saveStrangerAlert(alert);
             playAlertBeep();
             
-            // Show stranger image in alert
-            const imageHtml = imageData ? `<img src="${imageData}" style="width: 150px; border-radius: 12px; margin: 10px 0; border: 2px solid red;">` : '';
-            
+            const imageHtml = imageData ? `<img src="${imageData}" style="width: 120px; border-radius: 12px; margin: 10px 0; border: 2px solid red;">` : '';
             await Swal.fire({
-                title: '⚠️ AMARAN KESELAMATAN!',
-                html: `Wajah asing dikesan di dalam kelas!<br><br>${imageHtml}<strong>Kelas:</strong> ${alert.className}<br><strong>Masa:</strong> ${getCurrentTime()}<br><br>Gambar wajah asing telah disimpan.`,
-                icon: 'warning',
-                confirmButtonColor: '#FF3B30',
-                confirmButtonText: 'OK, Faham',
-                background: 'white',
-                borderRadius: '20px'
+                title: '⚠️ AMARAN! Wajah Asing',
+                html: `${imageHtml}<strong>Kelas:</strong> ${alert.className}<br><strong>Masa:</strong> ${getCurrentTime()}`,
+                icon: 'warning', confirmButtonColor: '#FF3B30', confirmButtonText: 'OK'
             });
-            
             updateUI();
-        }
-
-        async function viewStrangerImage(imageData) {
-            Swal.fire({
-                title: 'Gambar Wajah Asing',
-                imageUrl: imageData,
-                imageWidth: 300,
-                imageAlt: 'Wajah Asing',
-                confirmButtonColor: '#007AFF',
-                confirmButtonText: 'Tutup',
-                background: 'white',
-                borderRadius: '20px'
-            });
-        }
-
-        async function exportStrangerData() {
-            const todayStrangers = strangerAlerts.filter(a => a.date === getTodayDate());
-            if (todayStrangers.length === 0) {
-                await showWarning('Tiada Data', 'Tiada laporan wajah asing untuk hari ini.');
-                return;
-            }
-            
-            // Create HTML report
-            let reportHtml = `
-                <html>
-                <head><title>Laporan Wajah Asing - ${getTodayDate()}</title>
-                <style>
-                    body { font-family: Arial; padding: 20px; }
-                    .stranger-item { border: 1px solid #ccc; margin: 10px 0; padding: 10px; border-radius: 8px; }
-                    img { max-width: 200px; border-radius: 8px; }
-                </style>
-                </head>
-                <body>
-                <h1>Laporan Wajah Asing</h1>
-                <p>Tarikh: ${getTodayDate()}</p>
-                <p>Jumlah Kejadian: ${todayStrangers.length}</p>
-                <hr>
-            `;
-            
-            for (const alert of todayStrangers) {
-                reportHtml += `
-                    <div class="stranger-item">
-                        <p><strong>Masa:</strong> ${alert.time}</p>
-                        <p><strong>Kelas:</strong> ${alert.className}</p>
-                        <p><strong>Sesi:</strong> ${alert.session === 'pagi' ? 'Pagi' : 'Petang'}</p>
-                        ${alert.imageData ? `<img src="${alert.imageData}"><br><a href="${alert.imageData}" download="stranger_${alert.id}.jpg">Download Gambar</a>` : '<p>Tiada gambar</p>'}
-                    </div>
-                `;
-            }
-            
-            reportHtml += `</body></html>`;
-            
-            const blob = new Blob([reportHtml], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `laporan_wajah_asing_${getTodayDate()}.html`;
-            a.click();
-            URL.revokeObjectURL(url);
-            
-            await showSuccess('Eksport Berjaya', 'Laporan wajah asing telah dimuat turun.');
         }
 
         // ==================== QR SCANNER ====================
         async function startQRScanner() {
             if (isScanning) return;
-            
             const qrContainer = document.getElementById('qr-reader');
             if (!qrContainer) return;
-            
             try {
                 html5QrCode = new Html5Qrcode("qr-reader");
-                await html5QrCode.start(
-                    { facingMode: "environment" },
-                    { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1 },
+                await html5QrCode.start({ facingMode: "environment" }, { fps: 15, qrbox: { width: 250, height: 250 }, aspectRatio: 1 },
                     async (decodedText) => {
                         if (decodedText && !window.isProcessing) {
                             window.isProcessing = true;
                             try {
                                 const qrData = JSON.parse(decodedText);
                                 const user = registeredUsers.find(u => u.id === qrData.id);
-                                if (user) {
-                                    await autoMarkAttendance(user);
-                                    playBeep();
-                                } else {
-                                    await showError('❌ Pengguna Tidak Dikenali', 'QR Code ini tidak berdaftar.');
-                                    playAlertBeep();
-                                }
-                            } catch(e) {
-                                await showError('QR Code Tidak Sah', 'Format tidak dikenali.');
-                                playAlertBeep();
-                            }
-                            setTimeout(() => { window.isProcessing = false; }, 2000);
+                                if (user) { await autoMarkAttendance(user); playBeep(); }
+                                else { await showError('❌ Tidak Dikenali', 'QR tidak berdaftar.'); playAlertBeep(); }
+                            } catch(e) { await showError('QR Tidak Sah', ''); playAlertBeep(); }
+                            setTimeout(() => { window.isProcessing = false; }, 1500);
                         }
-                    },
-                    (error) => {}
-                );
+                    }, (error) => {});
                 isScanning = true;
-                const statusEl = document.getElementById('qrStatus');
-                if (statusEl) statusEl.innerHTML = '● Scanner QR aktif - Hala QR Code ke kamera';
-            } catch(err) {
-                await showError('Ralat Kamera', 'Kamera tidak dapat diakses.');
-            }
+            } catch(err) { await showError('Ralat Kamera', 'Kamera tidak dapat diakses.'); }
         }
 
-        function stopQRScanner() {
-            if (html5QrCode && isScanning) {
-                html5QrCode.stop().catch(e => console.log(e));
-                isScanning = false;
-            }
-        }
+        function stopQRScanner() { if (html5QrCode && isScanning) { html5QrCode.stop().catch(e => console.log(e)); isScanning = false; } }
 
         // ==================== REGISTER FACE ====================
         function startRegisterCamera() {
             if (registerStream) stopRegisterCamera();
-            
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } })
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: INPUT_SIZE }, height: { ideal: INPUT_SIZE } } })
                 .then(stream => {
                     registerStream = stream;
                     const video = document.getElementById('registerVideo');
-                    if (video) {
-                        video.srcObject = stream;
-                        video.play().catch(e => console.log(e));
-                    }
-                    
+                    if (video) { video.srcObject = stream; video.onloadedmetadata = () => video.play(); }
                     if (registerInterval) clearInterval(registerInterval);
-                    registerInterval = setInterval(registerFaceDetection, 300);
-                })
-                .catch(err => {
-                    showError('Ralat Kamera', 'Kamera tidak dapat diakses.');
-                });
+                    registerInterval = setInterval(registerFaceDetection, DETECTION_INTERVAL);
+                }).catch(err => { showError('Ralat Kamera', 'Kamera tidak dapat diakses.'); });
         }
 
         function stopRegisterCamera() {
-            if (registerStream) {
-                registerStream.getTracks().forEach(track => track.stop());
-                registerStream = null;
-            }
-            if (registerInterval) {
-                clearInterval(registerInterval);
-                registerInterval = null;
-            }
+            if (registerStream) { registerStream.getTracks().forEach(track => track.stop()); registerStream = null; }
+            if (registerInterval) { clearInterval(registerInterval); registerInterval = null; }
         }
 
         let registerInterval = null;
@@ -1003,7 +487,7 @@
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            const detection = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options())
+            const detection = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 }))
                 .withFaceLandmarks()
                 .withFaceDescriptor();
             
@@ -1021,15 +505,11 @@
                 ctx.stroke();
                 ctx.fillStyle = '#34C759';
                 ctx.font = 'bold 14px system-ui';
-                ctx.fillText('✓ Wajah Dikesan! Sedia untuk daftar', centerX, centerY - 5);
+                ctx.fillText('✓ Wajah Dikesan!', centerX, centerY - 5);
                 registerFaceDetected = true;
                 registerDescriptor = Array.from(detection.descriptor);
-                
                 const statusEl = document.getElementById('registerStatus');
-                if (statusEl) {
-                    statusEl.innerHTML = '✅ Wajah dikesan! Anda boleh daftar sekarang.';
-                    statusEl.className = 'camera-status status-active';
-                }
+                if (statusEl) { statusEl.innerHTML = '✅ Wajah dikesan! Sedia daftar'; statusEl.className = 'camera-status status-active'; }
             } else {
                 ctx.strokeStyle = '#FF9500';
                 ctx.lineWidth = 2;
@@ -1038,12 +518,8 @@
                 ctx.font = 'bold 14px system-ui';
                 ctx.fillText('Letakkan muka di sini', centerX, centerY - 5);
                 registerFaceDetected = false;
-                
                 const statusEl = document.getElementById('registerStatus');
-                if (statusEl) {
-                    statusEl.innerHTML = '● Letakkan muka dalam kotak untuk daftar';
-                    statusEl.className = 'camera-status status-info';
-                }
+                if (statusEl) { statusEl.innerHTML = '● Letakkan muka dalam kotak'; statusEl.className = 'camera-status status-info'; }
             }
         }
 
@@ -1052,38 +528,22 @@
             const role = document.getElementById('regRole').value;
             const className = document.getElementById('regClass').value.trim();
             
-            if (!name) { await showError('Ralat', 'Sila masukkan nama penuh.'); return; }
+            if (!name) { await showError('Ralat', 'Sila masukkan nama.'); return; }
             if (!className) { await showError('Ralat', 'Sila pilih kelas.'); return; }
-            if (!registerFaceDetected || !registerDescriptor) { await showWarning('Tiada Wajah Dikesan', 'Sila pastikan muka anda dalam kotak hijau.'); return; }
-            
-            if (registeredUsers.some(u => u.name.toLowerCase() === name.toLowerCase())) {
-                await showError('Nama Sudah Wujud', `Pengguna "${name}" sudah berdaftar.`);
-                return;
-            }
+            if (!registerFaceDetected || !registerDescriptor) { await showWarning('Tiada Wajah', 'Pastikan muka dalam kotak hijau.'); return; }
+            if (registeredUsers.some(u => u.name.toLowerCase() === name.toLowerCase())) { await showError('Nama Sudah Wujud', `"${name}" sudah berdaftar.`); return; }
             
             const newUser = {
-                id: Date.now().toString(),
-                name: name,
-                role: role,
-                className: className,
-                descriptor: registerDescriptor,
-                registeredAt: new Date().toISOString(),
+                id: Date.now().toString(), name: name, role: role, className: className,
+                descriptor: registerDescriptor, registeredAt: new Date().toISOString(),
                 qrData: JSON.stringify({ id: Date.now().toString(), name: name, role: role, className: className })
             };
-            
             registeredUsers.push(newUser);
             saveUsers();
             buildFaceMatcher();
-            
-            await showSuccess('✅ Pendaftaran Berjaya!', `${name} (${role === 'teacher' ? 'Guru' : 'Pelajar'})\nKelas: ${className}\n\n✅ Muka telah dihafal oleh sistem AI!\n✅ Sekarang auto detect untuk kehadiran`);
-            
+            await showSuccess('✅ Pendaftaran Berjaya!', `${name} (${role === 'teacher' ? 'Guru' : 'Pelajar'})\nKelas: ${className}\n✅ Muka telah DIHAFAL oleh AI!`);
             document.getElementById('regName').value = '';
-            document.getElementById('regClass').value = '';
-            
-            if (!availableClasses.includes(className)) {
-                availableClasses.push(className);
-                availableClasses.sort();
-            }
+            if (!availableClasses.includes(className)) { availableClasses.push(className); availableClasses.sort(); }
         }
 
         // ==================== RENDER FUNCTIONS ====================
@@ -1097,38 +557,22 @@
             const strangerToday = strangerAlerts.filter(a => a.date === today).length;
             
             const html = `
-                <div class="class-selector">
-                    <select id="classFilterSelect">
-                        <option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 Semua Kelas</option>
-                        ${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Kelas ${c}</option>`).join('')}
-                    </select>
-                </div>
+                <div class="class-selector"><select id="classFilterSelect"><option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 Semua Kelas</option>${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Kelas ${c}</option>`).join('')}</select></div>
                 <div class="stats-grid">
                     <div class="stat-card"><div class="stat-info"><h3>👥 Pengguna</h3><div class="stat-number">${registeredUsers.length}</div></div><div class="stat-icon"><i data-lucide="users"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3>✅ Hadir Hari Ini</h3><div class="stat-number">${todayAttendance}</div></div><div class="stat-icon"><i data-lucide="check-circle"></i></div></div>
+                    <div class="stat-card"><div class="stat-info"><h3>✅ Hadir</h3><div class="stat-number">${todayAttendance}</div></div><div class="stat-icon"><i data-lucide="check-circle"></i></div></div>
                     <div class="stat-card"><div class="stat-info"><h3>🎓 Pelajar</h3><div class="stat-number">${totalStudents}</div></div><div class="stat-icon"><i data-lucide="graduation-cap"></i></div></div>
                     <div class="stat-card"><div class="stat-info"><h3>👩‍🏫 Guru</h3><div class="stat-number">${totalTeachers}</div></div><div class="stat-icon"><i data-lucide="chalkboard"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3> Hadir</h3><div class="stat-number">${presentToday}</div></div><div class="stat-icon"><i data-lucide="smile"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3> Lewat</h3><div class="stat-number">${lateToday}</div></div><div class="stat-icon"><i data-lucide="clock"></i></div></div>
-                    <div class="stat-card" onclick="navigateTo('records')"><div class="stat-info"><h3>⚠️ Wajah Asing</h3><div class="stat-number">${strangerToday}</div></div><div class="stat-icon"><i data-lucide="alert-triangle"></i></div></div>
+                    <div class="stat-card"><div class="stat-info"><h3>😊 Hadir</h3><div class="stat-number">${presentToday}</div></div><div class="stat-icon"><i data-lucide="smile"></i></div></div>
+                    <div class="stat-card"><div class="stat-info"><h3>⏰ Lewat</h3><div class="stat-number">${lateToday}</div></div><div class="stat-icon"><i data-lucide="clock"></i></div></div>
+                    <div class="stat-card" onclick="navigateTo('records')"><div class="stat-info"><h3>⚠️ Asing</h3><div class="stat-number">${strangerToday}</div></div><div class="stat-icon"><i data-lucide="alert-triangle"></i></div></div>
                 </div>
-                <div class="charts-row">
-                    <div class="chart-card"><h3><i data-lucide="pie-chart"></i> Kehadiran Hari Ini</h3><canvas id="attendanceChartCanvas"></canvas></div>
-                </div>
-                <div class="data-table"><h3><i data-lucide="cpu"></i> Sistem AI Face Recognition</h3>
-                    <p style="font-size: 13px; line-height: 1.5;">
-                    <strong>Tab AI Security</strong> - Kamera akan HAFAL semua muka yang didaftarkan<br>
-                    <strong>Wajah dikenali</strong> → AUTO rekod kehadiran (Kotak HIJAU + bunyi beep)<br>
-                    <strong>Wajah asing/stranger</strong> → ALERT + bunyi kuat + popup amaran + GAMBAR DISIMPAN<br>
-                    📱 <strong>QR Code</strong> - Alternatif jika muka tidak jelas<br>
-                    📋 <strong>Rekod</strong> - Lihat semua gambar wajah asing yang dikesan</p>
-                </div>
-                <div class="data-table"><h3>📋 Kehadiran Terkini (${selectedClass === "Semua Kelas" ? "Semua Kelas" : "Kelas " + selectedClass})</h3>
-                <div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Sesi</th><th>Status</th><th>Kaedah</th><th>Masa</th></thead><tbody>${attendanceRecords.filter(r => selectedClass === "Semua Kelas" || r.className === selectedClass).slice(-10).reverse().map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td>${r.sessionName || r.session}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td><span style="font-size:10px;">${r.method || 'Face Auto'}</span></td><td>${r.time}</td><tr>`).join('') || '<tr><td colspan="6">Tiada rekod</tr>'}</tbody></div></div>
-            `;
+                <div class="charts-row"><div class="chart-card"><h3><i data-lucide="pie-chart"></i> Kehadiran Hari Ini</h3><canvas id="attendanceChartCanvas"></canvas></div></div>
+                <div class="data-table"><h3>⚡ Fast AI Face Recognition</h3><p style="font-size: 13px;">✓ Detection setiap <strong>0.25 saat</strong> (sangat pantas!)<br>✓ Wajah dikenali → AUTO hadir + bunyi beep<br>✓ Wajah asing → ALERT + bunyi kuat + GAMBAR disimpan</p></div>
+                <div class="data-table"><h3>📋 Kehadiran Terkini</h3><div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Sesi</th><th>Status</th><th>Masa</th></thead><tbody>${attendanceRecords.filter(r => selectedClass === "Semua Kelas" || r.className === selectedClass).slice(-8).reverse().map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td>${r.sessionName || r.session}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="5">Tiada rekod</td></tr>'}</tbody></div></div>`;
+
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
-            
             const ctx = document.getElementById('attendanceChartCanvas')?.getContext('2d');
             if (ctx && attendanceChart) attendanceChart.destroy();
             if (ctx) {
@@ -1137,210 +581,77 @@
                 const late = filtered.filter(r => r.status === 'Lewat').length;
                 attendanceChart = new Chart(ctx, { type: 'doughnut', data: { labels: ['Hadir', 'Lewat'], datasets: [{ data: [present, late], backgroundColor: ['#34C759', '#FF9500'] }] } });
             }
-            
-            document.getElementById('classFilterSelect').onchange = (e) => {
-                selectedClass = e.target.value;
-                localStorage.setItem('selected_class', selectedClass);
-                renderDashboard();
-            };
+            document.getElementById('classFilterSelect').onchange = (e) => { selectedClass = e.target.value; localStorage.setItem('selected_class', selectedClass); renderDashboard(); };
         }
 
         function renderSecurityPage() {
-            const html = `
-                <div class="camera-section">
-                    <h3><i data-lucide="shield-check"></i> AI Security - Face Recognition</h3>
-                    <div class="camera-container">
-                        <video id="securityVideo" autoplay playsinline></video>
-                        <canvas id="securityCanvas" class="face-canvas"></canvas>
-                        <div class="detected-face" id="detectCount">👤 Memuatkan AI...</div>
-                    </div>
-                    <div class="camera-status" id="securityStatus">● Memulakan AI Security...</div>
-                    <div class="camera-status" id="recognizedNames" style="margin-top: 5px;">✅ Menunggu wajah dikenali</div>
-                </div>
-                <div class="data-table">
-                    <h3><i data-lucide="info"></i> Cara Sistem Berfungsi</h3>
-                    <p style="font-size: 13px; line-height: 1.5;">
-                    🤖 <strong>AI Face Recognition:</strong><br>
-                    ✓ <span style="color:#34C759;">Kotak HIJAU</span> = Wajah DIKENALI → Auto rekod kehadiran + bunyi beep<br>
-                    ✓ <span style="color:#FF3B30;">Kotak MERAH</span> = Wajah ASING → Alert bunyi kuat + popup amaran + GAMBAR DISIMPAN<br>
-                    ✓ Sistem HAFAL semua muka yang didaftarkan di tab "Daftar Muka"</p>
-                </div>
-            `;
+            const html = `<div class="camera-section"><h3><i data-lucide="shield-check"></i> AI Security - Fast Detection</h3><div class="camera-container"><video id="securityVideo" autoplay playsinline></video><canvas id="securityCanvas" class="face-canvas"></canvas><div class="detected-face" id="detectCount">👤 Memuatkan...</div></div><div class="camera-status" id="securityStatus">⚡ Memulakan AI pantas...</div><div class="camera-status" id="recognizedNames" style="margin-top:5px;">✅ Menunggu wajah...</div></div><div class="data-table"><h3>⚡ Detection Speed</h3><p>✓ Detection setiap <strong>0.25 saat</strong><br>✓ Kotak HIJAU = Dikenali → Auto hadir<br>✓ Kotak MERAH = Asing → Alert + gambar</p></div>`;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
             startSecurityCamera();
         }
 
         function renderQRPage() {
-            const html = `
-                <div class="camera-section">
-                    <h3><i data-lucide="qr-code"></i> QR Code Attendance (Backup)</h3>
-                    <div class="qr-container" id="qr-reader"></div>
-                    <div class="camera-status" id="qrStatus" style="margin-top: 12px;">● Memulakan scanner...</div>
-                </div>
-                <div class="data-table">
-                    <h3><i data-lucide="info"></i> QR Code sebagai Alternatif</h3>
-                    <p style="font-size: 13px;">Guna QR Code jika muka tidak jelas atau kamera bermasalah.<br>Setiap pengguna mendapat QR unik semasa daftar.</p>
-                </div>
-            `;
+            const html = `<div class="camera-section"><h3><i data-lucide="qr-code"></i> QR Code Attendance</h3><div class="qr-container" id="qr-reader"></div><div class="camera-status" id="qrStatus">● Memulakan scanner...</div></div><div class="data-table"><h3>Alternatif Cepat</h3><p>Scan QR jika muka tidak jelas</p></div>`;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
             setTimeout(() => startQRScanner(), 100);
         }
 
         function renderRegisterPage() {
-            const html = `
-                <div class="camera-section">
-                    <h3><i data-lucide="user-plus"></i> Daftar Muka Baru (AI akan HAFAL)</h3>
-                    <div class="camera-container">
-                        <video id="registerVideo" autoplay playsinline></video>
-                        <canvas id="registerCanvas" class="face-canvas"></canvas>
-                    </div>
-                    <div class="camera-status" id="registerStatus">● Memulakan kamera...</div>
-                </div>
-                <div class="data-table">
-                    <div class="register-form">
-                        <input type="text" id="regName" placeholder="Nama Penuh *">
-                        <select id="regRole">
-                            <option value="student">👨‍🎓 Pelajar</option>
-                            <option value="teacher">👩‍🏫 Guru</option>
-                        </select>
-                        <select id="regClass">
-                            <option value="">Pilih Kelas *</option>
-                            ${availableClasses.map(c => `<option value="${c}">Kelas ${c}</option>`).join('')}
-                            <option value="Lain-lain">Kelas Lain (isi sendiri)</option>
-                        </select>
-                        <input type="text" id="regClassOther" placeholder="Atau masukkan kelas lain" style="display:none;">
-                        <button class="btn btn-success" id="registerBtn"><i data-lucide="camera"></i> 🧠 HAFAL Wajah Ini & Daftar</button>
-                    </div>
-                </div>
-                <div class="data-table">
-                    <h3><i data-lucide="users"></i> Senarai Wajah Yang Telah Dihafal</h3>
-                    <div class="table-container" id="usersTableContainer"></div>
-                </div>
-            `;
+            const html = `<div class="camera-section"><h3><i data-lucide="user-plus"></i> Daftar Muka Baru</h3><div class="camera-container"><video id="registerVideo" autoplay playsinline></video><canvas id="registerCanvas" class="face-canvas"></canvas></div><div class="camera-status" id="registerStatus">● Memulakan kamera...</div></div><div class="data-table"><div class="register-form"><input type="text" id="regName" placeholder="Nama Penuh *"><select id="regRole"><option value="student">👨‍🎓 Pelajar</option><option value="teacher">👩‍🏫 Guru</option></select><select id="regClass"><option value="">Pilih Kelas *</option>${availableClasses.map(c => `<option value="${c}">Kelas ${c}</option>`).join('')}<option value="Lain-lain">Kelas Lain</option></select><input type="text" id="regClassOther" placeholder="Kelas lain" style="display:none;"><button class="btn btn-success" id="registerBtn"><i data-lucide="camera"></i> 🧠 HAFAL Wajah & Daftar</button></div></div><div class="data-table"><h3>Senarai Muka Dihafal</h3><div class="table-container" id="usersTableContainer"></div></div>`;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
             startRegisterCamera();
-            
             const classSelect = document.getElementById('regClass');
             const classOther = document.getElementById('regClassOther');
-            classSelect.onchange = () => {
-                classOther.style.display = classSelect.value === 'Lain-lain' ? 'block' : 'none';
-            };
-            
-            document.getElementById('registerBtn').onclick = async () => {
-                let className = document.getElementById('regClass').value;
-                if (className === 'Lain-lain') {
-                    className = document.getElementById('regClassOther').value.trim();
-                    if (!className) {
-                        await showError('Ralat', 'Sila masukkan nama kelas.');
-                        return;
-                    }
-                }
-                document.getElementById('regClass').value = className;
-                registerUser();
-            };
-            
+            classSelect.onchange = () => { classOther.style.display = classSelect.value === 'Lain-lain' ? 'block' : 'none'; };
+            document.getElementById('registerBtn').onclick = async () => { let className = document.getElementById('regClass').value; if (className === 'Lain-lain') { className = document.getElementById('regClassOther').value.trim(); if (!className) { await showError('Ralat', 'Masukkan kelas.'); return; } } registerUser(); };
             renderUsersTable();
         }
 
         function renderUsersTable() {
             const container = document.getElementById('usersTableContainer');
             if (!container) return;
-            container.innerHTML = `<table><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th><th>Status AI</th></thead><tbody>${registeredUsers.map(u => `<tr><td>${escapeHtml(u.name)}</td><td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Guru' : 'Pelajar'}</span></td><td>${escapeHtml(u.className)}</td><td><span style="color:#34C759;">✅ Muka Dihafal</span></td></tr>`).join('') || '<tr><td colspan="4">Tiada pengguna berdaftar</tr>'}</tbody></table>`;
+            container.innerHTML = `<table><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th><th>Status</th></tr></thead><tbody>${registeredUsers.map(u => `<tr><td>${escapeHtml(u.name)}</td><td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Guru' : 'Pelajar'}</span></td><td>${escapeHtml(u.className)}</td><td style="color:#34C759;">✅ Muka Dihafal</td></tr>`).join('') || '<tr><td colspan="4">Tiada pengguna</td></tr>'}</tbody></tr>`;
         }
 
         function renderRecordsPage() {
             const today = getTodayDate();
-            const filtered = attendanceRecords.filter(r => r.date === today && (selectedClass === "Semua Kelas" || r.className === selectedClass));
             const todayStrangers = strangerAlerts.filter(a => a.date === today && (selectedClass === "Semua Kelas" || a.className === selectedClass));
-            
-            const html = `
-                <div class="class-selector">
-                    <select id="recordClassFilter">
-                        <option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 Semua Kelas</option>
-                        ${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Kelas ${c}</option>`).join('')}
-                    </select>
-                </div>
-                <div class="data-table">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <h3><i data-lucide="alert-triangle"></i> Laporan Wajah Asing (Dengan Gambar)</h3>
-                        <button class="btn-small btn-warning" id="exportStrangerBtn" style="width: auto; padding: 8px 16px;"><i data-lucide="download"></i> Eksport</button>
-                    </div>
-                    <div id="strangerListContainer"></div>
-                </div>
-                <div class="data-table">
-                    <h3>📋 Kehadiran Hari Ini - Sesi Pagi</h3>
-                    <div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Status</th><th>Masa</th></thead><tbody>${filtered.filter(r => r.session === 'pagi').map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="4">Tiada rekod sesi pagi</tr>'}</tbody></div>
-                </div>
-                <div class="data-table">
-                    <h3>📋 Kehadiran Hari Ini - Sesi Petang</h3>
-                    <div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Status</th><th>Masa</th></thead><tbody>${filtered.filter(r => r.session === 'petang').map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="4">Tiada rekod sesi petang</tr>'}</tbody></div>
-                </div>
-            `;
+            const html = `<div class="class-selector"><select id="recordClassFilter"><option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 Semua Kelas</option>${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Kelas ${c}</option>`).join('')}</select></div>
+                <div class="data-table"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><h3><i data-lucide="alert-triangle"></i> Wajah Asing (${todayStrangers.length})</h3><button class="btn-small btn-warning" id="exportStrangerBtn" style="width:auto;padding:8px 16px;"><i data-lucide="download"></i> Eksport</button></div><div id="strangerListContainer"></div></div>
+                <div class="data-table"><h3>📋 Kehadiran Hari Ini</h3><div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Sesi</th><th>Status</th><th>Masa</th></tr></thead><tbody>${attendanceRecords.filter(r => r.date === today && (selectedClass === "Semua Kelas" || r.className === selectedClass)).map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td>${r.sessionName || r.session}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="5">Tiada rekod</td></tr>'}</tbody></div></div>`;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
             
-            // Load stranger alerts with images
             const strangerContainer = document.getElementById('strangerListContainer');
             if (strangerContainer) {
-                strangerContainer.innerHTML = todayStrangers.length === 0 ? 
-                    '<p style="text-align:center; padding:20px;">✅ Tiada laporan wajah asing untuk hari ini</p>' :
-                    todayStrangers.map(a => `
-                        <div class="danger-banner" style="margin-bottom:12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                            <div style="flex-shrink: 0;">
-                                ${a.imageData ? `<img src="${a.imageData}" class="stranger-image" onclick="viewStrangerImage('${a.imageData}')" style="cursor: pointer;">` : '<div style="width:60px;height:60px;background:#ddd;border-radius:10px;display:flex;align-items:center;justify-content:center;">📷</div>'}
-                            </div>
-                            <div style="flex:1;">
-                                <strong>⚠️ Wajah Asing Dikesan</strong><br>
-                                <small>Kelas: ${a.className} | Masa: ${a.time} | Sesi: ${a.session === 'pagi' ? 'Pagi' : 'Petang'}</small>
-                            </div>
-                            ${a.imageData ? `<button class="btn-small btn-primary" onclick="downloadStrangerImage('${a.imageData}', ${a.id})" style="width: auto; padding: 6px 12px;"><i data-lucide="download"></i> Simpan</button>` : ''}
-                        </div>
-                    `).join('');
+                strangerContainer.innerHTML = todayStrangers.length === 0 ? '<p style="text-align:center;padding:20px;">✅ Tiada laporan wajah asing</p>' :
+                    todayStrangers.map(a => `<div class="danger-banner"><div>${a.imageData ? `<img src="${a.imageData}" class="stranger-image" onclick="viewStrangerImage('${a.imageData}')" style="cursor:pointer;">` : '<div style="width:60px;height:60px;background:#ddd;border-radius:10px;">📷</div>'}</div><div style="flex:1;"><strong>⚠️ Wajah Asing</strong><br><small>Kelas: ${a.className} | Masa: ${a.time}</small></div>${a.imageData ? `<button class="btn-small btn-primary" onclick="downloadStrangerImage('${a.imageData}', ${a.id})"><i data-lucide="download"></i> Simpan</button>` : ''}</div>`).join('');
                 lucide.createIcons();
             }
-            
-            document.getElementById('recordClassFilter').onchange = (e) => {
-                selectedClass = e.target.value;
-                localStorage.setItem('selected_class', selectedClass);
-                renderRecordsPage();
-            };
-            
+            document.getElementById('recordClassFilter').onchange = (e) => { selectedClass = e.target.value; localStorage.setItem('selected_class', selectedClass); renderRecordsPage(); };
             document.getElementById('exportStrangerBtn').onclick = () => exportStrangerData();
         }
 
-        window.viewStrangerImage = function(imageData) {
-            Swal.fire({
-                title: 'Gambar Wajah Asing',
-                imageUrl: imageData,
-                imageWidth: 300,
-                imageAlt: 'Wajah Asing',
-                confirmButtonColor: '#007AFF',
-                confirmButtonText: 'Tutup',
-                background: 'white',
-                borderRadius: '20px'
-            });
-        };
+        window.viewStrangerImage = function(imageData) { Swal.fire({ title: 'Gambar Wajah Asing', imageUrl: imageData, imageWidth: 300, confirmButtonColor: '#007AFF' }); };
+        window.downloadStrangerImage = function(imageData, id) { const a = document.createElement('a'); a.href = imageData; a.download = `stranger_${id}_${getTodayDate()}.jpg`; a.click(); };
         
-        window.downloadStrangerImage = function(imageData, id) {
-            const a = document.createElement('a');
-            a.href = imageData;
-            a.download = `stranger_${id}_${getTodayDate()}.jpg`;
-            a.click();
-        };
+        async function exportStrangerData() {
+            const todayStrangers = strangerAlerts.filter(a => a.date === getTodayDate() && (selectedClass === "Semua Kelas" || a.className === selectedClass));
+            if (todayStrangers.length === 0) { await showWarning('Tiada Data', 'Tiada laporan untuk hari ini.'); return; }
+            let reportHtml = `<html><head><title>Laporan Wajah Asing - ${getTodayDate()}</title><style>body{font-family:Arial;padding:20px;}img{max-width:200px;border-radius:8px;}</style></head><body><h1>Laporan Wajah Asing</h1><p>Tarikh: ${getTodayDate()} | Jumlah: ${todayStrangers.length}</p><hr>`;
+            for (const alert of todayStrangers) { reportHtml += `<div style="border:1px solid #ccc;margin:10px 0;padding:10px;border-radius:8px;"><p><strong>Masa:</strong> ${alert.time}</p><p><strong>Kelas:</strong> ${alert.className}</p>${alert.imageData ? `<img src="${alert.imageData}"><br><a href="${alert.imageData}" download="stranger_${alert.id}.jpg">Download Gambar</a>` : ''}</div>`; }
+            reportHtml += `</body></html>`;
+            const blob = new Blob([reportHtml], { type: 'text/html' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `laporan_asing_${getTodayDate()}.html`; a.click(); URL.revokeObjectURL(url);
+            await showSuccess('Eksport Berjaya', 'Laporan telah dimuat turun.');
+        }
 
         function navigateTo(page) {
             currentPage = page;
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.toggle('active', item.dataset.page === page);
-            });
-            
-            stopSecurityCamera();
-            stopQRScanner();
-            stopRegisterCamera();
-            
+            document.querySelectorAll('.nav-item').forEach(item => { item.classList.toggle('active', item.dataset.page === page); });
+            stopSecurityCamera(); stopQRScanner(); stopRegisterCamera();
             if (page === 'dashboard') renderDashboard();
             else if (page === 'security') renderSecurityPage();
             else if (page === 'qrcode') renderQRPage();
@@ -1348,26 +659,15 @@
             else if (page === 'records') renderRecordsPage();
         }
 
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => navigateTo(item.dataset.page));
-        });
+        document.querySelectorAll('.nav-item').forEach(item => { item.addEventListener('click', () => navigateTo(item.dataset.page)); });
+        window.navigateTo = navigateTo;
 
-        // Initialize
         loadData();
         renderDashboard();
         lucide.createIcons();
         loadFaceModels();
         
-        setTimeout(() => {
-            showInfo('🤖 AI Face Recognition System', 
-                'Sistem Keselamatan Kelas Pintar\n\n' +
-                '✅ Daftar muka di tab "Daftar Muka" - AI akan HAFAL wajah anda\n' +
-                ' Buka tab "AI Security" - Kamera akan AUTO detect dan rekod kehadiran\n' +
-                ' Kotak HIJAU = Wajah dikenali → Auto hadir + bunyi beep\n' +
-                ' Kotak MERAH = Wajah asing → Alert + bunyi kuat + GAMBAR DISIMPAN\n' +
-                ' QR Code = Alternatif jika muka tidak jelas\n' +
-                '📋 Tab "Rekod" - Lihat semua gambar wajah asing yang dikesan');
-        }, 1500);
+        setTimeout(() => { showInfo('⚡ Fast AI Face Recognition', 'Detection setiap 0.25 saat!\n\n✅ Daftar muka di tab "Daftar Muka"\n✅ Buka "AI Security" - Auto detect & rekod\n🟢 Hijau = Dikenali → Auto hadir\n🔴 Merah = Asing → Alert + gambar disimpan'); }, 1500);
     </script>
 </body>
 </html>
