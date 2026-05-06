@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Smart Class - Fast AI Face Recognition</title>
+    <title>Smart Class - AI Face Recognition Security</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -71,6 +71,7 @@
         .btn-success { background: var(--success); color: white; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-warning { background: var(--warning); color: white; }
+        .btn-secondary { background: #8E8E93; color: white; }
         .btn:active { transform: scale(0.97); }
         .charts-row { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 20px; }
         .chart-card { background: var(--card-bg); border-radius: 24px; padding: 16px; }
@@ -81,6 +82,14 @@
         .stranger-image { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; cursor: pointer; border: 1px solid var(--border); }
         .btn-small { padding: 6px 12px; font-size: 11px; width: auto; margin-left: 8px; }
         .danger-banner { background: #FFEBEE; border-left: 4px solid var(--danger); animation: pulse 1s infinite; padding: 12px; border-radius: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .step-indicator { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 20px; }
+        .step { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .step-number { width: 40px; height: 40px; border-radius: 40px; background: #E5E5EA; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #8E8E93; }
+        .step.active .step-number { background: var(--primary); color: white; }
+        .step.completed .step-number { background: var(--success); color: white; }
+        .step-label { font-size: 11px; color: var(--text-secondary); }
+        .step.active .step-label { color: var(--primary); font-weight: bold; }
+        .info-box { background: #E3F2FD; border-radius: 14px; padding: 12px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -89,7 +98,7 @@
             <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23007AFF' rx='20'/%3E%3Cpath fill='white' d='M30 35 L45 28 L70 35 L65 68 L50 75 L35 68 L30 35Z'/%3E%3Ccircle cx='50' cy='48' r='8' fill='white'/%3E%3C/svg%3E">
             <div>
                 <h1>Smart Class Security</h1>
-                <p>Fast AI Face Recognition</p>
+                <p>AI Face Recognition | Daftar Nama & Kelas Dulu!</p>
             </div>
         </div>
         <div class="live-clock">
@@ -117,6 +126,10 @@
         let currentPage = 'dashboard';
         let attendanceChart = null;
         
+        // Register step
+        let registerStep = 1; // 1: Isi nama & kelas, 2: Tangkap wajah
+        let pendingRegistration = null; // Store user data before face capture
+        
         // Camera variables
         let securityStream = null;
         let registerStream = null;
@@ -135,13 +148,8 @@
         let lastStrangerAlertTime = 0;
         let lastAttendanceTime = {};
 
-        // FAST DETECTION - Parameters optimized
-        const DETECTION_INTERVAL = 250; // Cepat - 250ms (dari 800ms)
-        const INPUT_SIZE = 320; // Kecilkan input untuk speed
-        const SCORE_THRESHOLD = 0.5;
-        
-        // Pre-load model immediately
-        let modelLoadPromise = null;
+        const DETECTION_INTERVAL = 250;
+        const INPUT_SIZE = 320;
 
         function playBeep() {
             try {
@@ -230,13 +238,11 @@
         function updateUI() { if (currentPage === 'dashboard') renderDashboard(); if (currentPage === 'records') renderRecordsPage(); }
 
         // ==================== FAST FACE RECOGNITION ====================
+        let modelLoadPromise = null;
+        
         async function loadFaceModels() {
             if (modelLoadPromise) return modelLoadPromise;
-            
             modelLoadPromise = (async () => {
-                const statusEl = document.getElementById('securityStatus');
-                if (statusEl) { statusEl.innerHTML = '⚡ Memuatkan AI (cepat)...'; statusEl.className = 'camera-status status-info'; }
-                
                 const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
                 await Promise.all([
                     faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
@@ -245,11 +251,8 @@
                 ]);
                 modelsLoaded = true;
                 buildFaceMatcher();
-                
-                if (statusEl) { statusEl.innerHTML = '✅ AI Sedia! Mengesan wajah...'; statusEl.className = 'camera-status status-active'; }
                 console.log('Face models loaded fast');
             })();
-            
             return modelLoadPromise;
         }
 
@@ -266,39 +269,19 @@
             }
         }
 
-        // ==================== FAST CAMERA START ====================
+        // ==================== SECURITY CAMERA ====================
         async function startSecurityCamera() {
             if (securityStream) stopSecurityCamera();
-            
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: 'user', 
-                        width: { ideal: INPUT_SIZE }, 
-                        height: { ideal: INPUT_SIZE },
-                        frameRate: { ideal: 30 }
-                    } 
-                });
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: INPUT_SIZE }, height: { ideal: INPUT_SIZE }, frameRate: { ideal: 30 } } });
                 securityStream = stream;
                 const video = document.getElementById('securityVideo');
-                if (video) {
-                    video.srcObject = stream;
-                    video.onloadedmetadata = () => video.play();
-                }
+                if (video) { video.srcObject = stream; video.onloadedmetadata = () => video.play(); }
                 isSecurityActive = true;
-                
                 await loadFaceModels();
-                
                 if (securityInterval) clearInterval(securityInterval);
                 securityInterval = setInterval(detectAndProcessFaces, DETECTION_INTERVAL);
-                
-                const statusEl = document.getElementById('securityStatus');
-                if (statusEl) { statusEl.innerHTML = '✅ AI Aktif - Mengesan wajah dengan pantas'; statusEl.className = 'camera-status status-active'; }
-            } catch(err) {
-                console.error(err);
-                const statusEl = document.getElementById('securityStatus');
-                if (statusEl) { statusEl.innerHTML = '⚠️ Kamera tidak dapat diakses'; statusEl.className = 'camera-status status-error'; }
-            }
+            } catch(err) { console.error(err); }
         }
 
         function stopSecurityCamera() {
@@ -309,15 +292,12 @@
 
         async function detectAndProcessFaces() {
             if (!isSecurityActive || !modelsLoaded) return;
-            
             const video = document.getElementById('securityVideo');
             const canvas = document.getElementById('securityCanvas');
             if (!video || !video.videoWidth || !canvas) return;
             
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            
-            // Fast detection with smaller input
             const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 }))
                 .withFaceLandmarks()
                 .withFaceDescriptors();
@@ -331,7 +311,6 @@
             
             for (const detection of detections) {
                 let bestMatch = null;
-                
                 if (faceMatcher) {
                     const bestMatchResult = faceMatcher.findBestMatch(detection.descriptor);
                     if (bestMatchResult.label !== 'unknown') {
@@ -366,7 +345,6 @@
             
             const detectCountEl = document.getElementById('detectCount');
             if (detectCountEl) detectCountEl.innerHTML = detections.length > 0 ? `👤 ${detections.length} wajah` : '👤 Tiada wajah';
-            
             const recognizedEl = document.getElementById('recognizedNames');
             if (recognizedEl) recognizedEl.innerHTML = recognizedNames.length > 0 ? `✅ Dikenali: ${recognizedNames.join(', ')}` : '✅ Menunggu wajah...';
             
@@ -385,11 +363,9 @@
             const session = getCurrentSession();
             const sessionName = session === 'pagi' ? 'Sesi Pagi' : 'Sesi Petang';
             const key = `${user.id}_${today}_${session}`;
-            
             if (lastAttendanceTime[key] && Date.now() - lastAttendanceTime[key] < 5000) return;
             
             const alreadyLogged = attendanceRecords.find(rec => rec.id === user.id && rec.date === today && rec.session === session);
-            
             if (!alreadyLogged) {
                 lastAttendanceTime[key] = Date.now();
                 const now = new Date();
@@ -405,12 +381,7 @@
                 });
                 saveAttendance();
                 playBeep();
-                
-                Swal.fire({
-                    title: '✅ Kehadiran!',
-                    html: `<strong>${escapeHtml(user.name)}</strong><br>${status} | ${sessionName}<br>${getCurrentTime()}`,
-                    icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000
-                });
+                Swal.fire({ title: '✅ Kehadiran!', html: `<strong>${escapeHtml(user.name)}</strong><br>${status} | ${sessionName}`, icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
                 updateUI();
             }
         }
@@ -419,13 +390,8 @@
             const alert = { id: Date.now(), className: selectedClass === "Semua Kelas" ? "Unknown" : selectedClass, time: getCurrentTime(), date: getTodayDate(), session: getCurrentSession(), imageData: imageData };
             saveStrangerAlert(alert);
             playAlertBeep();
-            
             const imageHtml = imageData ? `<img src="${imageData}" style="width: 120px; border-radius: 12px; margin: 10px 0; border: 2px solid red;">` : '';
-            await Swal.fire({
-                title: '⚠️ AMARAN! Wajah Asing',
-                html: `${imageHtml}<strong>Kelas:</strong> ${alert.className}<br><strong>Masa:</strong> ${getCurrentTime()}`,
-                icon: 'warning', confirmButtonColor: '#FF3B30', confirmButtonText: 'OK'
-            });
+            await Swal.fire({ title: '⚠️ AMARAN! Wajah Asing', html: `${imageHtml}<strong>Kelas:</strong> ${alert.className}<br><strong>Masa:</strong> ${getCurrentTime()}`, icon: 'warning', confirmButtonColor: '#FF3B30', confirmButtonText: 'OK' });
             updateUI();
         }
 
@@ -455,7 +421,7 @@
 
         function stopQRScanner() { if (html5QrCode && isScanning) { html5QrCode.stop().catch(e => console.log(e)); isScanning = false; } }
 
-        // ==================== REGISTER FACE ====================
+        // ==================== REGISTER FACE - STEP BY STEP ====================
         function startRegisterCamera() {
             if (registerStream) stopRegisterCamera();
             navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: INPUT_SIZE }, height: { ideal: INPUT_SIZE } } })
@@ -465,7 +431,7 @@
                     if (video) { video.srcObject = stream; video.onloadedmetadata = () => video.play(); }
                     if (registerInterval) clearInterval(registerInterval);
                     registerInterval = setInterval(registerFaceDetection, DETECTION_INTERVAL);
-                }).catch(err => { showError('Ralat Kamera', 'Kamera tidak dapat diakses.'); });
+                }).catch(err => { console.error(err); });
         }
 
         function stopRegisterCamera() {
@@ -505,11 +471,11 @@
                 ctx.stroke();
                 ctx.fillStyle = '#34C759';
                 ctx.font = 'bold 14px system-ui';
-                ctx.fillText('✓ Wajah Dikesan!', centerX, centerY - 5);
+                ctx.fillText('✓ Wajah Dikesan! Klik Daftar', centerX, centerY - 5);
                 registerFaceDetected = true;
                 registerDescriptor = Array.from(detection.descriptor);
-                const statusEl = document.getElementById('registerStatus');
-                if (statusEl) { statusEl.innerHTML = '✅ Wajah dikesan! Sedia daftar'; statusEl.className = 'camera-status status-active'; }
+                const statusEl = document.getElementById('registerCameraStatus');
+                if (statusEl) { statusEl.innerHTML = '✅ Wajah dikesan! Sedia untuk didaftarkan'; statusEl.className = 'camera-status status-active'; }
             } else {
                 ctx.strokeStyle = '#FF9500';
                 ctx.lineWidth = 2;
@@ -518,32 +484,117 @@
                 ctx.font = 'bold 14px system-ui';
                 ctx.fillText('Letakkan muka di sini', centerX, centerY - 5);
                 registerFaceDetected = false;
-                const statusEl = document.getElementById('registerStatus');
-                if (statusEl) { statusEl.innerHTML = '● Letakkan muka dalam kotak'; statusEl.className = 'camera-status status-info'; }
+                const statusEl = document.getElementById('registerCameraStatus');
+                if (statusEl) { statusEl.innerHTML = '● Letakkan muka dalam kotak hijau'; statusEl.className = 'camera-status status-info'; }
             }
         }
 
-        async function registerUser() {
+        // Step 1: Save name and class, then go to step 2
+        async function saveNameAndClass() {
             const name = document.getElementById('regName').value.trim();
             const role = document.getElementById('regRole').value;
-            const className = document.getElementById('regClass').value.trim();
+            let className = document.getElementById('regClass').value;
             
-            if (!name) { await showError('Ralat', 'Sila masukkan nama.'); return; }
-            if (!className) { await showError('Ralat', 'Sila pilih kelas.'); return; }
-            if (!registerFaceDetected || !registerDescriptor) { await showWarning('Tiada Wajah', 'Pastikan muka dalam kotak hijau.'); return; }
-            if (registeredUsers.some(u => u.name.toLowerCase() === name.toLowerCase())) { await showError('Nama Sudah Wujud', `"${name}" sudah berdaftar.`); return; }
+            if (!name) { await showError('Ralat', 'Sila masukkan nama penuh.'); return false; }
+            if (!className) { await showError('Ralat', 'Sila pilih kelas.'); return false; }
+            
+            // Check if name already exists
+            if (registeredUsers.some(u => u.name.toLowerCase() === name.toLowerCase())) {
+                await showError('Nama Sudah Wujud', `Pengguna "${name}" sudah berdaftar.`);
+                return false;
+            }
+            
+            pendingRegistration = { name, role, className };
+            registerStep = 2;
+            renderRegisterStep2();
+            return true;
+        }
+
+        // Step 2: Capture face and complete registration
+        async function captureAndRegister() {
+            if (!registerFaceDetected || !registerDescriptor) {
+                await showWarning('Tiada Wajah Dikesan', 'Sila pastikan muka anda dalam kotak hijau.');
+                return;
+            }
+            
+            if (!pendingRegistration) {
+                await showError('Ralat', 'Sila isi nama dan kelas terlebih dahulu.');
+                registerStep = 1;
+                renderRegisterPage();
+                return;
+            }
             
             const newUser = {
-                id: Date.now().toString(), name: name, role: role, className: className,
-                descriptor: registerDescriptor, registeredAt: new Date().toISOString(),
-                qrData: JSON.stringify({ id: Date.now().toString(), name: name, role: role, className: className })
+                id: Date.now().toString(),
+                name: pendingRegistration.name,
+                role: pendingRegistration.role,
+                className: pendingRegistration.className,
+                descriptor: registerDescriptor,
+                registeredAt: new Date().toISOString(),
+                qrData: JSON.stringify({ id: Date.now().toString(), name: pendingRegistration.name, role: pendingRegistration.role, className: pendingRegistration.className })
             };
+            
             registeredUsers.push(newUser);
             saveUsers();
             buildFaceMatcher();
-            await showSuccess('✅ Pendaftaran Berjaya!', `${name} (${role === 'teacher' ? 'Guru' : 'Pelajar'})\nKelas: ${className}\n✅ Muka telah DIHAFAL oleh AI!`);
-            document.getElementById('regName').value = '';
-            if (!availableClasses.includes(className)) { availableClasses.push(className); availableClasses.sort(); }
+            
+            await showSuccess('✅ Pendaftaran Berjaya!', `${newUser.name} (${newUser.role === 'teacher' ? 'Guru' : 'Pelajar'})\nKelas: ${newUser.className}\n\n✅ Muka telah DIHAFAL oleh AI!`);
+            
+            // Reset
+            pendingRegistration = null;
+            registerStep = 1;
+            
+            if (!availableClasses.includes(newUser.className)) {
+                availableClasses.push(newUser.className);
+                availableClasses.sort();
+            }
+            
+            renderRegisterPage();
+        }
+
+        function backToStep1() {
+            registerStep = 1;
+            pendingRegistration = null;
+            renderRegisterPage();
+        }
+
+        function renderRegisterStep2() {
+            const html = `
+                <div class="step-indicator">
+                    <div class="step completed"><div class="step-number">✓</div><div class="step-label">Nama & Kelas</div></div>
+                    <div class="step active"><div class="step-number">2</div><div class="step-label">Tangkap Wajah</div></div>
+                </div>
+                <div class="info-box">
+                    <i data-lucide="info"></i>
+                    <div><strong>Langkah 2/2: Tangkap Wajah</strong><br>Letakkan muka dalam kotak hijau, kemudian klik Daftar</div>
+                </div>
+                <div class="camera-section">
+                    <div class="camera-container">
+                        <video id="registerVideo" autoplay playsinline></video>
+                        <canvas id="registerCanvas" class="face-canvas"></canvas>
+                    </div>
+                    <div class="camera-status" id="registerCameraStatus">● Memulakan kamera...</div>
+                </div>
+                <div class="data-table">
+                    <div class="register-form">
+                        <div style="background: #E8F5E9; padding: 12px; border-radius: 14px; margin-bottom: 16px;">
+                            <strong>📝 Maklumat Pengguna:</strong><br>
+                            Nama: ${escapeHtml(pendingRegistration?.name || '')}<br>
+                            Peranan: ${pendingRegistration?.role === 'teacher' ? 'Guru' : 'Pelajar'}<br>
+                            Kelas: ${pendingRegistration?.className || ''}
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="btn btn-secondary" id="backBtn" style="flex:1;"><i data-lucide="arrow-left"></i> Kembali</button>
+                            <button class="btn btn-success" id="captureBtn" style="flex:1;"><i data-lucide="camera"></i> Daftar Wajah</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+            lucide.createIcons();
+            startRegisterCamera();
+            document.getElementById('backBtn').onclick = backToStep1;
+            document.getElementById('captureBtn').onclick = captureAndRegister;
         }
 
         // ==================== RENDER FUNCTIONS ====================
@@ -568,8 +619,8 @@
                     <div class="stat-card" onclick="navigateTo('records')"><div class="stat-info"><h3>⚠️ Asing</h3><div class="stat-number">${strangerToday}</div></div><div class="stat-icon"><i data-lucide="alert-triangle"></i></div></div>
                 </div>
                 <div class="charts-row"><div class="chart-card"><h3><i data-lucide="pie-chart"></i> Kehadiran Hari Ini</h3><canvas id="attendanceChartCanvas"></canvas></div></div>
-                <div class="data-table"><h3>⚡ Fast AI Face Recognition</h3><p style="font-size: 13px;">✓ Detection setiap <strong>0.25 saat</strong> (sangat pantas!)<br>✓ Wajah dikenali → AUTO hadir + bunyi beep<br>✓ Wajah asing → ALERT + bunyi kuat + GAMBAR disimpan</p></div>
-                <div class="data-table"><h3>📋 Kehadiran Terkini</h3><div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Sesi</th><th>Status</th><th>Masa</th></thead><tbody>${attendanceRecords.filter(r => selectedClass === "Semua Kelas" || r.className === selectedClass).slice(-8).reverse().map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td>${r.sessionName || r.session}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="5">Tiada rekod</td></tr>'}</tbody></div></div>`;
+                <div class="data-table"><h3>⚡ Fast AI Face Recognition</h3><p style="font-size: 13px;">✓ Detection setiap <strong>0.25 saat</strong><br>✓ Wajah dikenali → AUTO hadir + bunyi beep<br>✓ Wajah asing → ALERT + bunyi kuat + GAMBAR disimpan</p></div>
+                <div class="data-table"><h3>📋 Kehadiran Terkini</h3><div class="table-container"><tr><thead><tr><th>Nama</th><th>Kelas</th><th>Sesi</th><th>Status</th><th>Masa</th></thead><tbody>${attendanceRecords.filter(r => selectedClass === "Semua Kelas" || r.className === selectedClass).slice(-8).reverse().map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td>${r.sessionName || r.session}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="5">Tiada rekod</td></tr>'}</tbody></div></div>`;
 
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
@@ -599,21 +650,63 @@
         }
 
         function renderRegisterPage() {
-            const html = `<div class="camera-section"><h3><i data-lucide="user-plus"></i> Daftar Muka Baru</h3><div class="camera-container"><video id="registerVideo" autoplay playsinline></video><canvas id="registerCanvas" class="face-canvas"></canvas></div><div class="camera-status" id="registerStatus">● Memulakan kamera...</div></div><div class="data-table"><div class="register-form"><input type="text" id="regName" placeholder="Nama Penuh *"><select id="regRole"><option value="student">👨‍🎓 Pelajar</option><option value="teacher">👩‍🏫 Guru</option></select><select id="regClass"><option value="">Pilih Kelas *</option>${availableClasses.map(c => `<option value="${c}">Kelas ${c}</option>`).join('')}<option value="Lain-lain">Kelas Lain</option></select><input type="text" id="regClassOther" placeholder="Kelas lain" style="display:none;"><button class="btn btn-success" id="registerBtn"><i data-lucide="camera"></i> 🧠 HAFAL Wajah & Daftar</button></div></div><div class="data-table"><h3>Senarai Muka Dihafal</h3><div class="table-container" id="usersTableContainer"></div></div>`;
+            const html = `
+                <div class="step-indicator">
+                    <div class="step active"><div class="step-number">1</div><div class="step-label">Nama & Kelas</div></div>
+                    <div class="step"><div class="step-number">2</div><div class="step-label">Tangkap Wajah</div></div>
+                </div>
+                <div class="info-box">
+                    <i data-lucide="info"></i>
+                    <div><strong>Langkah 1/2: Isi Maklumat</strong><br>Masukkan nama dan kelas terlebih dahulu, kemudian tekan "Teruskan" untuk tangkap wajah</div>
+                </div>
+                <div class="data-table">
+                    <div class="register-form">
+                        <input type="text" id="regName" placeholder="Nama Penuh *">
+                        <select id="regRole">
+                            <option value="student">👨‍🎓 Pelajar</option>
+                            <option value="teacher">👩‍🏫 Guru</option>
+                        </select>
+                        <select id="regClass">
+                            <option value="">Pilih Kelas *</option>
+                            ${availableClasses.map(c => `<option value="${c}">Kelas ${c}</option>`).join('')}
+                            <option value="Lain-lain">Kelas Lain (isi sendiri)</option>
+                        </select>
+                        <input type="text" id="regClassOther" placeholder="Kelas lain" style="display:none;">
+                        <button class="btn btn-primary" id="continueBtn"><i data-lucide="arrow-right"></i> Teruskan ke Tangkap Wajah</button>
+                    </div>
+                </div>
+                <div class="data-table">
+                    <h3><i data-lucide="users"></i> Senarai Muka Dihafal</h3>
+                    <div class="table-container" id="usersTableContainer"></div>
+                </div>
+            `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
-            startRegisterCamera();
+            
             const classSelect = document.getElementById('regClass');
             const classOther = document.getElementById('regClassOther');
             classSelect.onchange = () => { classOther.style.display = classSelect.value === 'Lain-lain' ? 'block' : 'none'; };
-            document.getElementById('registerBtn').onclick = async () => { let className = document.getElementById('regClass').value; if (className === 'Lain-lain') { className = document.getElementById('regClassOther').value.trim(); if (!className) { await showError('Ralat', 'Masukkan kelas.'); return; } } registerUser(); };
+            
+            document.getElementById('continueBtn').onclick = async () => {
+                let className = document.getElementById('regClass').value;
+                if (className === 'Lain-lain') {
+                    className = document.getElementById('regClassOther').value.trim();
+                    if (!className) {
+                        await showError('Ralat', 'Sila masukkan nama kelas.');
+                        return;
+                    }
+                }
+                document.getElementById('regClass').value = className;
+                await saveNameAndClass();
+            };
+            
             renderUsersTable();
         }
 
         function renderUsersTable() {
             const container = document.getElementById('usersTableContainer');
             if (!container) return;
-            container.innerHTML = `<table><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th><th>Status</th></tr></thead><tbody>${registeredUsers.map(u => `<tr><td>${escapeHtml(u.name)}</td><td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Guru' : 'Pelajar'}</span></td><td>${escapeHtml(u.className)}</td><td style="color:#34C759;">✅ Muka Dihafal</td></tr>`).join('') || '<tr><td colspan="4">Tiada pengguna</td></tr>'}</tbody></tr>`;
+            container.innerHTML = `<table><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th><th>Status</th></thead><tbody>${registeredUsers.map(u => `<tr><td>${escapeHtml(u.name)}</td><td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Guru' : 'Pelajar'}</span></td><td>${escapeHtml(u.className)}</td><td style="color:#34C759;">✅ Muka Dihafal</td></tr>`).join('') || '<tr><td colspan="4">Tiada pengguna berdaftar</td></tr>'}</tbody></table>`;
         }
 
         function renderRecordsPage() {
@@ -621,7 +714,7 @@
             const todayStrangers = strangerAlerts.filter(a => a.date === today && (selectedClass === "Semua Kelas" || a.className === selectedClass));
             const html = `<div class="class-selector"><select id="recordClassFilter"><option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 Semua Kelas</option>${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Kelas ${c}</option>`).join('')}</select></div>
                 <div class="data-table"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><h3><i data-lucide="alert-triangle"></i> Wajah Asing (${todayStrangers.length})</h3><button class="btn-small btn-warning" id="exportStrangerBtn" style="width:auto;padding:8px 16px;"><i data-lucide="download"></i> Eksport</button></div><div id="strangerListContainer"></div></div>
-                <div class="data-table"><h3>📋 Kehadiran Hari Ini</h3><div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Sesi</th><th>Status</th><th>Masa</th></tr></thead><tbody>${attendanceRecords.filter(r => r.date === today && (selectedClass === "Semua Kelas" || r.className === selectedClass)).map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td>${r.sessionName || r.session}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="5">Tiada rekod</td></tr>'}</tbody></div></div>`;
+                <div class="data-table"><h3>📋 Kehadiran Hari Ini</h3><div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Sesi</th><th>Status</th><th>Masa</th></thead><tbody>${attendanceRecords.filter(r => r.date === today && (selectedClass === "Semua Kelas" || r.className === selectedClass)).map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td>${r.sessionName || r.session}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="5">Tiada rekod</td></tr>'}</tbody></div></div>`;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
             
@@ -652,6 +745,8 @@
             currentPage = page;
             document.querySelectorAll('.nav-item').forEach(item => { item.classList.toggle('active', item.dataset.page === page); });
             stopSecurityCamera(); stopQRScanner(); stopRegisterCamera();
+            registerStep = 1;
+            pendingRegistration = null;
             if (page === 'dashboard') renderDashboard();
             else if (page === 'security') renderSecurityPage();
             else if (page === 'qrcode') renderQRPage();
@@ -667,7 +762,7 @@
         lucide.createIcons();
         loadFaceModels();
         
-        setTimeout(() => { showInfo('⚡ Fast AI Face Recognition', 'Detection setiap 0.25 saat!\n\n✅ Daftar muka di tab "Daftar Muka"\n✅ Buka "AI Security" - Auto detect & rekod\n🟢 Hijau = Dikenali → Auto hadir\n🔴 Merah = Asing → Alert + gambar disimpan'); }, 1500);
+        setTimeout(() => { showInfo('📝 Urutan Daftar Yang Betul', '1️⃣ Masukkan NAMA dan KELAS dulu\n2️⃣ Tekan "Teruskan"\n3️⃣ Baru TANGKAP WAJAH anda\n\nMuka akan DIHAFAL oleh AI!'); }, 1500);
     </script>
 </body>
 </html>
