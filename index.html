@@ -43,7 +43,7 @@
         .header-left img { width: 40px; height: 40px; border-radius: 12px; background: var(--primary); }
         .header-left h1 { font-size: 18px; margin: 0; }
         .header-left p { font-size: 10px; color: var(--text-secondary); }
-        .header-right { display: flex; gap: 8px; }
+        .header-right { display: flex; gap: 8px; align-items: center; }
         .icon-btn { background: none; border: none; cursor: pointer; padding: 8px; border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--text-primary); }
         .live-clock { background: var(--bg); padding: 6px 12px; border-radius: 25px; font-size: 13px; font-weight: 600; font-family: monospace; }
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 12px 20px; z-index: 100; }
@@ -108,9 +108,6 @@
         .edit-btn, .delete-btn { background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
         .edit-btn { color: var(--primary); }
         .delete-btn { color: var(--danger); }
-        .sync-status { font-size: 10px; display: flex; align-items: center; gap: 4px; }
-        .online { color: var(--success); }
-        .offline { color: var(--danger); }
         .camera-selector { margin-bottom: 12px; }
         .camera-selector select { width: 100%; padding: 10px; border-radius: 14px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-primary); }
     </style>
@@ -194,17 +191,14 @@
         async function syncToFirebase() {
             if (!isOnline) return;
             try {
-                // Sync users
                 for (const user of registeredUsers) {
                     const userData = { ...user };
-                    delete userData.descriptor; // Don't sync descriptor to Firestore
+                    delete userData.descriptor;
                     await db.collection('users').doc(user.id).set(userData, { merge: true });
                 }
-                // Sync attendance
                 for (const att of attendanceRecords) {
                     await db.collection('attendance').doc(`${att.id}_${att.date}_${att.session}`).set(att, { merge: true });
                 }
-                // Sync stranger alerts
                 for (const alert of strangerAlerts) {
                     await db.collection('strangers').doc(alert.id.toString()).set(alert, { merge: true });
                 }
@@ -219,19 +213,16 @@
                     const existing = registeredUsers.find(u => u.id === doc.id);
                     if (!existing) registeredUsers.push(doc.data());
                 });
-                
                 const attendanceSnapshot = await db.collection('attendance').get();
                 attendanceSnapshot.forEach(doc => {
                     const existing = attendanceRecords.find(a => a.id === doc.data().id && a.date === doc.data().date && a.session === doc.data().session);
                     if (!existing) attendanceRecords.push(doc.data());
                 });
-                
                 const strangersSnapshot = await db.collection('strangers').get();
                 strangersSnapshot.forEach(doc => {
                     const existing = strangerAlerts.find(s => s.id === doc.data().id);
                     if (!existing) strangerAlerts.push(doc.data());
                 });
-                
                 saveUsersLocal();
                 saveAttendanceLocal();
                 saveStrangerAlertsLocal();
@@ -722,8 +713,29 @@
             const presentToday = attendanceRecords.filter(r => r.date === today && r.status === 'Hadir').length;
             const lateToday = attendanceRecords.filter(r => r.date === today && r.status === 'Lewat').length;
             const strangerToday = strangerAlerts.filter(a => a.date === today).length;
+            
+            const attendanceRows = attendanceRecords
+                .filter(r => selectedClass === "Semua Kelas" || r.className === selectedClass)
+                .slice(-8).reverse()
+                .map(r => `
+                    <tr>
+                        <td>${escapeHtml(r.name)}</td>
+                        <td>${escapeHtml(r.className)}</td>
+                        <td>${r.sessionName || r.session}</td>
+                        <td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td>
+                        <td>${r.time}</td>
+                    </tr>
+                `).join('');
+            
+            const noDataRow = '<tr><td colspan="5">Tiada rekod</td></tr>';
+            
             const html = `
-                <div class="class-selector"><select id="classFilterSelect"><option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 Semua Kelas</option>${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Kelas ${c}</option>`).join('')}</select></div>
+                <div class="class-selector">
+                    <select id="classFilterSelect">
+                        <option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 Semua Kelas</option>
+                        ${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Kelas ${c}</option>`).join('')}
+                    </select>
+                </div>
                 <div class="stats-grid">
                     <div class="stat-card"><div class="stat-info"><h3>👥 Pengguna</h3><div class="stat-number">${registeredUsers.length}</div></div><div class="stat-icon"><i data-lucide="users"></i></div></div>
                     <div class="stat-card"><div class="stat-info"><h3>✅ Hadir</h3><div class="stat-number">${todayAttendance}</div></div><div class="stat-icon"><i data-lucide="check-circle"></i></div></div>
@@ -733,11 +745,31 @@
                     <div class="stat-card"><div class="stat-info"><h3>⏰ Lewat</h3><div class="stat-number">${lateToday}</div></div><div class="stat-icon"><i data-lucide="clock"></i></div></div>
                     <div class="stat-card" onclick="navigateTo('records')"><div class="stat-info"><h3>⚠️ Asing</h3><div class="stat-number">${strangerToday}</div></div><div class="stat-icon"><i data-lucide="alert-triangle"></i></div></div>
                 </div>
-                <div class="charts-row"><div class="chart-card"><h3><i data-lucide="pie-chart"></i> Kehadiran Hari Ini</h3><canvas id="attendanceChartCanvas"></canvas></div></div>
-                <div class="data-table"><h3>☁️ Firebase Cloud Sync</h3><p style="font-size: 13px;">✅ Data disimpan ke cloud secara automatik<br>✅ Sync merentas semua peranti<br>✅ Backup selamat</p></div>
-                <div class="data-table"><h3>📋 Kehadiran Terkini</h3><div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Sesi</th><th>Status</th><th>Masa</th></thead><tbody>${attendanceRecords.filter(r => selectedClass === "Semua Kelas" || r.className === selectedClass).slice(-8).reverse().map(r => `<tr><td>${escapeHtml(r.name)}72</div></div>`;
+                <div class="charts-row">
+                    <div class="chart-card"><h3><i data-lucide="pie-chart"></i> Kehadiran Hari Ini</h3><canvas id="attendanceChartCanvas"></canvas></div>
+                </div>
+                <div class="data-table">
+                    <h3>☁️ Firebase Cloud Sync</h3>
+                    <p style="font-size: 13px;">✅ Data disimpan ke cloud secara automatik<br>✅ Sync merentas semua peranti<br>✅ Backup selamat</p>
+                </div>
+                <div class="data-table">
+                    <h3>📋 Kehadiran Terkini</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr><th>Nama</th><th>Kelas</th><th>Sesi</th><th>Status</th><th>Masa</th></tr>
+                            </thead>
+                            <tbody>
+                                ${attendanceRows || noDataRow}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
+            
             const ctx = document.getElementById('attendanceChartCanvas')?.getContext('2d');
             if (ctx && attendanceChart) attendanceChart.destroy();
             if (ctx) {
@@ -746,7 +778,12 @@
                 const late = filtered.filter(r => r.status === 'Lewat').length;
                 attendanceChart = new Chart(ctx, { type: 'doughnut', data: { labels: ['Hadir', 'Lewat'], datasets: [{ data: [present, late], backgroundColor: ['#34C759', '#FF9500'] }] } });
             }
-            document.getElementById('classFilterSelect').onchange = (e) => { selectedClass = e.target.value; localStorage.setItem('selected_class', selectedClass); renderDashboard(); };
+            
+            document.getElementById('classFilterSelect').onchange = (e) => { 
+                selectedClass = e.target.value; 
+                localStorage.setItem('selected_class', selectedClass); 
+                renderDashboard(); 
+            };
         }
         
         function renderSecurityPage() {
@@ -795,15 +832,22 @@
         function renderUsersTable() {
             const container = document.getElementById('usersTableContainer');
             if (!container) return;
-            container.innerHTML = `<tr><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th><th>Status</th><th>Tindakan</th></thead><tbody>${registeredUsers.map(u => `
-                <tr>
-                    <td>${escapeHtml(u.name)}</td>
-                    <td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Guru' : 'Pelajar'}</span></td>
-                    <td>${escapeHtml(u.className)}</td>
-                    <td style="color:#34C759;">✅ Muka Dihafal</td>
-                    <td class="action-buttons"><button class="edit-btn" onclick="editUserById('${u.id}')"><i data-lucide="edit-2"></i></button><button class="delete-btn" onclick="deleteUserById('${u.id}')"><i data-lucide="trash-2"></i></button></td>
-                </tr>
-            `).join('') || '<tr><td colspan="5">Tiada pengguna berdaftar</td></tr>'}</tbody></td>`;
+            container.innerHTML = `
+                <table>
+                    <thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th><th>Status</th><th>Tindakan</th></tr></thead>
+                    <tbody>
+                        ${registeredUsers.map(u => `
+                            <tr>
+                                <td>${escapeHtml(u.name)}</td>
+                                <td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Guru' : 'Pelajar'}</span></td>
+                                <td>${escapeHtml(u.className)}</td>
+                                <td style="color:#34C759;">✅ Muka Dihafal</td>
+                                <td class="action-buttons"><button class="edit-btn" onclick="editUserById('${u.id}')"><i data-lucide="edit-2"></i></button><button class="delete-btn" onclick="deleteUserById('${u.id}')"><i data-lucide="trash-2"></i></button></td>
+                            </tr>
+                        `).join('') || '<tr><td colspan="5">Tiada pengguna berdaftar</td></tr>'}
+                    </tbody>
+                </table>
+            `;
             lucide.createIcons();
         }
         
@@ -813,15 +857,60 @@
         function renderRecordsPage() {
             const today = getTodayDate();
             const todayStrangers = strangerAlerts.filter(a => a.date === today && (selectedClass === "Semua Kelas" || a.className === selectedClass));
-            const html = `<div class="class-selector"><select id="recordClassFilter"><option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 Semua Kelas</option>${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Kelas ${c}</option>`).join('')}</select></div>
-                <div class="data-table"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><h3><i data-lucide="alert-triangle"></i> Wajah Asing (${todayStrangers.length})</h3><div><button class="btn-small btn-primary" id="exportPDFBtn" style="width:auto;padding:8px 16px;"><i data-lucide="file-text"></i> PDF</button><button class="btn-small btn-warning" id="exportStrangerBtn" style="width:auto;padding:8px 16px;"><i data-lucide="download"></i> HTML</button></div></div><div id="strangerListContainer"></div></div>
-                <div class="data-table"><h3>📋 Kehadiran Hari Ini</h3><div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Sesi</th><th>Status</th><th>Masa</th></thead><tbody>${attendanceRecords.filter(r => r.date === today && (selectedClass === "Semua Kelas" || r.className === selectedClass)).map(r => `<tr><td>${escapeHtml(r.name)}72<td>${escapeHtml(r.className)}</td><td>${r.sessionName || r.session}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="5">Tiada rekod</td></tr>'}</tbody></div></div>`;
+            const attendanceRows = attendanceRecords
+                .filter(r => r.date === today && (selectedClass === "Semua Kelas" || r.className === selectedClass))
+                .map(r => `
+                    <tr>
+                        <td>${escapeHtml(r.name)}</td>
+                        <td>${escapeHtml(r.className)}</td>
+                        <td>${r.sessionName || r.session}</td>
+                        <td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td>
+                        <td>${r.time}</td>
+                    </tr>
+                `).join('');
+            
+            const noDataRow = '<tr><td colspan="5">Tiada rekod</td></tr>';
+            
+            const html = `
+                <div class="class-selector">
+                    <select id="recordClassFilter">
+                        <option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 Semua Kelas</option>
+                        ${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Kelas ${c}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="data-table">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                        <h3><i data-lucide="alert-triangle"></i> Wajah Asing (${todayStrangers.length})</h3>
+                        <div>
+                            <button class="btn-small btn-primary" id="exportPDFBtn" style="width:auto;padding:8px 16px;"><i data-lucide="file-text"></i> PDF</button>
+                            <button class="btn-small btn-warning" id="exportStrangerBtn" style="width:auto;padding:8px 16px;"><i data-lucide="download"></i> HTML</button>
+                        </div>
+                    </div>
+                    <div id="strangerListContainer"></div>
+                </div>
+                <div class="data-table">
+                    <h3>📋 Kehadiran Hari Ini</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Nama</th><th>Kelas</th><th>Sesi</th><th>Status</th><th>Masa</th></tr></thead>
+                            <tbody>${attendanceRows || noDataRow}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
+            
             const strangerContainer = document.getElementById('strangerListContainer');
             if (strangerContainer) {
                 strangerContainer.innerHTML = todayStrangers.length === 0 ? '<p style="text-align:center;padding:20px;">✅ Tiada laporan wajah asing</p>' :
-                    todayStrangers.map(a => `<div class="danger-banner"><div>${a.imageData ? `<img src="${a.imageData}" class="stranger-image" onclick="viewStrangerImage('${a.imageData}')" style="cursor:pointer;">` : '<div style="width:60px;height:60px;background:#ddd;border-radius:10px;">📷</div>'}</div><div style="flex:1;"><strong>⚠️ Wajah Asing</strong><br><small>Kelas: ${a.className} | Masa: ${a.time}</small></div>${a.imageData ? `<button class="btn-small btn-primary" onclick="downloadStrangerImage('${a.imageData}', ${a.id})"><i data-lucide="download"></i> Simpan</button>` : ''}</div>`).join('');
+                    todayStrangers.map(a => `
+                        <div class="danger-banner">
+                            <div>${a.imageData ? `<img src="${a.imageData}" class="stranger-image" onclick="viewStrangerImage('${a.imageData}')" style="cursor:pointer;">` : '<div style="width:60px;height:60px;background:#ddd;border-radius:10px;">📷</div>'}</div>
+                            <div style="flex:1;"><strong>⚠️ Wajah Asing</strong><br><small>Kelas: ${a.className} | Masa: ${a.time}</small></div>
+                            ${a.imageData ? `<button class="btn-small btn-primary" onclick="downloadStrangerImage('${a.imageData}', ${a.id})"><i data-lucide="download"></i> Simpan</button>` : ''}
+                        </div>
+                    `).join('');
                 lucide.createIcons();
             }
             document.getElementById('recordClassFilter').onchange = (e) => { selectedClass = e.target.value; localStorage.setItem('selected_class', selectedClass); renderRecordsPage(); };
