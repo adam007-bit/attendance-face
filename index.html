@@ -14,352 +14,87 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
-            --primary: #007AFF;
-            --primary-light: #5E9EFF;
-            --primary-dark: #0055CC;
-            --success: #34C759;
-            --warning: #FF9500;
-            --danger: #FF3B30;
-            --purple: #AF52DE;
-            --bg: #F5F5F7;
-            --card-bg: #FFFFFF;
-            --text-primary: #1C1C1E;
-            --text-secondary: #8E8E93;
-            --border: #E5E5EA;
-            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
-            --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+            --primary: #007AFF; --primary-light: #5E9EFF; --primary-dark: #0055CC;
+            --success: #34C759; --warning: #FF9500; --danger: #FF3B30; --purple: #AF52DE;
+            --bg: #F5F5F7; --card-bg: #FFFFFF; --text-primary: #1C1C1E;
+            --text-secondary: #8E8E93; --border: #E5E5EA;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04); --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
             --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
-            --radius-sm: 16px;
-            --radius-md: 20px;
-            --radius-lg: 28px;
-            --radius-xl: 40px;
+            --radius-sm: 16px; --radius-md: 20px; --radius-lg: 28px;
         }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text-primary);
-            min-height: 100vh;
-        }
-
-        .header {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(20px);
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 99;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .header-left img {
-            width: 44px;
-            height: 44px;
-            border-radius: 14px;
-            background: var(--primary);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .header-left h1 {
-            font-size: 20px;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary), var(--purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .header-left p {
-            font-size: 11px;
-            color: var(--text-secondary);
-        }
-
-        .header-right {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .icon-btn {
-            background: var(--bg);
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--text-primary);
-        }
-
-        .live-clock {
-            background: var(--bg);
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 14px;
-            font-weight: 600;
-            font-family: monospace;
-        }
-
-        .user-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--bg);
-            padding: 6px 16px 6px 12px;
-            border-radius: 30px;
-        }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 16px;
-            left: 16px;
-            right: 16px;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 40px;
-            display: flex;
-            justify-content: space-around;
-            padding: 8px 16px;
-            z-index: 100;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            padding: 8px 16px;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--text-secondary);
-            font-size: 11px;
-            font-weight: 500;
-        }
-
-        .nav-item i {
-            width: 22px;
-            height: 22px;
-        }
-
-        .nav-item.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .main-content {
-            padding: 20px 16px 100px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 14px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            border-radius: var(--radius-md);
-            padding: 18px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: var(--shadow-sm);
-            cursor: pointer;
-            border: 1px solid var(--border);
-        }
-
-        .stat-number {
-            font-size: 32px;
-            font-weight: 700;
-        }
-
-        .camera-section {
-            background: var(--card-bg);
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border);
-        }
-
-        .camera-container {
-            position: relative;
-            background: #000;
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            aspect-ratio: 4/3;
-        }
-
-        #securityVideo, #registerVideo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1);
-        }
-
-        .face-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        .camera-status {
-            text-align: center;
-            margin-top: 14px;
-            font-size: 13px;
-            padding: 10px;
-            border-radius: var(--radius-sm);
-            font-weight: 500;
-        }
-
-        .status-active {
-            background: #E8F5E9;
-            color: #2E7D32;
-        }
-
-        .data-table {
-            background: var(--card-bg);
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border);
-        }
-
-        .badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            display: inline-block;
-        }
-
+        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; }
+        .header { background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 99; }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .header-left img { width: 44px; height: 44px; border-radius: 14px; background: var(--primary); }
+        .header-left h1 { font-size: 20px; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header-left p { font-size: 11px; color: var(--text-secondary); }
+        .header-right { display: flex; gap: 12px; align-items: center; }
+        .icon-btn { background: var(--bg); border: none; width: 40px; height: 40px; border-radius: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .live-clock { background: var(--bg); padding: 8px 16px; border-radius: 30px; font-size: 14px; font-weight: 600; font-family: monospace; }
+        .user-badge { display: flex; align-items: center; gap: 8px; background: var(--bg); padding: 6px 16px 6px 12px; border-radius: 30px; }
+        .bottom-nav { position: fixed; bottom: 16px; left: 16px; right: 16px; background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 40px; display: flex; justify-content: space-around; padding: 8px 16px; z-index: 100; box-shadow: var(--shadow-lg); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 16px; border-radius: 30px; cursor: pointer; color: var(--text-secondary); font-size: 11px; font-weight: 500; }
+        .nav-item i { width: 22px; height: 22px; }
+        .nav-item.active { background: var(--primary); color: white; }
+        .main-content { padding: 20px 16px 100px; max-width: 600px; margin: 0 auto; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 24px; }
+        .stat-card { background: var(--card-bg); border-radius: var(--radius-md); padding: 18px 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-sm); cursor: pointer; border: 1px solid var(--border); }
+        .stat-number { font-size: 32px; font-weight: 700; }
+        .camera-section { background: var(--card-bg); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+        .camera-container { position: relative; background: #000; border-radius: var(--radius-md); overflow: hidden; aspect-ratio: 4/3; }
+        #securityVideo, #registerVideo { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        .face-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .camera-status { text-align: center; margin-top: 14px; font-size: 13px; padding: 10px; border-radius: var(--radius-sm); font-weight: 500; }
+        .status-active { background: #E8F5E9; color: #2E7D32; }
+        .data-table { background: var(--card-bg); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
         .badge-hadir { background: #E8F5E9; color: #2E7D32; }
         .badge-lewat { background: #FFF3E0; color: #E65100; }
-        .btn {
-            padding: 14px 20px;
-            border-radius: 40px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-            transition: all 0.2s;
-        }
-        .btn-primary { background: var(--primary); color: white; }
+        .badge-teacher { background: #E3F2FD; color: #1565C0; }
+        .badge-student { background: #F3E5F5; color: #6A1B9A; }
+        .btn { padding: 14px 20px; border-radius: 40px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; transition: all 0.2s; font-size: 15px; }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(0,122,255,0.3); }
         .btn-success { background: var(--success); color: white; }
         .btn-secondary { background: #8E8E93; color: white; }
-
-        .register-form input, .register-form select {
-            width: 100%;
-            padding: 16px;
-            border-radius: 30px;
-            border: 1px solid var(--border);
-            margin-bottom: 12px;
-            background: var(--card-bg);
-        }
-
-        .login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(20px);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .login-card {
-            background: var(--card-bg);
-            border-radius: 56px;
-            padding: 40px 32px;
-            width: 90%;
-            max-width: 380px;
-            text-align: center;
-        }
-
-        .login-card input {
-            width: 100%;
-            padding: 16px 20px;
-            margin: 12px 0;
-            border-radius: 40px;
-            border: 1px solid var(--border);
-        }
-
-        .danger-banner {
-            background: #FFEBEE;
-            border-left: 4px solid var(--danger);
-            padding: 14px;
-            border-radius: var(--radius-sm);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .stranger-image { width: 55px; height: 55px; border-radius: 12px; object-fit: cover; cursor: pointer; border: 2px solid var(--danger); }
         .btn-small { padding: 8px 16px; font-size: 12px; width: auto; }
-        .detection-indicator { position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.7); padding: 6px 14px; border-radius: 30px; font-size: 11px; color: white; z-index: 10; }
+        .register-form input, .register-form select { width: 100%; padding: 16px; border-radius: 30px; border: 1px solid var(--border); margin-bottom: 12px; background: var(--card-bg); }
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(20px); z-index: 10000; display: flex; align-items: center; justify-content: center; }
+        .login-card { background: var(--card-bg); border-radius: 56px; padding: 40px 32px; width: 90%; max-width: 380px; text-align: center; }
+        .login-card input { width: 100%; padding: 16px 20px; margin: 12px 0; border-radius: 40px; border: 1px solid var(--border); }
+        .danger-banner { background: #FFEBEE; border-left: 4px solid var(--danger); padding: 14px; border-radius: var(--radius-sm); margin-bottom: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .stranger-image { width: 55px; height: 55px; border-radius: 12px; object-fit: cover; cursor: pointer; border: 2px solid var(--danger); }
+        .detection-indicator { position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); padding: 6px 14px; border-radius: 30px; font-size: 11px; color: white; z-index: 10; }
         .step-indicator { display: flex; justify-content: center; gap: 24px; margin-bottom: 24px; }
+        .step { display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .step-number { width: 44px; height: 44px; border-radius: 44px; background: var(--border); display: flex; align-items: center; justify-content: center; font-weight: bold; }
         .step.active .step-number { background: var(--primary); color: white; }
         .step.completed .step-number { background: var(--success); color: white; }
         .class-selector, .camera-selector { margin-bottom: 16px; }
         .class-selector select, .camera-selector select { width: 100%; padding: 12px 16px; border-radius: 40px; border: 1px solid var(--border); background: var(--card-bg); }
-        .info-box { background: #E3F2FD; border-radius: var(--radius-sm); padding: 14px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+        .info-box { background: #E3F2FD; border-radius: var(--radius-sm); padding: 14px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-size: 13px; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid var(--border); }
         .action-buttons { display: flex; gap: 8px; }
         .edit-btn, .delete-btn { background: none; border: none; cursor: pointer; padding: 6px 10px; border-radius: 20px; }
         .edit-btn { color: var(--primary); }
         .delete-btn { color: var(--danger); }
-        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
+        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
         .page-btn { padding: 8px 14px; border-radius: 30px; border: 1px solid var(--border); background: var(--card-bg); cursor: pointer; }
         .page-btn.active { background: var(--primary); color: white; }
         .search-bar, .date-filter { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-        .search-bar input, .date-filter input { flex: 1; padding: 12px 16px; border-radius: 40px; border: 1px solid var(--border); }
+        .search-bar input, .date-filter input { flex: 1; padding: 12px 16px; border-radius: 40px; border: 1px solid var(--border); background: var(--card-bg); }
+        .qr-container { background: #000; border-radius: var(--radius-md); overflow: hidden; aspect-ratio: 1; max-width: 300px; margin: 0 auto; }
+        #qr-reader { width: 100%; height: 100%; }
+        .chart-card { background: var(--card-bg); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 20px; }
+        canvas { max-height: 200px; }
     </style>
 </head>
 <body>
     <div class="login-overlay" id="loginOverlay">
         <div class="login-card">
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23007AFF' rx='20'/%3E%3Cpath fill='white' d='M30 35 L45 28 L70 35 L65 68 L50 75 L35 68 L30 35Z'/%3E%3Ccircle cx='50' cy='48' r='8' fill='white'/%3E%3C/svg%3E" width="70">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23007AFF' rx='20'/%3E%3Cpath fill='white' d='M30 35 L45 28 L70 35 L65 68 L50 75 L35 68 L30 35Z'/%3E%3C/svg%3E" width="70">
             <h2>SmartClass Pro</h2>
             <p>AI Face Recognition System</p>
             <input type="text" id="loginUsername" placeholder="Nama Pengguna">
@@ -368,7 +103,6 @@
             <p style="margin-top:20px; font-size:12px;">Demo: admin / admin123</p>
         </div>
     </div>
-
     <div class="header" id="mainHeader" style="display: none;">
         <div class="header-left"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23007AFF' rx='20'/%3E%3Cpath fill='white' d='M30 35 L45 28 L70 35 L65 68 L50 75 L35 68 L30 35Z'/%3E%3C/svg%3E"><div><h1>SmartClass Pro</h1><p>AI Face Recognition • Auto Attendance</p></div></div>
         <div class="header-right"><div class="user-badge"><i data-lucide="user" style="width:16px;height:16px;"></i><span id="userName">Admin</span></div><button class="icon-btn" id="logoutBtn"><i data-lucide="log-out"></i></button><div class="live-clock"><span id="currentTime">--:--:--</span></div></div>
@@ -381,244 +115,187 @@
         <div class="nav-item" data-page="register"><i data-lucide="user-plus"></i><span>Register</span></div>
         <div class="nav-item" data-page="records"><i data-lucide="clipboard-list"></i><span>Records</span></div>
     </div>
-
     <script>
-        // ==================== ENHANCED FACE RECOGNITION WITH VOICE WELCOME ====================
+        // ==================== FULL FEATURES + VOICE + SIMILAR FACE DETECTION ====================
         let currentUser = null;
-        const validUsers = [{ username: "admin", password: "admin123", role: "admin", name: "Admin" }];
+        const validUsers = [{ username: "admin", password: "admin123", role: "admin", name: "Admin" }, { username: "guru", password: "guru123", role: "teacher", name: "Cikgu Ahmad" }];
         let registeredUsers = [], attendanceRecords = [], strangerAlerts = [], selectedClass = "Semua Kelas";
-        let availableClasses = ["5A","5B","5C","4A","4B"];
+        let availableClasses = ["5A", "5B", "5C", "4A", "4B", "4C", "3A", "3B", "2A", "2B", "1A", "1B"];
         let currentPage = 'dashboard', attendanceChart = null, registerStep = 1, pendingRegistration = null;
-        let securityStream = null, securityInterval = null, isSecurityActive = false, currentCameraId = 'user', modelsLoaded = false, faceMatcher = null;
-        let lastAttendanceTime = {}, lastStrangerAlertTime = 0;
+        let currentPageNum = 1, itemsPerPage = 10, searchQuery = "", startDate = "", endDate = "";
+        let securityStream = null, registerStream = null, securityInterval = null, isSecurityActive = false, currentCameraId = 'user';
+        let modelsLoaded = false, faceMatcher = null, html5QrCode = null, isScanning = false;
+        let audioCtx = null, lastStrangerAlertTime = 0, lastAttendanceTime = {};
         const FACE_MATCH_THRESHOLD = 0.48; // STRICTER for similar faces
-        
-        // Voice welcome system
-        let speechSynthesis = window.speechSynthesis;
         let lastWelcomeTime = {};
         
+        // VOICE WELCOME SYSTEM
         function speakWelcome(username) {
             try {
-                const now = Date.now();
-                if (lastWelcomeTime[username] && now - lastWelcomeTime[username] < 10000) return;
+                let now = Date.now();
+                if (lastWelcomeTime[username] && now - lastWelcomeTime[username] < 8000) return;
                 lastWelcomeTime[username] = now;
-                const utterance = new SpeechSynthesisUtterance(`Welcome ${username}`);
-                utterance.lang = 'en-US';
-                utterance.rate = 0.9;
-                utterance.volume = 0.8;
-                speechSynthesis.cancel();
-                speechSynthesis.speak(utterance);
-            } catch(e) { console.log("Voice not supported"); }
+                let utterance = new SpeechSynthesisUtterance(`Welcome ${username}`);
+                utterance.lang = 'en-US'; utterance.rate = 0.9; utterance.volume = 0.8;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(utterance);
+            } catch(e) { console.log("Voice error"); }
         }
         
-        // Firebase
+        // FIREBASE
         const firebaseConfig = { apiKey: "AIzaSyBZYM0Fe06bb_Q67U6Pn42RSoZB-mjo3io", authDomain: "secuirityschool.firebaseapp.com", projectId: "secuirityschool", storageBucket: "secuirityschool.firebasestorage.app", messagingSenderId: "321431921421", appId: "1:321431921421:web:265abf74d07deb917bc644" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         
+        // STORAGE
         function loadLocal() {
-            let u = localStorage.getItem('smart_users'); if(u) registeredUsers = JSON.parse(u);
-            let a = localStorage.getItem('smart_attendance'); if(a) attendanceRecords = JSON.parse(a);
-            let s = localStorage.getItem('smart_strangers'); if(s) strangerAlerts = JSON.parse(s);
+            let u = localStorage.getItem('smart_users'); if (u) registeredUsers = JSON.parse(u);
+            let a = localStorage.getItem('smart_attendance'); if (a) attendanceRecords = JSON.parse(a);
+            let s = localStorage.getItem('smart_strangers'); if (s) strangerAlerts = JSON.parse(s);
             let d = localStorage.getItem('smart_descriptors');
-            if(d) { let desc = JSON.parse(d); registeredUsers.forEach(u => { if(desc[u.id]) u.descriptor = desc[u.id]; }); }
+            if (d) { let desc = JSON.parse(d); registeredUsers.forEach(u => { if (desc[u.id]) u.descriptor = desc[u.id]; }); }
         }
         function saveLocal() {
-            localStorage.setItem('smart_users', JSON.stringify(registeredUsers.map(u=>({id:u.id,name:u.name,role:u.role,className:u.className}))));
+            localStorage.setItem('smart_users', JSON.stringify(registeredUsers.map(u => ({ id: u.id, name: u.name, role: u.role, className: u.className, registeredAt: u.registeredAt }))));
             localStorage.setItem('smart_attendance', JSON.stringify(attendanceRecords));
             localStorage.setItem('smart_strangers', JSON.stringify(strangerAlerts));
-            let desc = {}; registeredUsers.forEach(u=>{ if(u.descriptor) desc[u.id]=u.descriptor; });
+            let desc = {}; registeredUsers.forEach(u => { if (u.descriptor) desc[u.id] = u.descriptor; });
             localStorage.setItem('smart_descriptors', JSON.stringify(desc));
+            localStorage.setItem('smart_class', selectedClass);
         }
-        async function syncToFirebase() { try { for(let u of registeredUsers) { let data={...u}; delete data.descriptor; await db.collection('users').doc(u.id).set(data,{merge:true}); } } catch(e){} }
+        async function syncToFirebase() {
+            try { for (let u of registeredUsers) { let data = { ...u }; delete data.descriptor; await db.collection('users').doc(u.id).set(data, { merge: true }); }
+            for (let a of attendanceRecords) await db.collection('attendance').doc(`${a.id}_${a.date}_${a.session}`).set(a, { merge: true });
+            for (let s of strangerAlerts) await db.collection('strangers').doc(s.id.toString()).set(s, { merge: true });
+            } catch(e) { console.error(e); }
+        }
+        async function loadFromFirebase() {
+            try {
+                let u = await db.collection('users').get(); u.forEach(d => { if (!registeredUsers.find(x => x.id === d.id)) registeredUsers.push(d.data()); });
+                let a = await db.collection('attendance').get(); a.forEach(d => { if (!attendanceRecords.find(x => x.id === d.data().id && x.date === d.data().date)) attendanceRecords.push(d.data()); });
+                let s = await db.collection('strangers').get(); s.forEach(d => { if (!strangerAlerts.find(x => x.id === d.data().id)) strangerAlerts.push(d.data()); });
+                saveLocal(); updateUI();
+            } catch(e) { console.error(e); }
+        }
         function getTodayDate() { return new Date().toLocaleDateString('en-CA'); }
-        function getCurrentTime() { return new Date().toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+        function getCurrentTime() { return new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
         function getCurrentSession() { return new Date().getHours() < 13 ? "pagi" : "petang"; }
-        function escapeHtml(str) { return String(str).replace(/[&<>]/g, m=> m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
-        async function showSuccess(t,m) { await Swal.fire({ title:t, text:m, icon:'success', confirmButtonColor:'#007AFF', borderRadius:'24px' }); }
-        async function showError(t,m) { await Swal.fire({ title:t, text:m, icon:'error', confirmButtonColor:'#007AFF', borderRadius:'24px' }); }
-        function playBeep() { try { let ctx=new (window.AudioContext||window.webkitAudioContext)(); let o=ctx.createOscillator(), g=ctx.createGain(); o.connect(g); g.connect(ctx.destination); o.frequency.value=880; g.gain.value=0.2; o.start(); g.gain.exponentialRampToValueAtTime(0.00001,ctx.currentTime+0.2); setTimeout(()=>o.stop(),200); } catch(e){} }
+        function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); }
+        async function showSuccess(t, m) { await Swal.fire({ title: t, text: m, icon: 'success', confirmButtonColor: '#007AFF', borderRadius: '24px' }); }
+        async function showError(t, m) { await Swal.fire({ title: t, text: m, icon: 'error', confirmButtonColor: '#007AFF', borderRadius: '24px' }); }
+        function playBeep() { try { let ctx = new (window.AudioContext || window.webkitAudioContext)(); let o = ctx.createOscillator(), g = ctx.createGain(); o.connect(g); g.connect(ctx.destination); o.frequency.value = 880; g.gain.value = 0.2; o.start(); g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.2); setTimeout(() => o.stop(), 200); } catch(e) {} }
+        function playAlertBeep() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); for (let i = 0; i < 3; i++) { setTimeout(() => { let o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value = 880; g.gain.value = 0.3; o.start(); g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.15); setTimeout(() => o.stop(), 150); }, i * 200); } } catch(e) {} if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]); }
+        async function captureImage(video) { if (!video || !video.videoWidth) return null; let c = document.createElement('canvas'); c.width = video.videoWidth; c.height = video.videoHeight; c.getContext('2d').drawImage(video, 0, 0); return c.toDataURL('image/jpeg', 0.8); }
+        function updateUI() { if (currentPage === 'dashboard') renderDashboard(); if (currentPage === 'records') renderRecordsPage(); if (currentPage === 'register') renderUsersTable(); }
         
-        // ENHANCED FACE MATCHING FOR SIMILAR FACES
+        // ENHANCED FACE MATCHING FOR SIMILAR LOOKING PEOPLE
         async function getBestMatch(descriptor) {
-            if(!faceMatcher) return null;
+            if (!faceMatcher) return null;
             let bestDistance = 1, bestUser = null;
-            for(let user of registeredUsers) {
-                if(!user.descriptor) continue;
+            for (let user of registeredUsers) {
+                if (!user.descriptor) continue;
                 let distance = faceapi.euclideanDistance(descriptor, new Float32Array(user.descriptor));
-                if(distance < bestDistance && distance < FACE_MATCH_THRESHOLD) {
-                    bestDistance = distance;
-                    bestUser = user;
-                }
+                if (distance < bestDistance && distance < FACE_MATCH_THRESHOLD) { bestDistance = distance; bestUser = user; }
             }
             return bestUser;
         }
-        
         async function loadFaceModels() {
-            const url = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
+            let status = document.getElementById('securityStatus'); if (status) { status.innerHTML = '🎯 Loading AI Model...'; status.className = 'camera-status status-detecting'; }
+            let url = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
             await Promise.all([faceapi.nets.ssdMobilenetv1.loadFromUri(url), faceapi.nets.faceLandmark68Net.loadFromUri(url), faceapi.nets.faceRecognitionNet.loadFromUri(url)]);
             modelsLoaded = true;
-            let labeled = [];
-            for(let u of registeredUsers) if(u.descriptor) labeled.push(new faceapi.LabeledFaceDescriptors(u.id, [new Float32Array(u.descriptor)]));
-            if(labeled.length) faceMatcher = new faceapi.FaceMatcher(labeled, FACE_MATCH_THRESHOLD);
+            let labeled = []; for (let u of registeredUsers) if (u.descriptor) labeled.push(new faceapi.LabeledFaceDescriptors(u.id, [new Float32Array(u.descriptor)]));
+            if (labeled.length) faceMatcher = new faceapi.FaceMatcher(labeled, FACE_MATCH_THRESHOLD);
+            if (status) { status.innerHTML = '✅ AI Ready - Detecting Faces'; status.className = 'camera-status status-active'; }
         }
         
         async function detectAndProcessFaces() {
-            if(!isSecurityActive || !modelsLoaded) return;
+            if (!isSecurityActive || !modelsLoaded) return;
             let video = document.getElementById('securityVideo'), canvas = document.getElementById('securityCanvas');
-            if(!video || !video.videoWidth) return;
+            if (!video || !video.videoWidth) return;
             canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-            let detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options({minConfidence:0.35})).withFaceLandmarks().withFaceDescriptors();
-            let ctx = canvas.getContext('2d');
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-            ctx.drawImage(video,0,0,canvas.width,canvas.height);
-            let recognizedNames = [];
-            for(let d of detections) {
+            let detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.35 })).withFaceLandmarks().withFaceDescriptors();
+            let ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            let recognized = [], stranger = false;
+            for (let d of detections) {
                 let bestUser = await getBestMatch(d.descriptor);
                 let box = d.detection.box;
-                ctx.beginPath(); ctx.rect(box.x,box.y,box.width,box.height);
-                if(bestUser) {
-                    ctx.strokeStyle = '#34C759'; ctx.lineWidth=3; ctx.stroke();
-                    ctx.fillStyle='#34C759'; ctx.font='bold 14px system-ui'; ctx.fillText(bestUser.name, box.x, box.y-5);
-                    recognizedNames.push(bestUser.name);
+                ctx.beginPath(); ctx.rect(box.x, box.y, box.width, box.height);
+                if (bestUser) {
+                    ctx.strokeStyle = '#34C759'; ctx.lineWidth = 3; ctx.stroke();
+                    ctx.fillStyle = '#34C759'; ctx.font = 'bold 14px system-ui'; ctx.fillText(bestUser.name, box.x, box.y - 5);
+                    recognized.push(bestUser.name);
                     await autoMarkAttendance(bestUser);
                 } else {
-                    ctx.strokeStyle='#FF3B30'; ctx.lineWidth=3; ctx.stroke();
-                    ctx.fillStyle='#FF3B30'; ctx.fillText('⚠️ STRANGER', box.x, box.y-5);
-                    if(Date.now() - lastStrangerAlertTime > 8000) {
-                        lastStrangerAlertTime = Date.now();
-                        let img = await captureImage(video);
-                        strangerAlerts.push({ id:Date.now(), className:selectedClass==="Semua Kelas"?"Unknown":selectedClass, time:getCurrentTime(), date:getTodayDate(), imageData:img });
-                        saveLocal(); syncToFirebase();
-                        await Swal.fire({ title:'⚠️ SECURITY ALERT!', html:`<img src="${img}" style="width:150px;border-radius:16px;"><br>Stranger detected!`, icon:'warning', confirmButtonColor:'#FF3B30' });
-                    }
+                    ctx.strokeStyle = '#FF3B30'; ctx.lineWidth = 3; ctx.stroke();
+                    ctx.fillStyle = '#FF3B30'; ctx.font = 'bold 14px system-ui'; ctx.fillText('⚠️ STRANGER', box.x, box.y - 5);
+                    stranger = true;
                 }
             }
-            let detectEl = document.getElementById('detectCount'); if(detectEl) detectEl.innerHTML = detections.length ? `👤 ${detections.length} face(s)` : '👤 No face';
-            let recEl = document.getElementById('recognizedNames'); if(recEl) recEl.innerHTML = recognizedNames.length ? `✅ Recognized: ${recognizedNames.join(', ')}` : '✅ Waiting...';
+            let detectEl = document.getElementById('detectCount'); if (detectEl) detectEl.innerHTML = detections.length ? `👤 ${detections.length} face(s)` : '👤 No face';
+            let recEl = document.getElementById('recognizedNames'); if (recEl) recEl.innerHTML = recognized.length ? `✅ Recognized: ${recognized.join(', ')}` : '✅ Waiting for face...';
+            if (stranger && Date.now() - lastStrangerAlertTime > 8000) { lastStrangerAlertTime = Date.now(); let img = await captureImage(video); await reportStranger(img); }
         }
         
         async function autoMarkAttendance(user) {
             let today = getTodayDate(), session = getCurrentSession(), key = `${user.id}_${today}_${session}`;
-            if(lastAttendanceTime[key] && Date.now()-lastAttendanceTime[key] < 3000) return;
-            let already = attendanceRecords.find(r=> r.id===user.id && r.date===today && r.session===session);
-            if(!already) {
+            if (lastAttendanceTime[key] && Date.now() - lastAttendanceTime[key] < 3000) return;
+            let already = attendanceRecords.find(r => r.id === user.id && r.date === today && r.session === session);
+            if (!already) {
                 lastAttendanceTime[key] = Date.now();
-                let tv = new Date().getHours()*60+new Date().getMinutes();
-                let status = "Hadir";
-                if(session==='pagi' && tv>510) status="Lewat";
-                if(session==='petang' && tv>810) status="Lewat";
-                attendanceRecords.push({ id:user.id, name:user.name, role:user.role, className:user.className, status, session, sessionName:session==='pagi'?'Morning':'Afternoon', time:getCurrentTime(), date:today, timestamp:Date.now(), method:'Face Auto' });
+                let tv = new Date().getHours() * 60 + new Date().getMinutes();
+                let status = "Hadir"; if (session === 'pagi' && tv > 510) status = "Lewat"; if (session === 'petang' && tv > 810) status = "Lewat";
+                attendanceRecords.push({ id: user.id, name: user.name, role: user.role, className: user.className, status, session, sessionName: session === 'pagi' ? 'Morning' : 'Afternoon', time: getCurrentTime(), date: today, timestamp: Date.now(), method: 'Face Auto' });
                 saveLocal(); syncToFirebase(); playBeep();
-                // VOICE WELCOME
                 speakWelcome(user.name);
-                Swal.fire({ title:`👋 Welcome ${user.name}!`, html:`✅ Attendance Recorded<br>Status: ${status}<br>Time: ${getCurrentTime()}`, icon:'success', toast:true, position:'top-end', showConfirmButton:false, timer:2500, background:'white', borderRadius:'20px' });
+                Swal.fire({ title: `👋 Welcome ${user.name}!`, html: `✅ Attendance Recorded<br>Status: ${status}<br>Time: ${getCurrentTime()}`, icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 2500, borderRadius: '20px' });
                 updateUI();
             }
         }
+        async function reportStranger(img) { let alert = { id: Date.now(), className: selectedClass === "Semua Kelas" ? "Unknown" : selectedClass, time: getCurrentTime(), date: getTodayDate(), session: getCurrentSession(), imageData: img }; strangerAlerts.push(alert); saveLocal(); syncToFirebase(); playAlertBeep(); await Swal.fire({ title: '⚠️ SECURITY ALERT!', html: `<img src="${img}" style="width:150px;border-radius:16px;"><br>Stranger detected!`, icon: 'warning', confirmButtonColor: '#FF3B30' }); updateUI(); }
         
-        async function captureImage(video) { if(!video||!video.videoWidth) return null; let c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight; c.getContext('2d').drawImage(video,0,0); return c.toDataURL('image/jpeg',0.8); }
-        function updateUI() { if(currentPage==='dashboard') renderDashboard(); else if(currentPage==='records') renderRecordsPage(); else if(currentPage==='register') renderUsersTable(); }
+        async function startSecurityCamera() { if (securityStream) stopSecurityCamera(); let stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentCameraId, width: { ideal: 320 }, height: { ideal: 320 } } }); securityStream = stream; document.getElementById('securityVideo').srcObject = stream; isSecurityActive = true; if (!modelsLoaded) await loadFaceModels(); if (securityInterval) clearInterval(securityInterval); securityInterval = setInterval(detectAndProcessFaces, 150); }
+        function stopSecurityCamera() { if (securityStream) { securityStream.getTracks().forEach(t => t.stop()); securityStream = null; } if (securityInterval) { clearInterval(securityInterval); securityInterval = null; } isSecurityActive = false; }
         
-        async function startSecurityCamera() {
-            if(securityStream) stopSecurityCamera();
-            let stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:currentCameraId, width:{ideal:320}, height:{ideal:320} } });
-            securityStream = stream; document.getElementById('securityVideo').srcObject = stream; isSecurityActive = true;
-            if(!modelsLoaded) await loadFaceModels();
-            if(securityInterval) clearInterval(securityInterval);
-            securityInterval = setInterval(detectAndProcessFaces, 150);
-        }
-        function stopSecurityCamera() { if(securityStream){ securityStream.getTracks().forEach(t=>t.stop()); securityStream=null; } if(securityInterval){ clearInterval(securityInterval); securityInterval=null; } isSecurityActive=false; }
+        // QR SCANNER
+        async function startQRScanner() { if (isScanning) return; html5QrCode = new Html5Qrcode("qr-reader"); await html5QrCode.start({ facingMode: "environment" }, { fps: 15, qrbox: { width: 250, height: 250 } }, async (t) => { if (t && !window.processing) { window.processing = true; try { let d = JSON.parse(t), u = registeredUsers.find(x => x.id === d.id); if (u) { await autoMarkAttendance(u); playBeep(); } else { await showError('❌', 'QR not registered'); playAlertBeep(); } } catch(e) { await showError('Invalid QR', ''); } setTimeout(() => { window.processing = false; }, 1500); } }); isScanning = true; }
+        function stopQRScanner() { if (html5QrCode && isScanning) { html5QrCode.stop(); isScanning = false; } }
         
-        // Register face functions
-        let registerStream=null, registerInterval=null, registerDescriptor=null, registerFaceDetected=false;
-        function startRegisterCamera() { navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user' } }).then(s=>{ registerStream=s; document.getElementById('registerVideo').srcObject=s; if(registerInterval) clearInterval(registerInterval); registerInterval=setInterval(checkFaceForRegister,100); }); }
-        function stopRegisterCamera() { if(registerStream){ registerStream.getTracks().forEach(t=>t.stop()); registerStream=null; } if(registerInterval) clearInterval(registerInterval); }
-        async function checkFaceForRegister() {
-            let video=document.getElementById('registerVideo'), canvas=document.getElementById('registerCanvas');
-            if(!video||!video.videoWidth||!modelsLoaded) return;
-            canvas.width=video.videoWidth; canvas.height=video.videoHeight;
-            let detection = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options({minConfidence:0.3})).withFaceDescriptor();
-            let ctx=canvas.getContext('2d'); ctx.drawImage(video,0,0);
-            if(detection) { registerFaceDetected=true; registerDescriptor=Array.from(detection.descriptor); ctx.fillStyle='#34C759'; ctx.font='bold 14px'; ctx.fillText('✓ Face Ready',50,50); }
-            else { registerFaceDetected=false; ctx.fillStyle='#FF9500'; ctx.fillText('Place face in frame',50,50); }
-        }
-        async function captureAndRegister() {
-            if(!registerFaceDetected||!registerDescriptor) { await Swal.fire('No Face','Please position face','warning'); return; }
-            if(!pendingRegistration) return;
-            let newUser={ id:Date.now().toString(), ...pendingRegistration, descriptor:registerDescriptor, registeredAt:new Date().toISOString() };
-            registeredUsers.push(newUser); saveLocal(); syncToFirebase(); await loadFaceModels();
-            await showSuccess('✅ Registered!', `${newUser.name} added to AI database.`);
-            pendingRegistration=null; registerStep=1; renderRegisterPage();
-        }
-        async function saveNameAndClass() {
-            let name=document.getElementById('regName').value.trim(), role=document.getElementById('regRole').value, className=document.getElementById('regClass').value;
-            if(!name||!className) { await showError('Error','Fill all fields'); return false; }
-            if(registeredUsers.some(u=>u.name.toLowerCase()===name.toLowerCase())){ await showError('Exists','Name already used'); return false; }
-            pendingRegistration={ name, role, className }; registerStep=2; renderRegisterStep2(); return true;
-        }
-        function renderRegisterStep2() {
-            document.getElementById('mainContent').innerHTML = `<div class="step-indicator"><div class="step completed"><div class="step-number">✓</div></div><div class="step active"><div class="step-number">2</div></div></div>
-            <div class="info-box"><i data-lucide="camera"></i><div><strong>Position your face</strong><br>Look at camera</div></div>
-            <div class="camera-container"><video id="registerVideo" autoplay playsinline></video><canvas id="registerCanvas" class="face-canvas"></canvas></div>
-            <div class="data-table"><div style="background:#E8F5E9;padding:16px;border-radius:20px;margin-bottom:16px;"><strong>📝 ${escapeHtml(pendingRegistration.name)}</strong><br>${pendingRegistration.role} | ${pendingRegistration.className}</div>
-            <div style="display:flex;gap:12px;"><button class="btn btn-secondary" id="backBtn">Back</button><button class="btn btn-success" id="captureBtn">Register Face</button></div></div>`;
-            lucide.createIcons(); startRegisterCamera();
-            document.getElementById('backBtn').onclick = ()=>{ registerStep=1; renderRegisterPage(); stopRegisterCamera(); };
-            document.getElementById('captureBtn').onclick = captureAndRegister;
-        }
-        function renderRegisterPage() {
-            document.getElementById('mainContent').innerHTML = `<div class="step-indicator"><div class="step active"><div class="step-number">1</div></div><div class="step"><div class="step-number">2</div></div></div>
-            <div class="data-table"><div class="register-form"><input type="text" id="regName" placeholder="Full Name"><select id="regRole"><option value="student">Student</option><option value="teacher">Teacher</option></select>
-            <select id="regClass"><option value="">Select Class</option>${availableClasses.map(c=>`<option value="${c}">${c}</option>`).join('')}</select><button class="btn btn-primary" id="continueBtn">Continue →</button></div></div>
-            <div class="data-table"><h3>👥 Registered Users</h3><div id="usersList"></div></div>`;
-            lucide.createIcons(); renderUsersTable();
-            document.getElementById('continueBtn').onclick = saveNameAndClass;
-        }
-        function renderUsersTable() {
-            let container=document.getElementById('usersList'); if(!container) return;
-            container.innerHTML = `<table><thead><tr><th>Name</th><th>Role</th><th>Class</th><th></th></tr></thead><tbody>${registeredUsers.map(u=>`<tr><td>${escapeHtml(u.name)}</td><td>${u.role}</td><td>${u.className}</td><td><button class="edit-btn" onclick="editUserById('${u.id}')">✏️</button><button class="delete-btn" onclick="deleteUserById('${u.id}')">🗑️</button></td></tr>`).join('')||'<tr><td colspan="4">No users</td></tr>'}</tbody></table>`;
-        }
-        window.editUserById = (id)=>{ let u=registeredUsers.find(x=>x.id===id); if(u) editUser(u); };
-        window.deleteUserById = (id)=>{ let u=registeredUsers.find(x=>x.id===id); if(u) deleteUser(u); };
-        async function editUser(user) { let r=await Swal.fire({ title:'Edit', html:`<input id="n" value="${user.name}"><select id="r"><option value="student">Student</option><option value="teacher">Teacher</option></select><input id="c" value="${user.className}">`, preConfirm:()=>({ name:document.getElementById('n').value, role:document.getElementById('r').value, className:document.getElementById('c').value }) }); if(r.value){ user.name=r.value.name; user.role=r.value.role; user.className=r.value.className; saveLocal(); syncToFirebase(); await loadFaceModels(); updateUI(); } }
-        async function deleteUser(user) { let c=await Swal.fire({ title:'Delete?', text:`Delete ${user.name}?`, icon:'warning', showCancelButton:true }); if(c.isConfirmed){ registeredUsers=registeredUsers.filter(u=>u.id!==user.id); saveLocal(); syncToFirebase(); await loadFaceModels(); updateUI(); } }
+        // REGISTER FACE
+        function startRegisterCamera() { navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } }).then(s => { registerStream = s; document.getElementById('registerVideo').srcObject = s; if (registerInterval) clearInterval(registerInterval); registerInterval = setInterval(checkFaceForRegister, 100); }); }
+        function stopRegisterCamera() { if (registerStream) { registerStream.getTracks().forEach(t => t.stop()); registerStream = null; } if (registerInterval) clearInterval(registerInterval); }
+        let registerInterval = null, registerFaceDetected = false, registerDescriptor = null;
+        async function checkFaceForRegister() { let video = document.getElementById('registerVideo'), canvas = document.getElementById('registerCanvas'); if (!video || !video.videoWidth || !modelsLoaded) return; canvas.width = video.videoWidth; canvas.height = video.videoHeight; let detection = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 })).withFaceDescriptor(); let ctx = canvas.getContext('2d'); ctx.drawImage(video, 0, 0); if (detection) { registerFaceDetected = true; registerDescriptor = Array.from(detection.descriptor); ctx.fillStyle = '#34C759'; ctx.font = 'bold 14px'; ctx.fillText('✓ Face Ready', 50, 50); } else { registerFaceDetected = false; ctx.fillStyle = '#FF9500'; ctx.fillText('Place face in frame', 50, 50); } }
+        async function captureAndRegister() { if (!registerFaceDetected || !registerDescriptor) { await Swal.fire('No Face', 'Please position face', 'warning'); return; } if (!pendingRegistration) return; let newUser = { id: Date.now().toString(), ...pendingRegistration, descriptor: registerDescriptor, registeredAt: new Date().toISOString(), qrData: JSON.stringify({ id: Date.now().toString(), name: pendingRegistration.name }) }; registeredUsers.push(newUser); saveLocal(); syncToFirebase(); await loadFaceModels(); await showSuccess('✅ Registered!', `${newUser.name} added!`); pendingRegistration = null; registerStep = 1; renderRegisterPage(); }
+        async function saveNameAndClass() { let name = document.getElementById('regName').value.trim(), role = document.getElementById('regRole').value, className = document.getElementById('regClass').value; if (!name || !className) { await showError('Error', 'Fill all fields'); return false; } if (registeredUsers.some(u => u.name.toLowerCase() === name.toLowerCase())) { await showError('Exists', 'Name already used'); return false; } pendingRegistration = { name, role, className }; registerStep = 2; renderRegisterStep2(); return true; }
+        function renderRegisterStep2() { document.getElementById('mainContent').innerHTML = `<div class="step-indicator"><div class="step completed"><div class="step-number">✓</div></div><div class="step active"><div class="step-number">2</div></div></div><div class="info-box"><i data-lucide="camera"></i><div>Position your face in frame</div></div><div class="camera-container"><video id="registerVideo" autoplay playsinline></video><canvas id="registerCanvas" class="face-canvas"></canvas></div><div class="data-table"><div style="background:#E8F5E9;padding:16px;border-radius:20px;"><strong>📝 ${escapeHtml(pendingRegistration.name)}</strong><br>${pendingRegistration.role} | ${pendingRegistration.className}</div><div style="display:flex;gap:12px;margin-top:16px;"><button class="btn btn-secondary" id="backBtn">Back</button><button class="btn btn-success" id="captureBtn">Register Face</button></div></div>`; lucide.createIcons(); startRegisterCamera(); document.getElementById('backBtn').onclick = () => { registerStep = 1; renderRegisterPage(); stopRegisterCamera(); }; document.getElementById('captureBtn').onclick = captureAndRegister; }
         
-        function renderDashboard() {
-            let today=getTodayDate(), present=attendanceRecords.filter(r=>r.date===today&&r.status==='Hadir').length, late=attendanceRecords.filter(r=>r.date===today&&r.status==='Lewat').length;
-            let html=`<div class="class-selector"><select id="classFilter"><option value="Semua Kelas">All Classes</option>${availableClasses.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
-            <div class="stats-grid"><div class="stat-card"><div><h3>Total Users</h3><div class="stat-number">${registeredUsers.length}</div></div></div>
-            <div class="stat-card"><div><h3>Today's Present</h3><div class="stat-number">${present+late}</div></div></div>
-            <div class="stat-card"><div><h3>Present</h3><div class="stat-number">${present}</div></div></div>
-            <div class="stat-card"><div><h3>Late</h3><div class="stat-number">${late}</div></div></div></div>
-            <div class="chart-card"><canvas id="attChart"></canvas></div>
-            <div class="data-table"><h3>Recent Attendance</h3><div class="table-container"><table><thead><tr><th>Name</th><th>Status</th><th>Time</th></thead><tbody>${attendanceRecords.slice(-5).reverse().map(r=>`<tr><td>${r.name}</td><td><span class="badge ${r.status==='Hadir'?'badge-hadir':'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('')}</tbody></table></div></div>`;
-            document.getElementById('mainContent').innerHTML = html; lucide.createIcons();
-            let ctx=document.getElementById('attChart')?.getContext('2d'); if(ctx){ if(attendanceChart) attendanceChart.destroy(); attendanceChart=new Chart(ctx,{ type:'doughnut', data:{ labels:['Present','Late'], datasets:[{ data:[present,late], backgroundColor:['#34C759','#FF9500'] }] } }); }
-            document.getElementById('classFilter').onchange=(e)=>{ selectedClass=e.target.value; renderDashboard(); };
-        }
-        function renderSecurityPage() {
-            document.getElementById('mainContent').innerHTML = `<div class="camera-section"><div class="camera-selector"><select id="cameraSelect"><option value="user">Front</option><option value="environment">Back</option></select></div>
-            <div class="camera-container"><video id="securityVideo" autoplay playsinline></video><canvas id="securityCanvas" class="face-canvas"></canvas><div class="detection-indicator" id="detectCount">Initializing...</div></div>
-            <div class="camera-status" id="securityStatus">Starting AI...</div><div class="camera-status" id="recognizedNames">Waiting...</div></div>`;
-            lucide.createIcons(); startSecurityCamera();
-            document.getElementById('cameraSelect').onchange=(e)=>{ currentCameraId=e.target.value; startSecurityCamera(); };
-        }
-        function renderQRPage() { document.getElementById('mainContent').innerHTML = `<div class="camera-section"><h3>QR Scanner</h3><div id="qr-reader" style="width:100%;"></div></div>`; lucide.createIcons(); new Html5Qrcode("qr-reader").start({ facingMode:"environment" },{ fps:10,qrbox:250 }, (t)=>{ try{ let d=JSON.parse(t), u=registeredUsers.find(x=>x.id===d.id); if(u) autoMarkAttendance(u); } catch(e){} }); }
-        function renderRecordsPage() { 
-            let todayStrangers=strangerAlerts.filter(a=>a.date===getTodayDate());
-            let html=`<div class="data-table"><h3>⚠️ Stranger Alerts (${todayStrangers.length})</h3><div id="strangerList">${todayStrangers.map(a=>`<div class="danger-banner"><img src="${a.imageData}" class="stranger-image"><div>${a.className} | ${a.time}</div><button class="btn-small btn-primary" onclick="downloadImage('${a.imageData}')">Save</button></div>`).join('')||'None'}</div></div>
-            <div class="data-table"><h3>Attendance Records</h3><div class="table-container"><table><thead><tr><th>Name</th><th>Class</th><th>Status</th><th>Date</th></thead><tbody>${attendanceRecords.slice().reverse().slice(0,20).map(r=>`<tr><td>${r.name}</td><td>${r.className}</td><td><span class="badge ${r.status==='Hadir'?'badge-hadir':'badge-lewat'}">${r.status}</span></td><td>${r.date}</td></tr>`).join('')}</tbody></table></div></div>`;
-            document.getElementById('mainContent').innerHTML = html; lucide.createIcons();
-        }
-        window.downloadImage=(data)=>{ let a=document.createElement('a'); a.href=data; a.download=`stranger_${Date.now()}.jpg`; a.click(); };
+        // EDIT/DELETE
+        async function editUser(user) { let r = await Swal.fire({ title: 'Edit User', html: `<input id="n" class="swal2-input" value="${escapeHtml(user.name)}"><select id="r" class="swal2-select"><option value="student">Student</option><option value="teacher">Teacher</option></select><input id="c" class="swal2-input" value="${escapeHtml(user.className)}">`, preConfirm: () => ({ name: document.getElementById('n').value, role: document.getElementById('r').value, className: document.getElementById('c').value }) }); if (r.value) { user.name = r.value.name; user.role = r.value.role; user.className = r.value.className; saveLocal(); syncToFirebase(); await loadFaceModels(); updateUI(); } }
+        async function deleteUser(user) { let c = await Swal.fire({ title: 'Delete User?', text: `Delete ${user.name}?`, icon: 'warning', showCancelButton: true }); if (c.isConfirmed) { registeredUsers = registeredUsers.filter(u => u.id !== user.id); saveLocal(); syncToFirebase(); await loadFaceModels(); updateUI(); } }
         
-        function navigateTo(page) { currentPage=page; stopSecurityCamera(); if(page==='dashboard') renderDashboard(); else if(page==='security') renderSecurityPage(); else if(page==='qrcode') renderQRPage(); else if(page==='register') renderRegisterPage(); else if(page==='records') renderRecordsPage(); }
-        function login() { let u=document.getElementById('loginUsername').value, p=document.getElementById('loginPassword').value; if((u==='admin'&&p==='admin123')||(u==='guru'&&p==='guru123')){ currentUser={name:u==='admin'?'Admin':'Cikgu Ahmad'}; localStorage.setItem('loggedInUser',JSON.stringify(currentUser)); document.getElementById('loginOverlay').style.display='none'; document.getElementById('mainHeader').style.display='flex'; document.getElementById('mainContent').style.display='block'; document.getElementById('bottomNav').style.display='flex'; document.getElementById('userName').innerText=currentUser.name; loadLocal(); loadFaceModels().then(()=>{ renderDashboard(); lucide.createIcons(); }); } else showError('Login Failed','Invalid credentials'); }
+        // EXPORT
+        function exportToCSV() { let csv = "Name,Class,Status,Session,Date,Time\n"; let filtered = getFilteredAttendance(); for (let r of filtered) csv += `"${r.name}","${r.className}","${r.status}","${r.sessionName}","${r.date}","${r.time}"\n`; let blob = new Blob([csv], { type: 'text/csv' }); let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `attendance_${getTodayDate()}.csv`; a.click(); showSuccess('Export Complete', 'CSV downloaded'); }
+        async function exportToPDF() { let { jsPDF } = window.jspdf; let doc = new jsPDF(); doc.setFontSize(18); doc.text('Attendance Report', 20, 20); doc.setFontSize(12); doc.text(`Date: ${getTodayDate()}`, 20, 35); doc.text(`Total Present: ${getFilteredAttendance().length}`, 20, 45); doc.save(`attendance_${getTodayDate()}.pdf`); await showSuccess('Export Complete', 'PDF downloaded'); }
+        function getFilteredAttendance() { let filtered = [...attendanceRecords]; if (selectedClass !== "Semua Kelas") filtered = filtered.filter(r => r.className === selectedClass); if (searchQuery) filtered = filtered.filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase())); if (startDate) filtered = filtered.filter(r => r.date >= startDate); if (endDate) filtered = filtered.filter(r => r.date <= endDate); return filtered; }
+        function getPaginatedData(data) { let start = (currentPageNum - 1) * itemsPerPage; return data.slice(start, start + itemsPerPage); }
+        function renderPagination(totalItems) { let totalPages = Math.ceil(totalItems / itemsPerPage); let html = '<div class="pagination">'; for (let i = 1; i <= Math.min(totalPages, 8); i++) html += `<button class="page-btn ${i === currentPageNum ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`; html += '</div>'; return html; }
+        window.goToPage = (page) => { currentPageNum = page; renderRecordsPage(); };
+        
+        // RENDER PAGES
+        function renderDashboard() { let today = getTodayDate(), present = attendanceRecords.filter(r => r.date === today && r.status === 'Hadir').length, late = attendanceRecords.filter(r => r.date === today && r.status === 'Lewat').length, strangers = strangerAlerts.filter(a => a.date === today).length; let html = `<div class="class-selector"><select id="classFilter"><option value="Semua Kelas">All Classes</option>${availableClasses.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div><div class="stats-grid"><div class="stat-card"><div><h3>Total Users</h3><div class="stat-number">${registeredUsers.length}</div></div></div><div class="stat-card"><div><h3>Today's Present</h3><div class="stat-number">${present + late}</div></div></div><div class="stat-card"><div><h3>Present</h3><div class="stat-number">${present}</div></div></div><div class="stat-card"><div><h3>Late</h3><div class="stat-number">${late}</div></div></div><div class="stat-card" onclick="navigateTo('records')"><div><h3>Strangers</h3><div class="stat-number">${strangers}</div></div></div></div><div class="chart-card"><canvas id="attChart"></canvas></div><div class="data-table"><h3>Recent Attendance</h3><div class="table-container"><table><thead><tr><th>Name</th><th>Class</th><th>Status</th><th>Time</th></thead><tbody>${attendanceRecords.slice(-10).reverse().map(r => `<tr><td>${r.name}</td><td>${r.className}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="4">No records</td></tr>'}</tbody></table></div></div>`; document.getElementById('mainContent').innerHTML = html; lucide.createIcons(); let ctx = document.getElementById('attChart')?.getContext('2d'); if (ctx) { if (attendanceChart) attendanceChart.destroy(); attendanceChart = new Chart(ctx, { type: 'doughnut', data: { labels: ['Present', 'Late'], datasets: [{ data: [present, late], backgroundColor: ['#34C759', '#FF9500'] }] } }); } document.getElementById('classFilter').onchange = (e) => { selectedClass = e.target.value; renderDashboard(); }; }
+        function renderSecurityPage() { let html = `<div class="camera-section"><div class="camera-selector"><select id="cameraSelect"><option value="user">Front</option><option value="environment">Back</option></select></div><div class="camera-container"><video id="securityVideo" autoplay playsinline></video><canvas id="securityCanvas" class="face-canvas"></canvas><div class="detection-indicator" id="detectCount">Initializing...</div></div><div class="camera-status" id="securityStatus">Starting AI...</div><div class="camera-status" id="recognizedNames">Waiting...</div></div><div class="data-table"><h3>🔒 AI Features</h3><p>✓ Stricter face matching (0.48 threshold)<br>✓ Voice welcome on recognition<br>✓ Similar face differentiation<br>✓ Auto attendance + stranger alerts</p></div>`; document.getElementById('mainContent').innerHTML = html; lucide.createIcons(); startSecurityCamera(); document.getElementById('cameraSelect').onchange = (e) => { currentCameraId = e.target.value; startSecurityCamera(); }; }
+        function renderQRPage() { document.getElementById('mainContent').innerHTML = `<div class="camera-section"><h3>QR Scanner</h3><div class="qr-container" id="qr-reader"></div></div>`; lucide.createIcons(); setTimeout(() => startQRScanner(), 100); }
+        function renderRegisterPage() { let html = `<div class="step-indicator"><div class="step active"><div class="step-number">1</div></div><div class="step"><div class="step-number">2</div></div></div><div class="data-table"><div class="register-form"><input type="text" id="regName" placeholder="Full Name"><select id="regRole"><option value="student">Student</option><option value="teacher">Teacher</option></select><select id="regClass"><option value="">Select Class</option>${availableClasses.map(c => `<option value="${c}">${c}</option>`).join('')}<option value="Lain-lain">Other Class</option></select><input type="text" id="regClassOther" placeholder="Other class" style="display:none;"><button class="btn btn-primary" id="continueBtn">Continue →</button></div></div><div class="data-table"><h3>👥 Users</h3><div id="usersList"></div></div>`; document.getElementById('mainContent').innerHTML = html; lucide.createIcons(); document.getElementById('regClass').onchange = () => { document.getElementById('regClassOther').style.display = document.getElementById('regClass').value === 'Lain-lain' ? 'block' : 'none'; }; document.getElementById('continueBtn').onclick = async () => { let className = document.getElementById('regClass').value; if (className === 'Lain-lain') className = document.getElementById('regClassOther').value.trim(); if (!className) return; await saveNameAndClass(); }; renderUsersTable(); }
+        function renderUsersTable() { let container = document.getElementById('usersList'); if (!container) return; container.innerHTML = `<div class="table-container"><table><thead><tr><th>Name</th><th>Role</th><th>Class</th><th></th></thead><tbody>${registeredUsers.map(u => `<tr><td>${escapeHtml(u.name)}</td><td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role}</span></td><td>${escapeHtml(u.className)}</td><td class="action-buttons"><button class="edit-btn" onclick="editUserById('${u.id}')">✏️</button><button class="delete-btn" onclick="deleteUserById('${u.id}')">🗑️</button></td></tr>`).join('') || '<tr><td colspan="4">No users</td></tr>'}</tbody></table></div>`; lucide.createIcons(); }
+        window.editUserById = (id) => { let u = registeredUsers.find(x => x.id === id); if (u) editUser(u); }; window.deleteUserById = (id) => { let u = registeredUsers.find(x => x.id === id); if (u) deleteUser(u); };
+        function renderRecordsPage() { let filtered = getFilteredAttendance(); let paginated = getPaginatedData(filtered); let todayStrangers = strangerAlerts.filter(a => a.date === getTodayDate()); let html = `<div class="class-selector"><select id="recordClassFilter"><option value="Semua Kelas">All Classes</option>${availableClasses.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div><div class="search-bar"><input type="text" id="searchInput" placeholder="Search..." value="${escapeHtml(searchQuery)}"><button class="btn-small btn-primary" id="searchBtn">Search</button></div><div class="date-filter"><input type="date" id="startDateInput" value="${startDate}"><input type="date" id="endDateInput" value="${endDate}"><button class="btn-small btn-primary" id="filterBtn">Filter</button><button class="btn-small btn-secondary" id="resetBtn">Reset</button></div><div class="data-table"><div style="display:flex;justify-content:space-between;"><h3>⚠️ Strangers (${todayStrangers.length})</h3><div><button class="btn-small btn-primary" id="pdfBtn">PDF</button><button class="btn-small btn-success" id="excelBtn">Excel</button></div></div><div id="strangerList">${todayStrangers.map(a => `<div class="danger-banner"><img src="${a.imageData}" class="stranger-image"><div>${a.className} | ${a.time}</div><button class="btn-small btn-primary" onclick="downloadImage('${a.imageData}',${a.id})">Save</button></div>`).join('') || '✅ No alerts'}</div></div><div class="data-table"><h3>📋 Records (${filtered.length})</h3><div class="table-container"><table><thead><tr><th>Name</th><th>Class</th><th>Session</th><th>Status</th><th>Date</th><th>Time</th></thead><tbody>${paginated.map(r => `<tr><td>${r.name}</td><td>${r.className}</td><td>${r.sessionName}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.date}</td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="6">No records</td></tr>'}</tbody></table></div>${renderPagination(filtered.length)}</div>`; document.getElementById('mainContent').innerHTML = html; lucide.createIcons(); document.getElementById('recordClassFilter').onchange = (e) => { selectedClass = e.target.value; currentPageNum = 1; renderRecordsPage(); }; document.getElementById('searchBtn').onclick = () => { searchQuery = document.getElementById('searchInput').value; currentPageNum = 1; renderRecordsPage(); }; document.getElementById('filterBtn').onclick = () => { startDate = document.getElementById('startDateInput').value; endDate = document.getElementById('endDateInput').value; currentPageNum = 1; renderRecordsPage(); }; document.getElementById('resetBtn').onclick = () => { searchQuery = ""; startDate = ""; endDate = ""; currentPageNum = 1; renderRecordsPage(); }; document.getElementById('pdfBtn').onclick = exportToPDF; document.getElementById('excelBtn').onclick = exportToCSV; }
+        window.downloadImage = (data, id) => { let a = document.createElement('a'); a.href = data; a.download = `stranger_${id}.jpg`; a.click(); };
+        
+        function navigateTo(page) { currentPage = page; document.querySelectorAll('.nav-item').forEach(i => i.classList.toggle('active', i.dataset.page === page)); stopSecurityCamera(); stopQRScanner(); if (registerStream) registerStream.getTracks().forEach(t => t.stop()); if (page === 'dashboard') renderDashboard(); else if (page === 'security') renderSecurityPage(); else if (page === 'qrcode') renderQRPage(); else if (page === 'register') renderRegisterPage(); else if (page === 'records') renderRecordsPage(); }
+        function login() { let u = document.getElementById('loginUsername').value, p = document.getElementById('loginPassword').value; let user = validUsers.find(v => v.username === u && v.password === p); if (user) { currentUser = { username: user.username, name: user.name }; localStorage.setItem('loggedInUser', JSON.stringify(currentUser)); document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('mainHeader').style.display = 'flex'; document.getElementById('mainContent').style.display = 'block'; document.getElementById('bottomNav').style.display = 'flex'; document.getElementById('userName').innerText = currentUser.name; loadLocal(); loadFromFirebase().then(() => { loadFaceModels(); renderDashboard(); lucide.createIcons(); }); } else showError('Login Failed', 'Invalid credentials'); }
         function logout() { localStorage.removeItem('loggedInUser'); location.reload(); }
-        document.getElementById('loginBtn').onclick=login; document.getElementById('logoutBtn').onclick=logout; document.querySelectorAll('.nav-item').forEach(i=>i.addEventListener('click',()=>navigateTo(i.dataset.page)));
-        setInterval(()=>{ let el=document.getElementById('currentTime'); if(el) el.innerText=new Date().toLocaleTimeString('en-GB'); },1000);
-        let saved=localStorage.getItem('loggedInUser'); if(saved){ currentUser=JSON.parse(saved); document.getElementById('loginOverlay').style.display='none'; document.getElementById('mainHeader').style.display='flex'; document.getElementById('mainContent').style.display='block'; document.getElementById('bottomNav').style.display='flex'; document.getElementById('userName').innerText=currentUser.name; loadLocal(); loadFaceModels().then(()=>{ renderDashboard(); lucide.createIcons(); }); }
+        document.getElementById('loginBtn').onclick = login; document.getElementById('logoutBtn').onclick = logout; document.querySelectorAll('.nav-item').forEach(i => i.addEventListener('click', () => navigateTo(i.dataset.page))); window.navigateTo = navigateTo; setInterval(() => { if (document.getElementById('currentTime')) document.getElementById('currentTime').innerText = new Date().toLocaleTimeString('en-GB'); }, 1000); let saved = localStorage.getItem('loggedInUser'); if (saved) { currentUser = JSON.parse(saved); document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('mainHeader').style.display = 'flex'; document.getElementById('mainContent').style.display = 'block'; document.getElementById('bottomNav').style.display = 'flex'; document.getElementById('userName').innerText = currentUser.name; loadLocal(); loadFromFirebase().then(() => { loadFaceModels(); renderDashboard(); lucide.createIcons(); }); }
     </script>
 </body>
 </html>
