@@ -256,16 +256,19 @@
             document.getElementById('mainContent').style.display = 'none';
             document.getElementById('bottomNav').style.display = 'none';
         }
-        
-        function showMainApp() {
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('mainHeader').style.display = 'flex';
-            document.getElementById('mainContent').style.display = 'block';
-            document.getElementById('bottomNav').style.display = 'flex';
-            document.getElementById('userName').innerText = currentUser.name;
-            loadData();
-            initApp();
-        }
+     function showMainApp() {
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('mainHeader').style.display = 'flex';
+    document.getElementById('mainContent').style.display = 'block';
+    document.getElementById('bottomNav').style.display = 'flex';
+    document.getElementById('userName').innerText = currentUser.name;
+    
+    // Ganti loadData() dengan loadLocal()
+    loadLocal();
+    
+    // Panggil initApp
+    initApp();
+}
         
         // ==================== TELEGRAM BOT SETUP ====================
         const TELEGRAM_BOT_TOKEN = ""; // Isi dengan token bot Telegram
