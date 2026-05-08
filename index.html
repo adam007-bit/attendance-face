@@ -760,9 +760,9 @@
             const html = `<div class="class-selector"><select id="cf"><option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 Semua Kelas</option>${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Kelas ${c}</option>`).join('')}</select></div>
                 <div class="stats-grid"><div class="stat-card"><div><h3>👥 Pengguna</h3><div class="stat-number">${registeredUsers.length}</div></div><div class="stat-icon"><i data-lucide="users"></i></div></div>
                 <div class="stat-card"><div><h3>✅ Hadir</h3><div class="stat-number">${todayAttendance}</div></div><div class="stat-icon"><i data-lucide="check-circle"></i></div></div>
-                <div class="stat-card"><div><h3>🎓 Pelajar</h3><div class="stat-number">${totalStudents}</div></div><div class="stat-icon"><i data-lucide="graduation-cap"></i></div></div>
-                <div class="stat-card"><div><h3>👩‍🏫 Guru</h3><div class="stat-number">${totalTeachers}</div></div><div class="stat-icon"><i data-lucide="chalkboard"></i></div></div>
-                <div class="stat-card"><div><h3>😊 Hadir</h3><div class="stat-number">${present}</div></div><div class="stat-icon"><i data-lucide="smile"></i></div></div>
+                <div class="stat-card"><div><h3> Pelajar</h3><div class="stat-number">${totalStudents}</div></div><div class="stat-icon"><i data-lucide="graduation-cap"></i></div></div>
+                <div class="stat-card"><div><h3> Guru</h3><div class="stat-number">${totalTeachers}</div></div><div class="stat-icon"><i data-lucide="chalkboard"></i></div></div>
+                <div class="stat-card"><div><h3> Hadir</h3><div class="stat-number">${present}</div></div><div class="stat-icon"><i data-lucide="smile"></i></div></div>
                 <div class="stat-card"><div><h3>⏰ Lewat</h3><div class="stat-number">${late}</div></div><div class="stat-icon"><i data-lucide="clock"></i></div></div>
                 <div class="stat-card" onclick="navigateTo('records')"><div><h3>⚠️ Asing</h3><div class="stat-number">${strangers}</div></div><div class="stat-icon"><i data-lucide="alert-triangle"></i></div></div></div>
                 <div class="chart-card"><h3><i data-lucide="pie-chart"></i> Kehadiran Hari Ini</h3><canvas id="ac"></canvas></div>
