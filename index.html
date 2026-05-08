@@ -885,142 +885,329 @@
         function updateUI() { if (currentPage === 'dashboard') renderDashboard(); if (currentPage === 'records') renderRecordsPage(); if (currentPage === 'register') renderUsersTable(); }
         
         // ==================== FACE RECOGNITION CORE ====================
-        async function loadFaceModels() {
-            const status = document.getElementById('securityStatus');
-            if (status) { status.innerHTML = '🎯 Loading AI Model...'; status.className = 'camera-status status-detecting'; }
-            const url = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
-            await Promise.all([
-                faceapi.nets.ssdMobilenetv1.loadFromUri(url),
-                faceapi.nets.faceLandmark68Net.loadFromUri(url),
-                faceapi.nets.faceRecognitionNet.loadFromUri(url)
-            ]);
-            modelsLoaded = true;
-            buildMatcher();
-            if (status) { status.innerHTML = '✅ AI Ready - Detecting Faces'; status.className = 'camera-status status-active'; }
+       async function loadFaceModels() {
+    const status = document.getElementById('securityStatus');
+
+    if (status) {
+        status.innerHTML = '🎯 Loading AI Model...';
+        status.className = 'camera-status status-detecting';
+    }
+
+    const url = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
+
+    await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri(url),
+        faceapi.nets.faceLandmark68Net.loadFromUri(url),
+        faceapi.nets.faceRecognitionNet.loadFromUri(url)
+    ]);
+
+    // GPU acceleration
+    await faceapi.tf.setBackend('webgl');
+    await faceapi.tf.ready();
+
+    modelsLoaded = true;
+
+    buildMatcher();
+
+    if (status) {
+        status.innerHTML = '✅ AI Ready - Detecting Faces';
+        status.className = 'camera-status status-active';
+    }
+}
+
+function buildMatcher() {
+
+    const labeled = [];
+
+    for (const u of registeredUsers) {
+
+        if (u.descriptor) {
+
+            labeled.push(
+                new faceapi.LabeledFaceDescriptors(
+                    u.id,
+                    [
+                        new Float32Array(u.descriptor),
+                        new Float32Array(u.descriptor),
+                        new Float32Array(u.descriptor)
+                    ]
+                )
+            );
         }
-        
-        function buildMatcher() {
-            const labeled = [];
-            for (const u of registeredUsers) if (u.descriptor) labeled.push(new faceapi.LabeledFaceDescriptors(u.id, [new Float32Array(u.descriptor)]));
-            if (labeled.length) faceMatcher = new faceapi.FaceMatcher(labeled, 0.55);
-        }
-        
+    }
+
+    // More strict recognition for similar faces
+    if (labeled.length) {
+        faceMatcher = new faceapi.FaceMatcher(labeled, 0.42);
+    }
+}
         // ==================== SECURITY CAMERA (SMOOTH AUTO DETECTION) ====================
-        async function startSecurityCamera() {
-            if (securityStream) stopSecurityCamera();
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: currentCameraId, width: { ideal: INPUT_SIZE }, height: { ideal: INPUT_SIZE }, frameRate: { ideal: 30 } } 
-                });
-                securityStream = stream;
-                document.getElementById('securityVideo').srcObject = stream;
-                isSecurityActive = true;
-                if (!modelsLoaded) await loadFaceModels();
-                if (securityInterval) clearInterval(securityInterval);
-                securityInterval = setInterval(detectAndProcessFaces, DETECTION_INTERVAL);
-                const status = document.getElementById('securityStatus');
-                if (status) { status.innerHTML = '🎯 Camera Active - Auto Detecting'; status.className = 'camera-status status-active'; }
-            } catch(e) { console.error(e); showError('Camera Error', 'Please allow camera access'); }
+     // ==================== GLOBAL VARIABLES (ADD THIS TOP) ====================
+let faceStabilityMap = {};
+let lastFacePositions = {};
+let stableStartTime = {};
+let faceLearningBuffer = {};
+let spoofWarningCooldown = 0;
+
+// ==================== VOICE SYSTEM ====================
+function speak(text) {
+    if (!window.speechSynthesis) return;
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.rate = 1;
+    msg.pitch = 1;
+    msg.volume = 1;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(msg);
+}
+
+// ==================== LOAD MODELS ====================
+async function loadFaceModels() {
+    const status = document.getElementById('securityStatus');
+    if (status) {
+        status.innerHTML = '🎯 Loading AI Model...';
+        status.className = 'camera-status status-detecting';
+    }
+
+    const url = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
+
+    await Promise.all([
+        faceapi.nets.ssdMobilenetv1.loadFromUri(url),
+        faceapi.nets.faceLandmark68Net.loadFromUri(url),
+        faceapi.nets.faceRecognitionNet.loadFromUri(url)
+    ]);
+
+    modelsLoaded = true;
+    buildMatcher();
+
+    if (status) {
+        status.innerHTML = '✅ AI Ready - Detecting Faces';
+        status.className = 'camera-status status-active';
+    }
+}
+
+// ==================== FACE MATCHER ====================
+function buildMatcher() {
+    const labeled = [];
+
+    for (const u of registeredUsers) {
+        if (u.descriptor) {
+            labeled.push(
+                new faceapi.LabeledFaceDescriptors(
+                    u.id,
+                    [new Float32Array(u.descriptor)]
+                )
+            );
         }
-        
-        function stopSecurityCamera() {
-            if (securityStream) { securityStream.getTracks().forEach(t => t.stop()); securityStream = null; }
-            if (securityInterval) { clearInterval(securityInterval); securityInterval = null; }
-            isSecurityActive = false;
-        }
-        
-        async function detectAndProcessFaces() {
-            if (!isSecurityActive || !modelsLoaded) return;
-            const video = document.getElementById('securityVideo');
-            const canvas = document.getElementById('securityCanvas');
-            if (!video || !video.videoWidth || !canvas) return;
-            
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 }))
-                .withFaceLandmarks()
-                .withFaceDescriptors();
-            
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            let recognized = [];
-            let stranger = false;
-            
-            for (const d of detections) {
-                let best = null;
-                if (faceMatcher) {
-                    const result = faceMatcher.findBestMatch(d.descriptor);
-                    if (result.label !== 'unknown') best = registeredUsers.find(u => u.id === result.label);
-                }
-                const box = d.detection.box;
-                ctx.beginPath();
-                ctx.rect(box.x, box.y, box.width, box.height);
-                if (best) {
-                    ctx.strokeStyle = '#34C759';
-                    ctx.lineWidth = 3;
-                    ctx.stroke();
-                    ctx.fillStyle = '#34C759';
-                    ctx.font = 'bold 14px system-ui';
-                    ctx.fillText(best.name, box.x, box.y - 5);
-                    recognized.push(best.name);
-                    await autoMarkAttendance(best);
-                } else {
-                    ctx.strokeStyle = '#FF3B30';
-                    ctx.lineWidth = 3;
-                    ctx.stroke();
-                    ctx.fillStyle = '#FF3B30';
-                    ctx.font = 'bold 14px system-ui';
-                    ctx.fillText('⚠️ STRANGER', box.x, box.y - 5);
-                    stranger = true;
-                }
+    }
+
+    if (labeled.length) {
+        faceMatcher = new faceapi.FaceMatcher(labeled, 0.45);
+    }
+}
+
+// ==================== START CAMERA ====================
+async function startSecurityCamera() {
+    if (securityStream) stopSecurityCamera();
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: currentCameraId,
+                width: { ideal: INPUT_SIZE },
+                height: { ideal: INPUT_SIZE },
+                frameRate: { ideal: 30 }
             }
-            
-            const detectEl = document.getElementById('detectCount');
-            if (detectEl) detectEl.innerHTML = detections.length ? `👤 ${detections.length} face(s) detected` : '👤 No face detected';
-            
-            const recognizedEl = document.getElementById('recognizedNames');
-            if (recognizedEl) recognizedEl.innerHTML = recognized.length ? `✅ Recognized: ${recognized.join(', ')}` : '✅ Waiting for face...';
-            
-            if (stranger && Date.now() - lastStrangerAlertTime > 8000) {
-                lastStrangerAlertTime = Date.now();
-                const img = await captureImage(video);
-                await reportStranger(img);
+        });
+
+        securityStream = stream;
+        document.getElementById('securityVideo').srcObject = stream;
+
+        isSecurityActive = true;
+
+        if (!modelsLoaded) await loadFaceModels();
+
+        if (securityInterval) clearInterval(securityInterval);
+        securityInterval = setInterval(detectAndProcessFaces, 200); // smoother
+
+        const status = document.getElementById('securityStatus');
+        if (status) {
+            status.innerHTML = '🎯 Camera Active - AI Tracking';
+            status.className = 'camera-status status-active';
+        }
+
+    } catch (e) {
+        console.error(e);
+        showError('Camera Error', 'Please allow camera access');
+    }
+}
+
+// ==================== STOP CAMERA ====================
+function stopSecurityCamera() {
+    if (securityStream) {
+        securityStream.getTracks().forEach(t => t.stop());
+        securityStream = null;
+    }
+
+    if (securityInterval) {
+        clearInterval(securityInterval);
+        securityInterval = null;
+    }
+
+    isSecurityActive = false;
+}
+
+// ==================== MAIN DETECTION ENGINE ====================
+async function detectAndProcessFaces() {
+    if (!isSecurityActive || !modelsLoaded) return;
+
+    const video = document.getElementById('securityVideo');
+    const canvas = document.getElementById('securityCanvas');
+
+    if (!video || !video.videoWidth || !canvas) return;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const detections = await faceapi
+        .detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.6 }))
+        .withFaceLandmarks()
+        .withFaceDescriptors();
+
+    let recognized = [];
+    let stranger = false;
+
+    const now = Date.now();
+
+    for (const d of detections) {
+
+        const box = d.detection.box;
+        const descriptor = d.descriptor;
+
+        // ================= MATCH FACE =================
+        let best = null;
+        let label = "unknown";
+
+        if (faceMatcher) {
+            const result = faceMatcher.findBestMatch(descriptor);
+            label = result.label;
+
+            if (label !== 'unknown') {
+                best = registeredUsers.find(u => u.id === label);
             }
         }
-        
-        async function autoMarkAttendance(user) {
-            const today = getTodayDate();
-            const session = getCurrentSession();
-            const key = `${user.id}_${today}_${session}`;
-            if (lastAttendanceTime[key] && Date.now() - lastAttendanceTime[key] < 3000) return;
-            const already = attendanceRecords.find(r => r.id === user.id && r.date === today && r.session === session);
-            if (!already) {
-                lastAttendanceTime[key] = Date.now();
-                const tv = new Date().getHours() * 60 + new Date().getMinutes();
-                let status = "Hadir";
-                if (session === 'pagi' && tv > 510) status = "Lewat";
-                if (session === 'petang' && tv > 810) status = "Lewat";
-                attendanceRecords.push({
-                    id: user.id, name: user.name, role: user.role, className: user.className,
-                    status, session, sessionName: session === 'pagi' ? 'Morning' : 'Afternoon',
-                    time: getCurrentTime(), date: today, timestamp: Date.now(), method: 'Face Auto'
-                });
-                saveLocal(); syncToFirebase(); playBeep();
-                Swal.fire({ title: '✅ Attendance Recorded!', html: `<strong>${escapeHtml(user.name)}</strong><br>Status: ${status}<br>Time: ${getCurrentTime()}`, icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, background: 'white', borderRadius: '20px' });
-                updateUI();
+
+        // ================= CCTV STYLE BOX =================
+        ctx.strokeStyle = best ? '#34C759' : '#FF3B30';
+        ctx.lineWidth = 3;
+        ctx.shadowColor = ctx.strokeStyle;
+        ctx.shadowBlur = 12;
+
+        ctx.beginPath();
+        ctx.rect(box.x, box.y, box.width, box.height);
+        ctx.stroke();
+
+        ctx.shadowBlur = 0;
+
+        ctx.fillStyle = ctx.strokeStyle;
+        ctx.font = 'bold 14px system-ui';
+
+        const nameLabel = best ? best.name : "⚠️ UNKNOWN";
+        ctx.fillText(nameLabel, box.x, box.y - 8);
+
+        // ================= FACE KEY =================
+        const faceKey = best ? best.id : `unknown_${Math.round(box.x)}`;
+
+        if (!faceStabilityMap[faceKey]) {
+            faceStabilityMap[faceKey] = 0;
+            stableStartTime[faceKey] = now;
+        }
+
+        faceStabilityMap[faceKey]++;
+
+        // ================= SPOOF DETECTION =================
+        const area = box.width * box.height;
+        const prev = lastFacePositions[faceKey];
+
+        let spoofRisk = false;
+
+        if (prev) {
+            const movement = Math.abs(prev.x - box.x) + Math.abs(prev.y - box.y);
+
+            if (movement < 2 && area > 150000) {
+                spoofRisk = true;
             }
         }
-        
-        async function reportStranger(img) {
-            const alert = { id: Date.now(), className: selectedClass === "Semua Kelas" ? "Unknown" : selectedClass, time: getCurrentTime(), date: getTodayDate(), session: getCurrentSession(), imageData: img };
-            strangerAlerts.push(alert);
-            saveLocal(); syncToFirebase(); playAlertBeep();
-            await Swal.fire({ title: '⚠️ SECURITY ALERT!', html: `<img src="${img}" style="width:150px;border-radius:16px;margin:10px 0;"><br><strong>Stranger detected in class!</strong><br>Class: ${alert.className}<br>Time: ${alert.time}`, icon: 'warning', confirmButtonColor: '#FF3B30', confirmButtonText: 'Acknowledge', borderRadius: '28px' });
-            updateUI();
+
+        lastFacePositions[faceKey] = { x: box.x, y: box.y };
+
+        if (spoofRisk && now - spoofWarningCooldown > 5000) {
+            spoofWarningCooldown = now;
+            speak("Warning. Fake face detected.");
+
+            Swal.fire({
+                title: "🚫 Spoof Detected",
+                text: "Possible photo or fake face!",
+                icon: "error",
+                timer: 2000,
+                showConfirmButton: false
+            });
         }
-        
+
+        // ================= RECOGNIZED FACE =================
+        if (best) {
+            recognized.push(best.name);
+
+            if (now - stableStartTime[faceKey] > 3000) {
+                await autoMarkAttendance(best);
+                speak(`Attendance marked for ${best.name}`);
+                stableStartTime[faceKey] = now + 999999;
+            }
+
+        } else {
+            stranger = true;
+
+            if (!faceLearningBuffer[faceKey]) {
+                faceLearningBuffer[faceKey] = [];
+            }
+
+            faceLearningBuffer[faceKey].push(descriptor);
+
+            if (faceLearningBuffer[faceKey].length > 10) {
+                speak("Unknown face detected. Learning system active.");
+            }
+        }
+    }
+
+    // ================= UI STATUS =================
+    const detectEl = document.getElementById('detectCount');
+    if (detectEl) {
+        detectEl.innerHTML = detections.length
+            ? `👤 ${detections.length} face(s) tracked`
+            : '👤 No face detected';
+    }
+
+    const recognizedEl = document.getElementById('recognizedNames');
+    if (recognizedEl) {
+        recognizedEl.innerHTML = recognized.length
+            ? `✅ Recognized: ${recognized.join(', ')}`
+            : '🟡 Scanning...';
+    }
+
+    // ================= STRANGER ALERT =================
+    if (stranger && now - lastStrangerAlertTime > 8000) {
+        lastStrangerAlertTime = now;
+
+        const img = await captureImage(video);
+
+        speak("Alert. Unknown person detected.");
+
+        await reportStranger(img);
+    }
+}
         // ==================== QR SCANNER ====================
         async function startQRScanner() {
             if (isScanning) return;
@@ -1040,108 +1227,167 @@
         function stopQRScanner() { if (html5QrCode && isScanning) { html5QrCode.stop(); isScanning = false; } }
         
         // ==================== REGISTER FACE (NO BLINK, JUST CAPTURE) ====================
-        function startRegisterCamera() {
-            if (registerStream) stopRegisterCamera();
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: INPUT_SIZE }, height: { ideal: INPUT_SIZE } } }).then(s => {
-                registerStream = s;
-                document.getElementById('registerVideo').srcObject = s;
-                if (registerInterval) clearInterval(registerInterval);
-                registerInterval = setInterval(checkFaceForRegister, 100);
-            }).catch(e => console.error(e));
+       
+// ==================== CAMERA START ====================
+function startRegisterCamera() {
+    if (registerStream) stopRegisterCamera();
+
+    navigator.mediaDevices.getUserMedia({
+        video: {
+            facingMode: 'user',
+            width: { ideal: INPUT_SIZE },
+            height: { ideal: INPUT_SIZE },
+            frameRate: { ideal: 30 }
         }
-        
-        function stopRegisterCamera() { if (registerStream) { registerStream.getTracks().forEach(t => t.stop()); registerStream = null; } if (registerInterval) clearInterval(registerInterval); }
-        
-        let registerInterval = null;
-        let registerFaceDetected = false;
-        let registerDescriptor = null;
-        let currentFaceImage = null;
-        
-        async function checkFaceForRegister() {
-            const video = document.getElementById('registerVideo');
-            const canvas = document.getElementById('registerCanvas');
-            if (!video || !video.videoWidth || !canvas || !modelsLoaded) return;
-            
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const detection = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 })).withFaceLandmarks().withFaceDescriptor();
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0);
-            const cx = canvas.width/4, cy = canvas.height/4, w = canvas.width/2, h = canvas.height/2;
-            ctx.beginPath();
-            ctx.rect(cx, cy, w, h);
-            
-            if (detection) {
-                ctx.strokeStyle = '#34C759';
-                ctx.lineWidth = 3;
-                ctx.stroke();
-                ctx.fillStyle = '#34C759';
-                ctx.font = 'bold 14px system-ui';
-                ctx.fillText('✓ Face Detected! Ready to register', cx, cy - 5);
+    }).then(s => {
+
+        registerStream = s;
+        document.getElementById('registerVideo').srcObject = s;
+
+        if (registerInterval) clearInterval(registerInterval);
+
+        // smoother detection (IMPORTANT FIX)
+        registerInterval = setInterval(checkFaceForRegister, 200);
+
+        stableFaceTime = 0;
+        registerFaceDetected = false;
+        registerDescriptor = null;
+
+    }).catch(e => console.error(e));
+}
+
+// ==================== STOP CAMERA ====================
+function stopRegisterCamera() {
+    if (registerStream) {
+        registerStream.getTracks().forEach(t => t.stop());
+        registerStream = null;
+    }
+    if (registerInterval) clearInterval(registerInterval);
+}
+
+// ==================== EXTRA VARIABLES ====================
+let registerInterval = null;
+let registerFaceDetected = false;
+let registerDescriptor = null;
+let currentFaceImage = null;
+
+let stableFaceTime = 0;
+let lastRegisterFace = null;
+let spoofWarningCooldown = 0;
+
+// ==================== FACE CHECK ====================
+async function checkFaceForRegister() {
+
+    const video = document.getElementById('registerVideo');
+    const canvas = document.getElementById('registerCanvas');
+
+    if (!video || !video.videoWidth || !canvas || !modelsLoaded) return;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const detection = await faceapi
+        .detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.6 }))
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+    const cx = canvas.width / 4;
+    const cy = canvas.height / 4;
+    const w = canvas.width / 2;
+    const h = canvas.height / 2;
+
+    ctx.beginPath();
+    ctx.rect(cx, cy, w, h);
+
+    const now = Date.now();
+
+    // ================= FACE FOUND =================
+    if (detection) {
+
+        ctx.strokeStyle = '#34C759';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        ctx.fillStyle = '#34C759';
+        ctx.font = 'bold 14px system-ui';
+        ctx.fillText('✓ Face Detected', cx, cy - 10);
+
+        // ================= STABILITY CHECK =================
+        if (!lastRegisterFace) {
+            lastRegisterFace = detection.descriptor;
+            stableFaceTime = now;
+        }
+
+        const diff = faceapi.euclideanDistance(lastRegisterFace, detection.descriptor);
+
+        // if same face (stable)
+        if (diff < 0.45) {
+            if (now - stableFaceTime > 3000) {
                 registerFaceDetected = true;
                 registerDescriptor = Array.from(detection.descriptor);
                 currentFaceImage = await captureImage(video);
-                const status = document.getElementById('regCameraStatus');
-                if (status) { status.innerHTML = '✅ Face detected! Click Register to save'; status.className = 'camera-status status-active'; }
-            } else {
-                ctx.strokeStyle = '#FF9500';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                ctx.fillStyle = '#FF9500';
-                ctx.font = 'bold 14px system-ui';
-                ctx.fillText('Place your face in the box', cx, cy - 5);
-                registerFaceDetected = false;
-                const status = document.getElementById('regCameraStatus');
-                if (status) { status.innerHTML = '● Position your face in the green box'; status.className = 'camera-status status-info'; }
+            }
+        } else {
+            stableFaceTime = now;
+            lastRegisterFace = detection.descriptor;
+            registerFaceDetected = false;
+        }
+
+        // ================= SPOOF DETECTION =================
+        const area = w * h;
+
+        if (area > 180000 && now - spoofWarningCooldown > 5000) {
+            spoofWarningCooldown = now;
+            speak("Warning. Possible fake image detected.");
+
+            Swal.fire({
+                title: "🚫 Spoof Warning",
+                text: "Please remove photo or screen image",
+                icon: "warning",
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+
+        // ================= STATUS =================
+        const status = document.getElementById('regCameraStatus');
+
+        if (registerFaceDetected) {
+            if (status) {
+                status.innerHTML = '✅ Stable Face Ready (3s locked)';
+                status.className = 'camera-status status-active';
+            }
+        } else {
+            if (status) {
+                status.innerHTML = '🟡 Hold face steady...';
+                status.className = 'camera-status status-info';
             }
         }
-        
-        async function saveNameAndClass() {
-            const name = document.getElementById('regName').value.trim();
-            const role = document.getElementById('regRole').value;
-            let className = document.getElementById('regClass').value;
-            if (!name) { await showError('Error', 'Please enter name'); return false; }
-            if (!className) { await showError('Error', 'Please select class'); return false; }
-            if (registeredUsers.some(u => u.name.toLowerCase() === name.toLowerCase())) {
-                await showError('Name Exists', `"${name}" is already registered`);
-                return false;
-            }
-            pendingRegistration = { name, role, className };
-            registerStep = 2;
-            renderRegisterStep2();
-            return true;
+
+    } else {
+
+        ctx.strokeStyle = '#FF9500';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = '#FF9500';
+        ctx.fillText('Place face in box', cx, cy - 10);
+
+        registerFaceDetected = false;
+        lastRegisterFace = null;
+        stableFaceTime = 0;
+
+        const status = document.getElementById('regCameraStatus');
+        if (status) {
+            status.innerHTML = '● No face detected';
+            status.className = 'camera-status status-info';
         }
-        
-        async function captureAndRegister() {
-            if (!registerFaceDetected || !registerDescriptor) {
-                await showWarning('No Face Detected', 'Please position your face in the green box');
-                return;
-            }
-            if (!pendingRegistration) { await showError('Error', 'Please fill name and class first'); registerStep = 1; renderRegisterPage(); return; }
-            
-            // Countdown effect
-            for (let i = 3; i > 0; i--) { 
-                await Swal.fire({ title: `${i}...`, text: 'Preparing registration', icon: 'info', timer: 800, showConfirmButton: false, background: 'white', borderRadius: '20px' }); 
-            }
-            
-            const newUser = {
-                id: Date.now().toString(),
-                ...pendingRegistration,
-                descriptor: registerDescriptor,
-                registeredAt: new Date().toISOString(),
-                qrData: JSON.stringify({ id: Date.now().toString(), name: pendingRegistration.name, role: pendingRegistration.role, className: pendingRegistration.className })
-            };
-            registeredUsers.push(newUser);
-            saveLocal(); syncToFirebase(); buildMatcher();
-            await showSuccess('✅ Registration Successful!', `${newUser.name} (${newUser.role === 'teacher' ? 'Teacher' : 'Student'})\nClass: ${newUser.className}\n✅ Face saved to AI database!`);
-            pendingRegistration = null; registerStep = 1;
-            if (!availableClasses.includes(newUser.className)) { availableClasses.push(newUser.className); availableClasses.sort(); }
-            renderRegisterPage();
-        }
-        
-        function backToStep1() { registerStep = 1; pendingRegistration = null; renderRegisterPage(); }
-        
-        async function showWarning(title, msg) { await Swal.fire({ title, text: msg, icon: 'warning', confirmButtonColor: '#FF9500', borderRadius: '24px' }); }
+    }
+}
         
         // ==================== EDIT/DELETE USER ====================
         async function editUser(user) {
