@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>SmartClass Pro - Auto Face Capture System</title>
+    <title>SmartClass Pro Ultimate - Auto Face Capture</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -38,7 +38,6 @@
         }
         body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; background: var(--bg); color: var(--text-primary); transition: all 0.3s; }
         
-        /* Header */
         .header { position: sticky; top: 0; z-index: 100; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; background: var(--card-bg); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
         .header-left { display: flex; align-items: center; gap: 12px; }
         .logo { width: 44px; height: 44px; background: linear-gradient(135deg, var(--primary), var(--purple)); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; }
@@ -50,34 +49,35 @@
         .logout-btn { background: rgba(239,68,68,0.15); color: var(--danger); border: none; padding: 8px 20px; border-radius: 40px; font-weight: 600; cursor: pointer; }
         .live-clock { background: var(--bg); padding: 8px 16px; border-radius: 40px; font-family: monospace; font-weight: 600; font-size: 0.85rem; }
         
-        /* Bottom Navigation */
         .bottom-nav { position: fixed; bottom: 20px; left: 20px; right: 20px; background: var(--card-bg); backdrop-filter: blur(20px); border-radius: 60px; display: flex; justify-content: space-around; padding: 8px 16px; z-index: 100; border: 1px solid var(--border); box-shadow: var(--shadow-lg); }
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 20px; border-radius: 50px; cursor: pointer; transition: all 0.2s; color: var(--text-secondary); font-size: 0.7rem; font-weight: 500; }
         .nav-item i { width: 22px; height: 22px; }
         .nav-item.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
         
-        /* Main Content */
         .main-content { padding: 20px 16px 100px; max-width: 600px; margin: 0 auto; }
         
-        /* Stats Cards */
         .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 24px; }
-        .stat-card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 24px; padding: 18px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .stat-card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 24px; padding: 18px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.2s; }
+        .stat-card:active { transform: scale(0.97); }
         .stat-info h3 { font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 4px; }
         .stat-number { font-size: 1.8rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--purple)); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .stat-icon { width: 48px; height: 48px; background: rgba(99,102,241,0.1); border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
         
-        /* Camera Section */
         .camera-section { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 28px; padding: 20px; margin-bottom: 20px; }
         .camera-container { position: relative; background: #000; border-radius: 24px; overflow: hidden; aspect-ratio: 4/3; }
         #securityVideo, #registerVideo { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
         .face-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
         .detection-indicator { position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); padding: 6px 14px; border-radius: 30px; font-size: 11px; color: white; z-index: 10; }
+        .light-indicator { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); padding: 6px 12px; border-radius: 30px; font-size: 10px; color: white; z-index: 10; }
+        .torch-btn { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); border: none; border-radius: 40px; padding: 8px 16px; color: white; font-size: 11px; display: flex; align-items: center; gap: 6px; cursor: pointer; z-index: 10; }
         .camera-status { text-align: center; margin-top: 14px; font-size: 0.8rem; padding: 10px; border-radius: 20px; font-weight: 500; }
         .status-active { background: rgba(16,185,129,0.15); color: var(--success); }
+        .status-detecting { background: rgba(99,102,241,0.15); color: var(--primary); animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        
         .qr-container { background: #000; border-radius: 24px; overflow: hidden; aspect-ratio: 1; max-width: 300px; margin: 0 auto; }
         #qr-reader { width: 100%; height: 100%; }
         
-        /* Data Table */
         .data-table { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 28px; padding: 20px; margin-bottom: 20px; }
         .data-table h3 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
         .table-container { overflow-x: auto; }
@@ -90,38 +90,38 @@
         .badge-teacher { background: rgba(99,102,241,0.15); color: var(--primary); }
         .badge-student { background: rgba(139,92,246,0.15); color: var(--purple); }
         
-        /* Forms */
         .register-form input, .register-form select { width: 100%; padding: 16px; border-radius: 60px; border: 1px solid var(--border); background: var(--card-bg); margin-bottom: 12px; font-size: 0.9rem; color: var(--text-primary); }
         .btn { padding: 14px 20px; border-radius: 60px; font-weight: 600; border: none; cursor: pointer; width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--purple)); color: white; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--purple)); color: white; box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
         .btn-success { background: var(--success); color: white; }
         .btn-secondary { background: var(--text-secondary); color: white; }
         .btn:active { transform: scale(0.97); }
         .btn-small { padding: 8px 16px; font-size: 0.75rem; width: auto; }
         
-        /* Search & Filter */
-        .search-bar, .date-filter { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-        .search-bar input, .date-filter input { flex: 1; padding: 12px 18px; border-radius: 60px; border: 1px solid var(--border); background: var(--card-bg); font-size: 0.8rem; }
+        .search-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+        .search-bar input { flex: 1; padding: 12px 18px; border-radius: 60px; border: 1px solid var(--border); background: var(--card-bg); font-size: 0.8rem; }
+        .date-filter { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+        .date-filter input { flex: 1; padding: 12px 16px; border-radius: 60px; border: 1px solid var(--border); background: var(--card-bg); }
         .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
         .page-btn { padding: 8px 14px; border-radius: 30px; border: 1px solid var(--border); background: var(--card-bg); cursor: pointer; }
         .page-btn.active { background: var(--primary); color: white; }
         
-        /* Danger Banner */
-        .danger-banner { background: rgba(239,68,68,0.1); border-left: 4px solid var(--danger); border-radius: 16px; padding: 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .danger-banner { background: rgba(239,68,68,0.1); border-left: 4px solid var(--danger); border-radius: 16px; padding: 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; animation: shake 0.3s ease; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
         .stranger-image { width: 55px; height: 55px; border-radius: 16px; object-fit: cover; border: 2px solid var(--danger); cursor: pointer; }
-        
-        /* Step Indicator */
-        .step-indicator { display: flex; justify-content: center; gap: 24px; margin-bottom: 24px; }
-        .step { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        .step-number { width: 44px; height: 44px; border-radius: 44px; background: var(--border); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; }
-        .step.active .step-number { background: linear-gradient(135deg, var(--primary), var(--purple)); color: white; }
-        .step.completed .step-number { background: var(--success); color: white; }
-        .step-label { font-size: 0.7rem; font-weight: 500; color: var(--text-secondary); }
         
         .action-buttons { display: flex; gap: 8px; }
         .edit-btn, .delete-btn { background: none; border: none; cursor: pointer; padding: 6px 10px; border-radius: 20px; }
         .edit-btn { color: var(--primary); }
         .delete-btn { color: var(--danger); }
+        
+        .step-indicator { display: flex; justify-content: center; gap: 24px; margin-bottom: 24px; }
+        .step { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .step-number { width: 44px; height: 44px; border-radius: 44px; background: var(--border); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; color: var(--text-secondary); }
+        .step.active .step-number { background: linear-gradient(135deg, var(--primary), var(--purple)); color: white; }
+        .step.completed .step-number { background: var(--success); color: white; }
+        .step-label { font-size: 0.7rem; font-weight: 500; color: var(--text-secondary); }
+        .step.active .step-label { color: var(--primary); font-weight: 600; }
         
         .chart-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 28px; padding: 20px; margin-bottom: 20px; }
         canvas { max-height: 200px; }
@@ -129,11 +129,12 @@
         .class-selector, .camera-selector { margin-bottom: 16px; }
         .class-selector select, .camera-selector select { width: 100%; padding: 12px 16px; border-radius: 60px; border: 1px solid var(--border); background: var(--card-bg); font-size: 0.85rem; }
         
-        .countdown-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; background: rgba(0,0,0,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: bold; color: white; z-index: 20; animation: pop 0.3s ease; }
+        .countdown-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; background: rgba(0,0,0,0.85); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 56px; font-weight: bold; color: white; z-index: 20; animation: pop 0.2s ease; border: 3px solid var(--success); }
         @keyframes pop { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
         
         .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(20px); z-index: 10000; display: flex; align-items: center; justify-content: center; }
-        .login-card { background: var(--card-bg); backdrop-filter: blur(20px); border-radius: 56px; padding: 40px; width: 90%; max-width: 380px; text-align: center; border: 1px solid var(--border); }
+        .login-card { background: var(--card-bg); backdrop-filter: blur(20px); border-radius: 56px; padding: 40px; width: 90%; max-width: 380px; text-align: center; border: 1px solid var(--border); animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .login-card input { width: 100%; padding: 16px 20px; margin: 12px 0; border-radius: 60px; border: 1px solid var(--border); background: var(--card-bg); font-size: 1rem; }
         .info-box { background: rgba(99,102,241,0.1); border-radius: 20px; padding: 14px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-size: 0.8rem; }
     </style>
@@ -142,17 +143,17 @@
     <div class="login-overlay" id="loginOverlay">
         <div class="login-card">
             <div class="logo" style="margin: 0 auto 20px; width: 70px; height: 70px;"><i data-lucide="brain" style="width: 36px; height: 36px;"></i></div>
-            <h2>SmartClass Pro</h2>
-            <p style="margin-bottom: 24px;">Auto Face Capture System</p>
+            <h2>SmartClass Pro Ultimate</h2>
+            <p style="margin-bottom: 24px;">Auto Capture 3-2-1 | Face Recognition</p>
             <input type="text" id="loginUsername" placeholder="Username">
             <input type="password" id="loginPassword" placeholder="Password">
             <button class="btn btn-primary" id="loginBtn">Login</button>
-            <p style="margin-top: 20px; font-size: 12px;">Demo: admin / admin123</p>
+            <p style="margin-top: 20px; font-size: 12px;">Demo: admin / admin123 | guru / guru123</p>
         </div>
     </div>
 
     <div class="header" id="mainHeader" style="display: none;">
-        <div class="header-left"><div class="logo"><i data-lucide="brain"></i></div><div><h1>SmartClass Pro</h1><p>Auto Face Capture • Voice Greeting</p></div></div>
+        <div class="header-left"><div class="logo"><i data-lucide="brain"></i></div><div><h1>SmartClass Pro</h1><p>Auto Capture 3-2-1 • Voice • Flash</p></div></div>
         <div class="header-right"><div class="user-badge"><i data-lucide="user"></i><span id="userName">Admin</span></div><button class="icon-btn" id="darkModeToggle"><i data-lucide="moon"></i></button><button class="icon-btn" id="logoutBtn"><i data-lucide="log-out"></i></button><div class="live-clock"><span id="currentTime">--:--:--</span></div></div>
     </div>
 
@@ -166,6 +167,28 @@
     </div>
 
     <script>
+        // Telegram Config (isi untuk enable)
+        const TELEGRAM_BOT_TOKEN = "";
+        const TELEGRAM_CHAT_ID = "";
+        
+        async function sendTelegramAlert(message, imageData = null) {
+            if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
+            try {
+                await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message })
+                });
+                if (imageData) {
+                    const blob = await (await fetch(imageData)).blob();
+                    const formData = new FormData();
+                    formData.append('chat_id', TELEGRAM_CHAT_ID);
+                    formData.append('photo', blob, 'stranger.jpg');
+                    formData.append('caption', message);
+                    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData });
+                }
+            } catch(e) { console.error(e); }
+        }
+        
         // Voice Greeting
         function speakGreeting(name, role, status) {
             const utterance = new SpeechSynthesisUtterance(`Welcome ${name}. ${role === 'teacher' ? 'Teacher' : 'Student'}. ${status}.`);
@@ -177,7 +200,10 @@
         
         // Login
         let currentUser = null;
-        const validUsers = [{ username: "admin", password: "admin123", role: "admin", name: "Admin" }];
+        const validUsers = [
+            { username: "admin", password: "admin123", role: "admin", name: "Admin" },
+            { username: "guru", password: "guru123", role: "teacher", name: "Cikgu Ahmad" }
+        ];
         
         // Data
         let registeredUsers = [], attendanceRecords = [], strangerAlerts = [];
@@ -189,9 +215,10 @@
         let pendingRegistration = null;
         let currentPageNum = 1, itemsPerPage = 10, searchQuery = "", startDate = "", endDate = "";
         
-        // Camera
+        // Camera & Flash
         let securityStream = null, registerStream = null, securityInterval = null, isSecurityActive = false, currentCameraId = 'user';
         let torchEnabled = false, videoTrack = null;
+        let lastLightLevel = 100;
         
         // Auto Capture Timer
         let captureTimer = null;
@@ -218,18 +245,20 @@
             const u = localStorage.getItem('smart_users'); if (u) registeredUsers = JSON.parse(u);
             const a = localStorage.getItem('smart_attendance'); if (a) attendanceRecords = JSON.parse(a);
             const s = localStorage.getItem('smart_strangers'); if (s) strangerAlerts = JSON.parse(s);
+            const c = localStorage.getItem('smart_class'); if (c) selectedClass = c;
             const d = localStorage.getItem('smart_descriptors');
             if (d) { const desc = JSON.parse(d); registeredUsers.forEach(u => { if (desc[u.id]) u.descriptor = desc[u.id]; }); }
         }
         function saveLocal() {
-            localStorage.setItem('smart_users', JSON.stringify(registeredUsers.map(u => ({ id: u.id, name: u.name, role: u.role, className: u.className }))));
+            localStorage.setItem('smart_users', JSON.stringify(registeredUsers.map(u => ({ id: u.id, name: u.name, role: u.role, className: u.className, registeredAt: u.registeredAt }))));
             localStorage.setItem('smart_attendance', JSON.stringify(attendanceRecords));
             localStorage.setItem('smart_strangers', JSON.stringify(strangerAlerts));
             const desc = {}; registeredUsers.forEach(u => { if (u.descriptor) desc[u.id] = u.descriptor; });
             localStorage.setItem('smart_descriptors', JSON.stringify(desc));
+            localStorage.setItem('smart_class', selectedClass);
         }
-        async function syncToFirebase() { try { for (const u of registeredUsers) { const data = { ...u }; delete data.descriptor; await db.collection('users').doc(u.id).set(data, { merge: true }); } for (const a of attendanceRecords) await db.collection('attendance').doc(`${a.id}_${a.date}_${a.session}`).set(a, { merge: true }); } catch(e) {} }
-        async function loadFromFirebase() { try { const u = await db.collection('users').get(); u.forEach(d => { if (!registeredUsers.find(x => x.id === d.id)) registeredUsers.push(d.data()); }); const a = await db.collection('attendance').get(); a.forEach(d => { if (!attendanceRecords.find(x => x.id === d.data().id && x.date === d.data().date)) attendanceRecords.push(d.data()); }); saveLocal(); updateUI(); } catch(e) {} }
+        async function syncToFirebase() { try { for (const u of registeredUsers) { const data = { ...u }; delete data.descriptor; await db.collection('users').doc(u.id).set(data, { merge: true }); } for (const a of attendanceRecords) await db.collection('attendance').doc(`${a.id}_${a.date}_${a.session}`).set(a, { merge: true }); for (const s of strangerAlerts) await db.collection('strangers').doc(s.id.toString()).set(s, { merge: true }); } catch(e) {} }
+        async function loadFromFirebase() { try { const u = await db.collection('users').get(); u.forEach(d => { if (!registeredUsers.find(x => x.id === d.id)) registeredUsers.push(d.data()); }); const a = await db.collection('attendance').get(); a.forEach(d => { if (!attendanceRecords.find(x => x.id === d.data().id && x.date === d.data().date)) attendanceRecords.push(d.data()); }); const s = await db.collection('strangers').get(); s.forEach(d => { if (!strangerAlerts.find(x => x.id === d.data().id)) strangerAlerts.push(d.data()); }); saveLocal(); updateUI(); } catch(e) {} }
         
         function getTodayDate() { return new Date().toLocaleDateString('en-CA'); }
         function getCurrentTime() { return new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
@@ -258,7 +287,7 @@
             if (labeled.length) faceMatcher = new faceapi.FaceMatcher(labeled, SIMILARITY_THRESHOLD);
         }
         
-        // Security Camera
+        // Security Camera with Flash & Light Indicator
         async function startSecurityCamera() {
             if (securityStream) stopSecurityCamera();
             try {
@@ -283,7 +312,10 @@
             for (let i = 0; i < data.length; i += 4) total += (data[i] + data[i+1] + data[i+2]) / 3;
             return total / 2500;
         }
-        async function enableTorch() { if (videoTrack) { try { await videoTrack.applyConstraints({ advanced: [{ torch: true }] }); torchEnabled = true; } catch(e) {} } }
+        async function enableTorch() { if (videoTrack) { try { await videoTrack.applyConstraints({ advanced: [{ torch: true }] }); torchEnabled = true; updateTorchButton(true); } catch(e) {} } }
+        async function disableTorch() { if (videoTrack) { try { await videoTrack.applyConstraints({ advanced: [{ torch: false }] }); torchEnabled = false; updateTorchButton(false); } catch(e) {} } }
+        function updateTorchButton(on) { const btn = document.getElementById('torchBtn'); if (btn) btn.innerHTML = on ? '🔦 ON' : '🔦 OFF'; }
+        function toggleTorch() { torchEnabled ? disableTorch() : enableTorch(); }
         
         async function detectAndProcessFaces() {
             if (!isSecurityActive || !modelsLoaded) return;
@@ -291,6 +323,9 @@
             const canvas = document.getElementById('securityCanvas');
             if (!video || !video.videoWidth || !canvas) return;
             const light = detectLightLevel(video);
+            lastLightLevel = light;
+            const indicator = document.getElementById('lightIndicator');
+            if (indicator) indicator.innerHTML = light < 60 ? '🌙 Dark' : (light > 100 ? '☀️ Bright' : '☀️ Good');
             if (light < 60 && currentCameraId === 'environment' && !torchEnabled && videoTrack) await enableTorch();
             
             canvas.width = video.videoWidth; canvas.height = video.videoHeight;
@@ -308,11 +343,12 @@
                 const box = d.detection.box;
                 ctx.beginPath(); ctx.rect(box.x, box.y, box.width, box.height);
                 if (best) {
+                    const confidence = Math.round((1 - result.distance) * 100);
                     ctx.strokeStyle = '#10b981'; ctx.lineWidth = 3; ctx.stroke();
                     ctx.fillStyle = '#10b981'; ctx.font = 'bold 14px system-ui';
-                    ctx.fillText(`${best.name} (${Math.round((1 - result.distance)*100)}%)`, box.x, box.y - 5);
+                    ctx.fillText(`${best.name} (${confidence}%)`, box.x, box.y - 5);
                     recognized.push(best.name);
-                    await autoMarkAttendance(best, Math.round((1 - result.distance)*100));
+                    await autoMarkAttendance(best, confidence);
                 } else {
                     ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.stroke();
                     ctx.fillStyle = '#ef4444'; ctx.font = 'bold 14px system-ui';
@@ -320,8 +356,8 @@
                     stranger = true;
                 }
             }
-            document.getElementById('detectCount').innerHTML = detections.length ? `👤 ${detections.length} face(s)` : '👤 No face detected';
-            document.getElementById('recognizedNames').innerHTML = recognized.length ? `✅ Recognized: ${recognized.join(', ')}` : '✅ Waiting for face...';
+            document.getElementById('detectCount').innerHTML = detections.length ? `👤 ${detections.length} face(s)` : '👤 No face';
+            document.getElementById('recognizedNames').innerHTML = recognized.length ? `✅ Recognized: ${recognized.join(', ')}` : '✅ Waiting...';
             if (stranger && Date.now() - lastStrangerAlertTime > 8000) {
                 lastStrangerAlertTime = Date.now();
                 const img = await captureImage(video);
@@ -342,7 +378,7 @@
                 attendanceRecords.push({ id: user.id, name: user.name, role: user.role, className: user.className, status: statusName, session, sessionName: session === 'pagi' ? 'Morning' : 'Afternoon', time: getCurrentTime(), date: today, timestamp: Date.now(), method: 'Face Auto', confidence });
                 saveLocal(); syncToFirebase(); playBeep();
                 speakGreeting(user.name, user.role, statusText);
-                Swal.fire({ title: '✅ Attendance Recorded!', html: `<strong>${escapeHtml(user.name)}</strong><br>Status: ${statusText}<br>Time: ${getCurrentTime()}`, icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                Swal.fire({ title: '✅ Attendance Recorded!', html: `<strong>${escapeHtml(user.name)}</strong><br>Status: ${statusText}<br>Confidence: ${confidence}%`, icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
                 updateUI();
             }
         }
@@ -351,6 +387,7 @@
             const alert = { id: Date.now(), className: selectedClass === "Semua Kelas" ? "Unknown" : selectedClass, time: getCurrentTime(), date: getTodayDate(), session: getCurrentSession(), imageData: img };
             strangerAlerts.push(alert);
             saveLocal(); syncToFirebase(); playAlertBeep();
+            await sendTelegramAlert(`⚠️ STRANGER ALERT! Class: ${alert.className} at ${alert.time}`, img);
             await Swal.fire({ title: '⚠️ SECURITY ALERT!', html: `<img src="${img}" style="width:150px;border-radius:16px;margin:10px 0;"><br><strong>Stranger detected!</strong><br>Class: ${alert.className}<br>Time: ${alert.time}`, icon: 'warning', confirmButtonColor: '#ef4444' });
             updateUI();
         }
@@ -372,7 +409,7 @@
         }
         function stopQRScanner() { if (html5QrCode && isScanning) { html5QrCode.stop(); isScanning = false; } }
         
-        // ==================== REGISTER FACE WITH AUTO CAPTURE (123) ====================
+        // ==================== REGISTER FACE WITH AUTO CAPTURE 3-2-1 ====================
         function startRegisterCamera() {
             if (registerStream) stopRegisterCamera();
             navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: INPUT_SIZE }, height: { ideal: INPUT_SIZE } } }).then(s => {
@@ -382,7 +419,7 @@
                 registerInterval = setInterval(checkFaceForRegister, 100);
             }).catch(e => console.error(e));
         }
-        function stopRegisterCamera() { if (registerStream) { registerStream.getTracks().forEach(t => t.stop()); registerStream = null; } if (registerInterval) clearInterval(registerInterval); if (captureTimer) clearTimeout(captureTimer); }
+        function stopRegisterCamera() { if (registerStream) { registerStream.getTracks().forEach(t => t.stop()); registerStream = null; } if (registerInterval) clearInterval(registerInterval); if (captureTimer) clearTimeout(captureTimer); isCountingDown = false; }
         
         async function checkFaceForRegister() {
             const video = document.getElementById('registerVideo');
@@ -422,16 +459,13 @@
             countdownValue = 3;
             
             const showCountdown = () => {
-                if (!registerFaceDetected) {
-                    isCountingDown = false;
-                    return;
-                }
-                // Show countdown circle
+                if (!registerFaceDetected) { isCountingDown = false; return; }
+                // Show countdown circle on canvas
                 const ctx = canvas.getContext('2d');
                 ctx.fillStyle = 'rgba(0,0,0,0.7)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = 'white';
-                ctx.font = 'bold 48px system-ui';
+                ctx.font = 'bold 56px system-ui';
                 ctx.fillText(`${countdownValue}`, canvas.width/2 - 20, canvas.height/2 + 20);
                 document.getElementById('regCameraStatus').innerHTML = `🎯 Auto capturing in ${countdownValue}...`;
                 
@@ -452,7 +486,7 @@
             
             const newUser = { id: Date.now().toString(), ...pendingRegistration, descriptor: registerDescriptor, registeredAt: new Date().toISOString(), qrData: JSON.stringify({ id: Date.now().toString(), name: pendingRegistration.name, role: pendingRegistration.role, className: pendingRegistration.className }) };
             registeredUsers.push(newUser); saveLocal(); syncToFirebase(); buildMatcher();
-            await showSuccess('✅ Registration Successful!', `${newUser.name} (${newUser.role === 'teacher' ? 'Teacher' : 'Student'})\nClass: ${newUser.className}\n✅ Face saved!`);
+            await showSuccess('✅ Registration Successful!', `${newUser.name} (${newUser.role === 'teacher' ? 'Teacher' : 'Student'})\nClass: ${newUser.className}\n✅ Face saved to AI database!`);
             speakGreeting(newUser.name, newUser.role, "Registration successful");
             pendingRegistration = null; registerStep = 1;
             if (!availableClasses.includes(newUser.className)) { availableClasses.push(newUser.className); availableClasses.sort(); }
@@ -475,7 +509,7 @@
         
         // Edit/Delete
         async function editUser(user) {
-            const r = await Swal.fire({ title: 'Edit User', html: `<input id="n" class="swal2-input" value="${escapeHtml(user.name)}"><select id="r"><option value="student">Student</option><option value="teacher">Teacher</option></select><input id="c" class="swal2-input" value="${escapeHtml(user.className)}">`, preConfirm: () => ({ name: document.getElementById('n').value, role: document.getElementById('r').value, className: document.getElementById('c').value }) });
+            const r = await Swal.fire({ title: 'Edit User', html: `<input id="n" class="swal2-input" value="${escapeHtml(user.name)}"><select id="r"><option value="student" ${user.role === 'student' ? 'selected' : ''}>Student</option><option value="teacher" ${user.role === 'teacher' ? 'selected' : ''}>Teacher</option></select><input id="c" class="swal2-input" value="${escapeHtml(user.className)}">`, preConfirm: () => ({ name: document.getElementById('n').value, role: document.getElementById('r').value, className: document.getElementById('c').value }) });
             if (r.value) { user.name = r.value.name; user.role = r.value.role; user.className = r.value.className; saveLocal(); syncToFirebase(); buildMatcher(); updateUI(); await showSuccess('Updated', 'User info updated'); }
         }
         async function deleteUser(user) {
@@ -503,43 +537,44 @@
             const todayAttendance = attendanceRecords.filter(r => r.date === today).length;
             const totalStudents = registeredUsers.filter(u => u.role === 'student').length, totalTeachers = registeredUsers.filter(u => u.role === 'teacher').length;
             const present = attendanceRecords.filter(r => r.date === today && r.status === 'Hadir').length, late = attendanceRecords.filter(r => r.date === today && r.status === 'Lewat').length, strangers = strangerAlerts.filter(a => a.date === today).length;
-            const rows = attendanceRecords.slice(-8).reverse().map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td><td>${r.confidence || 100}%</td>`).join('');
-            const html = `<div class="class-selector"><select id="classFilter"><option value="Semua Kelas">📚 All Classes</option>${availableClasses.map(c => `<option value="${c}">📖 Class ${c}</option>`).join('')}</select></div><div class="stats-grid"><div class="stat-card"><div><h3>Total Users</h3><div class="stat-number">${registeredUsers.length}</div></div><div class="stat-icon"><i data-lucide="users"></i></div></div><div class="stat-card"><div><h3>Today's Present</h3><div class="stat-number">${todayAttendance}</div></div><div class="stat-icon"><i data-lucide="check-circle"></i></div></div><div class="stat-card"><div><h3>Students</h3><div class="stat-number">${totalStudents}</div></div><div class="stat-icon"><i data-lucide="graduation-cap"></i></div></div><div class="stat-card"><div><h3>Teachers</h3><div class="stat-number">${totalTeachers}</div></div><div class="stat-icon"><i data-lucide="chalkboard"></i></div></div><div class="stat-card"><div><h3>Present</h3><div class="stat-number">${present}</div></div><div class="stat-icon"><i data-lucide="smile"></i></div></div><div class="stat-card"><div><h3>Late</h3><div class="stat-number">${late}</div></div><div class="stat-icon"><i data-lucide="clock"></i></div></div><div class="stat-card" onclick="navigateTo('records')"><div><h3>Stranger Alerts</h3><div class="stat-number">${strangers}</div></div><div class="stat-icon"><i data-lucide="alert-triangle"></i></div></div></div><div class="chart-card"><h3><i data-lucide="pie-chart"></i> Today's Attendance</h3><canvas id="attChart"></canvas></div><div class="data-table"><h3>📋 Recent Attendance</h3><div class="table-container"><table><thead><tr><th>Name</th><th>Class</th><th>Status</th><th>Time</th><th>Confidence</th></tr></thead><tbody>${rows || '<tr><td colspan="5">No records</td>'}</tbody></div></div>`;
+            const rows = attendanceRecords.filter(r => selectedClass === "Semua Kelas" || r.className === selectedClass).slice(-8).reverse().map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td><td>${r.confidence || 100}%</td>`).join('');
+            const html = `<div class="class-selector"><select id="classFilter"><option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 All Classes</option>${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Class ${c}</option>`).join('')}</select></div><div class="stats-grid"><div class="stat-card"><div><h3>Total Users</h3><div class="stat-number">${registeredUsers.length}</div></div><div class="stat-icon"><i data-lucide="users"></i></div></div><div class="stat-card"><div><h3>Today's Present</h3><div class="stat-number">${todayAttendance}</div></div><div class="stat-icon"><i data-lucide="check-circle"></i></div></div><div class="stat-card"><div><h3>Students</h3><div class="stat-number">${totalStudents}</div></div><div class="stat-icon"><i data-lucide="graduation-cap"></i></div></div><div class="stat-card"><div><h3>Teachers</h3><div class="stat-number">${totalTeachers}</div></div><div class="stat-icon"><i data-lucide="chalkboard"></i></div></div><div class="stat-card"><div><h3>Present</h3><div class="stat-number">${present}</div></div><div class="stat-icon"><i data-lucide="smile"></i></div></div><div class="stat-card"><div><h3>Late</h3><div class="stat-number">${late}</div></div><div class="stat-icon"><i data-lucide="clock"></i></div></div><div class="stat-card" onclick="navigateTo('records')"><div><h3>Stranger Alerts</h3><div class="stat-number">${strangers}</div></div><div class="stat-icon"><i data-lucide="alert-triangle"></i></div></div></div><div class="chart-card"><h3><i data-lucide="pie-chart"></i> Today's Attendance</h3><canvas id="attChart"></canvas></div><div class="data-table"><h3>📋 Recent Attendance</h3><div class="table-container"><table><thead><tr><th>Name</th><th>Class</th><th>Status</th><th>Time</th><th>Confidence</th></tr></thead><tbody>${rows || '<tr><td colspan="5">No records</td>'}</tbody></table></div></div>`;
             document.getElementById('mainContent').innerHTML = html; lucide.createIcons();
             const ctx = document.getElementById('attChart')?.getContext('2d');
             if (ctx && attendanceChart) attendanceChart.destroy();
             if (ctx) attendanceChart = new Chart(ctx, { type: 'doughnut', data: { labels: ['Present', 'Late'], datasets: [{ data: [present, late], backgroundColor: ['#10b981', '#f59e0b'] }] } });
-            document.getElementById('classFilter').onchange = (e) => { selectedClass = e.target.value; renderDashboard(); };
+            document.getElementById('classFilter').onchange = (e) => { selectedClass = e.target.value; saveLocal(); renderDashboard(); };
         }
         
         function renderSecurityPage() {
-            const html = `<div class="camera-section"><div class="camera-selector"><select id="cameraSelect"><option value="user">📱 Front Camera</option><option value="environment">📷 Back Camera</option></select></div><div class="camera-container"><video id="securityVideo" autoplay playsinline></video><canvas id="securityCanvas" class="face-canvas"></canvas><div class="detection-indicator" id="detectCount">👤 Initializing...</div></div><div class="camera-status" id="securityStatus">🎯 Starting AI Security...</div><div class="camera-status" id="recognizedNames">✅ Waiting for face...</div></div><div class="data-table"><h3>🔒 Features</h3><p>✓ Auto face detection | Voice greeting | Stranger alert</p></div>`;
+            const html = `<div class="camera-section"><div class="camera-selector"><select id="cameraSelect"><option value="user">📱 Front Camera</option><option value="environment">📷 Back Camera (Flash)</option></select></div><div class="camera-container"><video id="securityVideo" autoplay playsinline></video><canvas id="securityCanvas" class="face-canvas"></canvas><div class="detection-indicator" id="detectCount">👤 Initializing...</div><div class="light-indicator" id="lightIndicator">☀️ Good</div><button class="torch-btn" id="torchBtn">🔦 OFF</button></div><div class="camera-status" id="securityStatus">🎯 Starting AI Security...</div><div class="camera-status" id="recognizedNames">✅ Waiting for face...</div></div><div class="data-table"><h3>🔒 Complete Features</h3><p>✓ Auto face detection | Voice greeting | Confidence score<br>✓ Auto flash in low light | Stranger alert + Telegram<br>✓ Real-time light indicator | Dark mode support</p></div>`;
             document.getElementById('mainContent').innerHTML = html; lucide.createIcons();
             document.getElementById('cameraSelect').onchange = (e) => { currentCameraId = e.target.value; startSecurityCamera(); };
+            document.getElementById('torchBtn').onclick = () => toggleTorch();
             startSecurityCamera();
         }
         
-        function renderQRPage() { document.getElementById('mainContent').innerHTML = `<div class="camera-section"><h3><i data-lucide="qr-code"></i> QR Scan</h3><div class="qr-container" id="qr-reader"></div><div class="camera-status">● Starting scanner...</div></div>`; lucide.createIcons(); setTimeout(() => startQRScanner(), 100); }
+        function renderQRPage() { document.getElementById('mainContent').innerHTML = `<div class="camera-section"><h3><i data-lucide="qr-code"></i> QR Code Scan</h3><div class="qr-container" id="qr-reader"></div><div class="camera-status">● Starting scanner...</div></div>`; lucide.createIcons(); setTimeout(() => startQRScanner(), 100); }
         
         function renderRegisterPage() {
-            const html = `<div class="step-indicator"><div class="step active"><div class="step-number">1</div><div class="step-label">Info</div></div><div class="step"><div class="step-number">2</div><div class="step-label">Auto Capture</div></div></div><div class="data-table"><div class="register-form"><input type="text" id="regName" placeholder="Full Name *"><select id="regRole"><option value="student">🎓 Student</option><option value="teacher">👩‍🏫 Teacher</option></select><select id="regClass"><option value="">Select Class *</option>${availableClasses.map(c => `<option value="${c}">Class ${c}</option>`).join('')}<option value="Lain-lain">Other</option></select><input type="text" id="regClassOther" placeholder="Other class" style="display:none;"><button class="btn btn-primary" id="continueBtn">Continue →</button></div></div><div class="data-table"><h3>👥 Registered Users</h3><div id="usersList"></div></div>`;
+            const html = `<div class="step-indicator"><div class="step active"><div class="step-number">1</div><div class="step-label">Info</div></div><div class="step"><div class="step-number">2</div><div class="step-label">Auto Capture</div></div></div><div class="data-table"><div class="register-form"><input type="text" id="regName" placeholder="Full Name *"><select id="regRole"><option value="student">🎓 Student</option><option value="teacher">👩‍🏫 Teacher</option></select><select id="regClass"><option value="">Select Class *</option>${availableClasses.map(c => `<option value="${c}">Class ${c}</option>`).join('')}<option value="Lain-lain">Other Class</option></select><input type="text" id="regClassOther" placeholder="Other class" style="display:none;"><button class="btn btn-primary" id="continueBtn">Continue →</button></div></div><div class="data-table"><h3>👥 Registered Users</h3><div id="usersList"></div></div>`;
             document.getElementById('mainContent').innerHTML = html; lucide.createIcons();
             document.getElementById('regClass').onchange = () => { document.getElementById('regClassOther').style.display = document.getElementById('regClass').value === 'Lain-lain' ? 'block' : 'none'; };
-            document.getElementById('continueBtn').onclick = async () => { let className = document.getElementById('regClass').value; if (className === 'Lain-lain') className = document.getElementById('regClassOther').value.trim(); if (!className) { await showError('Error', 'Select class'); return; } await saveNameAndClass(); };
+            document.getElementById('continueBtn').onclick = async () => { let className = document.getElementById('regClass').value; if (className === 'Lain-lain') className = document.getElementById('regClassOther').value.trim(); if (!className) { await showError('Error', 'Please select class'); return; } await saveNameAndClass(); };
             renderUsersTable();
         }
         
         function renderUsersTable() {
             const container = document.getElementById('usersList');
             if (!container) return;
-            container.innerHTML = `<div class="table-container"><table><thead><tr><th>Name</th><th>Role</th><th>Class</th><th></th></thead><tbody>${registeredUsers.map(u => `<tr><td>${escapeHtml(u.name)}</td><td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Teacher' : 'Student'}</span></td><td>${escapeHtml(u.className)}</td><td class="action-buttons"><button class="edit-btn" onclick="editUserById('${u.id}')"><i data-lucide="edit-2"></i></button><button class="delete-btn" onclick="deleteUserById('${u.id}')"><i data-lucide="trash-2"></i></button></td>`).join('') || '<tr><td colspan="4">No users</td>'}</tbody></div>`;
+            container.innerHTML = `<div class="table-container"><table><thead><tr><th>Name</th><th>Role</th><th>Class</th><th></th></thead><tbody>${registeredUsers.map(u => `<tr><td><strong>${escapeHtml(u.name)}</strong></td><td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Teacher' : 'Student'}</span></td><td>${escapeHtml(u.className)}</td><td class="action-buttons"><button class="edit-btn" onclick="editUserById('${u.id}')"><i data-lucide="edit-2"></i></button><button class="delete-btn" onclick="deleteUserById('${u.id}')"><i data-lucide="trash-2"></i></button></td>`).join('') || '<tr><td colspan="4">No users registered</td>'}</tbody> </div>`;
             lucide.createIcons();
         }
         window.editUserById = (id) => { const u = registeredUsers.find(x => x.id === id); if (u) editUser(u); };
         window.deleteUserById = (id) => { const u = registeredUsers.find(x => x.id === id); if (u) deleteUser(u); };
         
         function renderRegisterStep2() {
-            const html = `<div class="step-indicator"><div class="step completed"><div class="step-number">✓</div><div class="step-label">Info</div></div><div class="step active"><div class="step-number">2</div><div class="step-label">Auto Capture</div></div></div><div class="info-box"><i data-lucide="camera"></i><div><strong>Auto Capture in 3...2...1...</strong><br>Position your face, system will auto capture after 3 seconds!</div></div><div class="camera-container"><video id="registerVideo" autoplay playsinline></video><canvas id="registerCanvas" class="face-canvas"></canvas></div><div class="camera-status" id="regCameraStatus">● Position your face, auto capture in 3 seconds</div><div class="data-table"><div style="background:rgba(16,185,129,0.1);padding:16px;border-radius:20px;"><strong>📝 ${escapeHtml(pendingRegistration.name)}</strong><br>${pendingRegistration.role === 'teacher' ? 'Teacher' : 'Student'} | Class ${pendingRegistration.className}</div><button class="btn btn-secondary" id="backBtn" style="margin-top:16px;">← Back</button></div>`;
+            const html = `<div class="step-indicator"><div class="step completed"><div class="step-number">✓</div><div class="step-label">Info</div></div><div class="step active"><div class="step-number">2</div><div class="step-label">Auto 3-2-1</div></div></div><div class="info-box"><i data-lucide="camera"></i><div><strong>Auto Capture in 3...2...1...</strong><br>Position your face in the green box, system will auto capture after 3 seconds!</div></div><div class="camera-container"><video id="registerVideo" autoplay playsinline></video><canvas id="registerCanvas" class="face-canvas"></canvas></div><div class="camera-status" id="regCameraStatus">● Position your face, auto capture in 3 seconds</div><div class="data-table"><div style="background:rgba(16,185,129,0.1);padding:16px;border-radius:20px;"><strong>📝 ${escapeHtml(pendingRegistration.name)}</strong><br>${pendingRegistration.role === 'teacher' ? 'Teacher' : 'Student'} | Class ${pendingRegistration.className}</div><button class="btn btn-secondary" id="backBtn" style="margin-top:16px;">← Back</button></div>`;
             document.getElementById('mainContent').innerHTML = html; lucide.createIcons();
             startRegisterCamera();
             document.getElementById('backBtn').onclick = backToStep1;
@@ -548,18 +583,18 @@
         function renderRecordsPage() {
             let filtered = getFilteredAttendance();
             const paginated = getPaginatedData(filtered);
-            const todayStrangers = strangerAlerts.filter(a => a.date === getTodayDate());
-            const html = `<div class="class-selector"><select id="recordClassFilter"><option value="Semua Kelas">📚 All Classes</option>${availableClasses.map(c => `<option value="${c}">📖 Class ${c}</option>`).join('')}</select></div><div class="search-bar"><input type="text" id="searchInput" placeholder="🔍 Search..." value="${escapeHtml(searchQuery)}"><button class="btn-small btn-primary" id="searchBtn">Search</button></div><div class="date-filter"><input type="date" id="startDateInput" value="${startDate}"><input type="date" id="endDateInput" value="${endDate}"><button class="btn-small btn-primary" id="filterBtn">Filter</button><button class="btn-small btn-secondary" id="resetBtn">Reset</button></div><div class="data-table"><div style="display:flex;justify-content:space-between;"><h3>⚠️ Stranger Alerts (${todayStrangers.length})</h3><div><button class="btn-small btn-primary" id="pdfBtn">PDF</button><button class="btn-small btn-success" id="excelBtn">Excel</button></div></div><div id="strangerList"></div></div><div class="data-table"><h3>📋 Attendance Records</h3><div class="table-container"><table><thead><tr><th>Name</th><th>Class</th><th>Session</th><th>Status</th><th>Date</th><th>Time</th><th>Confidence</th></tr></thead><tbody>${paginated.map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td>${r.sessionName}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.date}</td><td>${r.time}</td><td>${r.confidence || 100}%</td>`).join('') || '<tr><td colspan="7">No records</td>'}</tbody></div>${renderPagination(filtered.length)}</div>`;
+            const todayStrangers = strangerAlerts.filter(a => a.date === getTodayDate() && (selectedClass === "Semua Kelas" || a.className === selectedClass));
+            const html = `<div class="class-selector"><select id="recordClassFilter"><option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 All Classes</option>${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Class ${c}</option>`).join('')}</select></div><div class="search-bar"><input type="text" id="searchInput" placeholder="🔍 Search by name..." value="${escapeHtml(searchQuery)}"><button class="btn-small btn-primary" id="searchBtn">Search</button></div><div class="date-filter"><input type="date" id="startDateInput" value="${startDate}"><input type="date" id="endDateInput" value="${endDate}"><button class="btn-small btn-primary" id="filterBtn">Filter</button><button class="btn-small btn-secondary" id="resetBtn">Reset</button></div><div class="data-table"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;"><h3>⚠️ Stranger Alerts (${todayStrangers.length})</h3><div><button class="btn-small btn-primary" id="pdfBtn">📄 PDF</button><button class="btn-small btn-success" id="excelBtn">📊 Excel</button></div></div><div id="strangerList"></div></div><div class="data-table"><h3>📋 Attendance Records (${filtered.length})</h3><div class="table-container"><table><thead><tr><th>Name</th><th>Class</th><th>Session</th><th>Status</th><th>Date</th><th>Time</th><th>Confidence</th></tr></thead><tbody>${paginated.map(r => `<tr><td><strong>${escapeHtml(r.name)}</strong></td><td>${escapeHtml(r.className)}</td><td>${r.sessionName}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.date}</td><td>${r.time}</td><td>${r.confidence || 100}%</td>`).join('') || '<tr><td colspan="7">No records</td>'}</tbody> </div>${renderPagination(filtered.length)}</div>`;
             document.getElementById('mainContent').innerHTML = html; lucide.createIcons();
-            document.getElementById('strangerList').innerHTML = todayStrangers.map(a => `<div class="danger-banner"><div>${a.imageData ? `<img src="${a.imageData}" class="stranger-image" onclick="viewStranger('${a.imageData}')">` : '📷'}</div><div><strong>⚠️ Stranger!</strong><br>Class: ${a.className} | Time: ${a.time}</div><button class="btn-small btn-primary" onclick="downloadImage('${a.imageData}',${a.id})">💾 Save</button></div>`).join('') || '<p>✅ No alerts</p>';
-            document.getElementById('recordClassFilter').onchange = (e) => { selectedClass = e.target.value; renderRecordsPage(); };
+            document.getElementById('strangerList').innerHTML = todayStrangers.length ? todayStrangers.map(a => `<div class="danger-banner"><div>${a.imageData ? `<img src="${a.imageData}" class="stranger-image" onclick="viewStranger('${a.imageData}')">` : '📷'}</div><div><strong>⚠️ Stranger Detected!</strong><br>Class: ${a.className} | Time: ${a.time}</div><button class="btn-small btn-primary" onclick="downloadImage('${a.imageData}',${a.id})">💾 Save Image</button></div>`).join('') : '<p>✅ No stranger alerts today</p>';
+            document.getElementById('recordClassFilter').onchange = (e) => { selectedClass = e.target.value; saveLocal(); currentPageNum = 1; renderRecordsPage(); };
             document.getElementById('searchBtn').onclick = () => { searchQuery = document.getElementById('searchInput').value; currentPageNum = 1; renderRecordsPage(); };
             document.getElementById('filterBtn').onclick = () => { startDate = document.getElementById('startDateInput').value; endDate = document.getElementById('endDateInput').value; currentPageNum = 1; renderRecordsPage(); };
             document.getElementById('resetBtn').onclick = () => { searchQuery = ""; startDate = ""; endDate = ""; currentPageNum = 1; renderRecordsPage(); };
             document.getElementById('pdfBtn').onclick = exportToPDF;
             document.getElementById('excelBtn').onclick = exportToCSV;
         }
-        window.viewStranger = (img) => { Swal.fire({ imageUrl: img, imageWidth: 300, confirmButtonColor: '#6366f1' }); };
+        window.viewStranger = (img) => { Swal.fire({ imageUrl: img, imageWidth: 300, confirmButtonColor: '#6366f1', borderRadius: '24px' }); };
         window.downloadImage = (data, id) => { const a = document.createElement('a'); a.href = data; a.download = `stranger_${id}.jpg`; a.click(); };
         
         function navigateTo(page) {
@@ -578,7 +613,7 @@
             const password = document.getElementById('loginPassword').value;
             const user = validUsers.find(u => u.username === username && u.password === password);
             if (user) {
-                currentUser = user;
+                currentUser = { username: user.username, role: user.role, name: user.name };
                 localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('mainHeader').style.display = 'flex';
@@ -586,15 +621,18 @@
                 document.getElementById('bottomNav').style.display = 'flex';
                 document.getElementById('userName').innerText = currentUser.name;
                 loadLocal(); loadFromFirebase().then(() => { buildMatcher(); renderDashboard(); lucide.createIcons(); loadFaceModels(); });
-            } else { showError('Login Failed', 'Invalid credentials'); }
+            } else { showError('Login Failed', 'Invalid username or password'); }
         }
         function logout() { localStorage.removeItem('loggedInUser'); location.reload(); }
         
-        document.getElementById('darkModeToggle')?.addEventListener('click', () => { document.body.classList.toggle('dark'); localStorage.setItem('darkMode', document.body.classList.contains('dark')); lucide.createIcons(); });
-        if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
+        // Dark Mode
+        let darkMode = localStorage.getItem('darkMode') === 'true';
+        if (darkMode) document.body.classList.add('dark');
+        document.getElementById('darkModeToggle').onclick = () => { document.body.classList.toggle('dark'); localStorage.setItem('darkMode', document.body.classList.contains('dark')); lucide.createIcons(); };
         
         document.getElementById('loginBtn').onclick = login;
         document.getElementById('logoutBtn').onclick = logout;
+        document.getElementById('loginPassword').addEventListener('keypress', (e) => { if (e.key === 'Enter') login(); });
         document.querySelectorAll('.nav-item').forEach(i => i.addEventListener('click', () => navigateTo(i.dataset.page)));
         window.navigateTo = navigateTo;
         setInterval(() => { if (document.getElementById('currentTime')) document.getElementById('currentTime').innerText = new Date().toLocaleTimeString('en-GB'); }, 1000);
@@ -609,6 +647,8 @@
             document.getElementById('userName').innerText = currentUser.name;
             loadLocal(); loadFromFirebase().then(() => { buildMatcher(); renderDashboard(); lucide.createIcons(); loadFaceModels(); });
         }
+        
+        setTimeout(() => { if (!currentUser) showInfo('SmartClass Pro Ultimate', '✨ Complete Features:\n✓ Auto capture 3-2-1\n✓ Voice greeting\n✓ Auto flash + light indicator\n✓ Telegram alert\n✓ Dark mode\n✓ Export PDF/Excel\n✓ Stranger image capture\n\nLogin: admin / admin123'); }, 1000);
     </script>
 </body>
 </html>
