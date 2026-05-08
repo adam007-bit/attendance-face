@@ -3,18 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Smart Class - AI Face Recognition with Blink Capture</title>
+    <title>Smart Class - AI Face Recognition with Auto Flash</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.min.js"></script>
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -36,7 +33,7 @@
             --text-secondary: #98989E;
             --border: #3A3A3C;
         }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; transition: background 0.3s, color 0.3s; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text-primary); transition: background 0.3s; }
         .header { background: var(--card-bg); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 99; }
         .header-left { display: flex; align-items: center; gap: 10px; }
         .header-left img { width: 40px; height: 40px; border-radius: 12px; background: var(--primary); }
@@ -67,7 +64,7 @@
         .status-warning { background: #FFF3E0; color: #E65100; }
         .status-error { background: #FFEBEE; color: #C62828; }
         .status-info { background: #E3F2FD; color: #1565C0; }
-        .status-blink { background: #E8F5E9; color: #2E7D32; animation: blink-bg 0.3s ease; }
+        .status-blink { background: #E8F5E9; animation: blink-bg 0.3s ease; }
         @keyframes blink-bg { 0% { background: #E8F5E9; } 50% { background: #34C759; color: white; } 100% { background: #E8F5E9; } }
         .data-table { background: var(--card-bg); border-radius: 24px; padding: 16px; margin-bottom: 16px; }
         .data-table h3 { font-size: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
@@ -80,7 +77,7 @@
         .badge-lewat { background: #FFF3E0; color: #E65100; }
         .badge-teacher { background: #F3E5F5; color: #6A1B9A; }
         .badge-student { background: #E8F5E9; color: #2E7D32; }
-        .register-form input, .register-form select { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid var(--border); margin-bottom: 12px; font-size: 15px; font-family: inherit; background: var(--card-bg); color: var(--text-primary); }
+        .register-form input, .register-form select { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid var(--border); margin-bottom: 12px; font-size: 15px; background: var(--card-bg); color: var(--text-primary); }
         .btn { padding: 14px 20px; border-radius: 30px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; transition: all 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-success { background: var(--success); color: white; }
@@ -111,9 +108,9 @@
         .delete-btn { color: var(--danger); }
         .camera-selector { margin-bottom: 12px; }
         .camera-selector select { width: 100%; padding: 10px; border-radius: 14px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-primary); }
-        .blink-indicator { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(52,199,89,0.9); color: white; padding: 12px 24px; border-radius: 60px; font-weight: bold; font-size: 18px; z-index: 20; white-space: nowrap; animation: pulse-ring 0.5s ease-out; pointer-events: none; }
-        @keyframes pulse-ring { 0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 0; } }
-        .countdown { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 8px 16px; border-radius: 40px; font-size: 24px; font-weight: bold; z-index: 20; font-family: monospace; }
+        .light-indicator { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 20px; font-size: 10px; color: white; z-index: 15; }
+        .torch-btn { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); border: none; border-radius: 30px; padding: 8px; cursor: pointer; z-index: 15; color: white; display: flex; align-items: center; gap: 5px; font-size: 10px; }
+        .flash-on { background: var(--warning); color: black; }
     </style>
 </head>
 <body>
@@ -122,7 +119,7 @@
             <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23007AFF' rx='20'/%3E%3Cpath fill='white' d='M30 35 L45 28 L70 35 L65 68 L50 75 L35 68 L30 35Z'/%3E%3Ccircle cx='50' cy='48' r='8' fill='white'/%3E%3C/svg%3E">
             <div>
                 <h1>Smart Class Security</h1>
-                <p>Blink to Register | AI Face Recognition</p>
+                <p>Auto Flash | Blink Register | AI Face Recognition</p>
             </div>
         </div>
         <div class="header-right">
@@ -142,7 +139,7 @@
     </div>
 
     <script>
-        // ==================== FIREBASE CONFIGURATION ====================
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBZYM0Fe06bb_Q67U6Pn42RSoZB-mjo3io",
             authDomain: "secuirityschool.firebaseapp.com",
@@ -151,13 +148,10 @@
             messagingSenderId: "321431921421",
             appId: "1:321431921421:web:265abf74d07deb917bc644"
         };
-        
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         
-        let isOnline = true;
-        
-        // ==================== DATA STORAGE ====================
+        // Data variables
         let registeredUsers = [];
         let attendanceRecords = [];
         let strangerAlerts = [];
@@ -174,20 +168,20 @@
         let securityInterval = null;
         let isSecurityActive = false;
         let currentCameraId = 'user';
+        let torchEnabled = false;
+        let videoTrack = null;
+        let autoFlashTriggered = false;
+        let lastLightLevel = 100;
         
         // Blink detection variables
-        let eyeState = { left: true, right: true };
         let blinkCount = 0;
-        let lastBlinkTime = 0;
-        let isCapturing = false;
-        let captureTimeout = null;
         let expectedBlinks = 2;
+        let isBlinking = false;
+        let captureTriggered = false;
         
         // Face recognition
         let modelsLoaded = false;
         let faceMatcher = null;
-        
-        // QR Scanner
         let html5QrCode = null;
         let isScanning = false;
         
@@ -195,249 +189,135 @@
         let lastStrangerAlertTime = 0;
         let lastAttendanceTime = {};
         
-        const DETECTION_INTERVAL = 250;
+        const DETECTION_INTERVAL = 200; // 5x per second!
         const INPUT_SIZE = 320;
         
-        // ==================== FIREBASE SYNC FUNCTIONS ====================
-        async function syncToFirebase() {
-            if (!isOnline) return;
+        // ==================== TORCH / FLASH CONTROL ====================
+        async function enableTorch() {
+            if (!videoTrack) return;
             try {
-                for (const user of registeredUsers) {
-                    const userData = { ...user };
-                    delete userData.descriptor;
-                    await db.collection('users').doc(user.id).set(userData, { merge: true });
-                }
-                for (const att of attendanceRecords) {
-                    await db.collection('attendance').doc(`${att.id}_${att.date}_${att.session}`).set(att, { merge: true });
-                }
-                for (const alert of strangerAlerts) {
-                    await db.collection('strangers').doc(alert.id.toString()).set(alert, { merge: true });
-                }
-            } catch (err) { console.error('Sync error:', err); isOnline = false; }
+                await videoTrack.applyConstraints({ advanced: [{ torch: true }] });
+                torchEnabled = true;
+                updateTorchButton(true);
+            } catch(e) { console.log('Torch not supported'); }
+        }
+        
+        async function disableTorch() {
+            if (!videoTrack) return;
+            try {
+                await videoTrack.applyConstraints({ advanced: [{ torch: false }] });
+                torchEnabled = false;
+                updateTorchButton(false);
+            } catch(e) { console.log('Torch not supported'); }
+        }
+        
+        function toggleTorch() { torchEnabled ? disableTorch() : enableTorch(); }
+        
+        function updateTorchButton(isOn) {
+            const btn = document.getElementById('torchBtn');
+            if (btn) {
+                btn.innerHTML = isOn ? '<i data-lucide="sun"></i> Flash ON' : '<i data-lucide="sun"></i> Flash OFF';
+                if (isOn) btn.classList.add('flash-on');
+                else btn.classList.remove('flash-on');
+                lucide.createIcons();
+            }
+        }
+        
+        // ==================== LIGHT DETECTION ====================
+        function detectLightLevel(video) {
+            if (!video || !video.videoWidth) return 100;
+            const canvas = document.createElement('canvas');
+            canvas.width = 50;
+            canvas.height = 50;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, 50, 50);
+            const data = ctx.getImageData(0, 0, 50, 50).data;
+            let total = 0;
+            for (let i = 0; i < data.length; i += 4) total += (data[i] + data[i+1] + data[i+2]) / 3;
+            return total / 2500;
+        }
+        
+        function updateLightIndicator(level) {
+            const indicator = document.getElementById('lightIndicator');
+            if (indicator) {
+                let text = '', color = '';
+                if (level < 50) { text = '🌙 Gelap - Flash ON'; color = '#FF9500'; }
+                else if (level < 100) { text = '☀️ Sederhana'; color = '#FFD700'; }
+                else { text = '☀️☀️ Terang'; color = '#34C759'; }
+                indicator.innerHTML = text;
+                indicator.style.backgroundColor = color;
+                indicator.style.color = 'black';
+            }
+            return level < 60;
+        }
+        
+        // ==================== SYNC FUNCTIONS ====================
+        async function syncToFirebase() {
+            try {
+                for (const u of registeredUsers) { const data = { ...u }; delete data.descriptor; await db.collection('users').doc(u.id).set(data, { merge: true }); }
+                for (const a of attendanceRecords) await db.collection('attendance').doc(`${a.id}_${a.date}_${a.session}`).set(a, { merge: true });
+                for (const s of strangerAlerts) await db.collection('strangers').doc(s.id.toString()).set(s, { merge: true });
+            } catch(e) { console.error(e); }
         }
         
         async function loadFromFirebase() {
             try {
-                const usersSnapshot = await db.collection('users').get();
-                usersSnapshot.forEach(doc => {
-                    const existing = registeredUsers.find(u => u.id === doc.id);
-                    if (!existing) registeredUsers.push(doc.data());
-                });
-                const attendanceSnapshot = await db.collection('attendance').get();
-                attendanceSnapshot.forEach(doc => {
-                    const existing = attendanceRecords.find(a => a.id === doc.data().id && a.date === doc.data().date && a.session === doc.data().session);
-                    if (!existing) attendanceRecords.push(doc.data());
-                });
-                const strangersSnapshot = await db.collection('strangers').get();
-                strangersSnapshot.forEach(doc => {
-                    const existing = strangerAlerts.find(s => s.id === doc.data().id);
-                    if (!existing) strangerAlerts.push(doc.data());
-                });
-                saveUsersLocal();
-                saveAttendanceLocal();
-                saveStrangerAlertsLocal();
+                const u = await db.collection('users').get(); u.forEach(d => { if (!registeredUsers.find(x => x.id === d.id)) registeredUsers.push(d.data()); });
+                const a = await db.collection('attendance').get(); a.forEach(d => { if (!attendanceRecords.find(x => x.id === d.data().id && x.date === d.data().date)) attendanceRecords.push(d.data()); });
+                const s = await db.collection('strangers').get(); s.forEach(d => { if (!strangerAlerts.find(x => x.id === d.data().id)) strangerAlerts.push(d.data()); });
+                saveLocal();
                 updateUI();
-                isOnline = true;
-            } catch (err) { console.error('Load error:', err); isOnline = false; }
+            } catch(e) { console.error(e); }
         }
         
-        function saveUsersLocal() {
-            const usersToSave = registeredUsers.map(u => ({ id: u.id, name: u.name, role: u.role, className: u.className, registeredAt: u.registeredAt }));
-            localStorage.setItem('fast_face_users', JSON.stringify(usersToSave));
-            const descriptorsToSave = {};
-            registeredUsers.forEach(u => { if (u.descriptor) descriptorsToSave[u.id] = u.descriptor; });
-            localStorage.setItem('fast_face_descriptors', JSON.stringify(descriptorsToSave));
+        function saveLocal() {
+            localStorage.setItem('users', JSON.stringify(registeredUsers.map(u => ({ id: u.id, name: u.name, role: u.role, className: u.className, registeredAt: u.registeredAt }))));
+            localStorage.setItem('attendance', JSON.stringify(attendanceRecords));
+            localStorage.setItem('strangers', JSON.stringify(strangerAlerts));
+            const desc = {}; registeredUsers.forEach(u => { if (u.descriptor) desc[u.id] = u.descriptor; });
+            localStorage.setItem('descriptors', JSON.stringify(desc));
+            localStorage.setItem('selected_class', selectedClass);
         }
         
-        function saveAttendanceLocal() { localStorage.setItem('fast_face_attendance', JSON.stringify(attendanceRecords)); }
-        function saveStrangerAlertsLocal() { localStorage.setItem('fast_face_stranger', JSON.stringify(strangerAlerts)); }
-        
-        function loadLocalData() {
-            const savedUsers = localStorage.getItem('fast_face_users');
-            if (savedUsers) { registeredUsers = JSON.parse(savedUsers); }
-            const savedAttendance = localStorage.getItem('fast_face_attendance');
-            if (savedAttendance) attendanceRecords = JSON.parse(savedAttendance);
-            const savedAlerts = localStorage.getItem('fast_face_stranger');
-            if (savedAlerts) strangerAlerts = JSON.parse(savedAlerts);
-            const savedClass = localStorage.getItem('selected_class');
-            if (savedClass) selectedClass = savedClass;
-            const savedDescriptors = localStorage.getItem('fast_face_descriptors');
-            if (savedDescriptors) {
-                const descriptors = JSON.parse(savedDescriptors);
-                registeredUsers.forEach(user => { if (descriptors[user.id]) user.descriptor = descriptors[user.id]; });
-            }
+        function loadLocal() {
+            const u = localStorage.getItem('users'); if (u) registeredUsers = JSON.parse(u);
+            const a = localStorage.getItem('attendance'); if (a) attendanceRecords = JSON.parse(a);
+            const s = localStorage.getItem('strangers'); if (s) strangerAlerts = JSON.parse(s);
+            const c = localStorage.getItem('selected_class'); if (c) selectedClass = c;
+            const d = localStorage.getItem('descriptors');
+            if (d) { const desc = JSON.parse(d); registeredUsers.forEach(u => { if (desc[u.id]) u.descriptor = desc[u.id]; }); }
         }
         
-        // ==================== HELPER FUNCTIONS ====================
-        function playBeep() {
-            try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.frequency.value = 880;
-                gain.gain.value = 0.3;
-                osc.start();
-                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
-                setTimeout(() => osc.stop(), 300);
-            } catch(e) { }
-        }
-        
-        function playAlertBeep() {
-            try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                for (let i = 0; i < 3; i++) {
-                    setTimeout(() => {
-                        const osc = audioCtx.createOscillator();
-                        const gain = audioCtx.createGain();
-                        osc.connect(gain);
-                        gain.connect(audioCtx.destination);
-                        osc.frequency.value = 880;
-                        gain.gain.value = 0.4;
-                        osc.start();
-                        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
-                        setTimeout(() => osc.stop(), 200);
-                    }, i * 200);
-                }
-            } catch(e) { }
-            if ('vibrate' in navigator) navigator.vibrate([200, 150, 200]);
-            sendBrowserNotification('⚠️ AMARAN!', 'Wajah asing dikesan!');
-        }
-        
-        function sendBrowserNotification(title, body) {
-            if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification(title, { body: body });
-            } else if ('Notification' in window && Notification.permission !== 'denied') {
-                Notification.requestPermission();
-            }
-        }
+        // Helper functions
+        function playBeep() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value = 880; g.gain.value = 0.3; o.start(); g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3); setTimeout(() => o.stop(), 300); } catch(e) {} }
+        function playAlertBeep() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); for (let i = 0; i < 3; i++) { setTimeout(() => { const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value = 880; g.gain.value = 0.4; o.start(); g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2); setTimeout(() => o.stop(), 200); }, i * 200); } } catch(e) {} if ('vibrate' in navigator) navigator.vibrate([200, 150, 200]); }
         
         function getTodayDate() { return new Date().toLocaleDateString('en-CA'); }
         function getCurrentTime() { return new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
         function getCurrentSession() { return new Date().getHours() < 13 ? "pagi" : "petang"; }
-        function escapeHtml(str) { return String(str).replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
+        function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m); }
         
-        async function showSuccess(title, message) { await Swal.fire({ title, text: message, icon: 'success', confirmButtonColor: '#007AFF', confirmButtonText: 'OK', background: 'white', borderRadius: '20px' }); }
-        async function showError(title, message) { await Swal.fire({ title, text: message, icon: 'error', confirmButtonColor: '#007AFF', confirmButtonText: 'OK', background: 'white', borderRadius: '20px' }); }
-        async function showWarning(title, message) { await Swal.fire({ title, text: message, icon: 'warning', confirmButtonColor: '#FF9500', confirmButtonText: 'OK', background: 'white', borderRadius: '20px' }); }
-        async function showInfo(title, message) { await Swal.fire({ title, text: message, icon: 'info', confirmButtonColor: '#007AFF', confirmButtonText: 'OK', background: 'white', borderRadius: '20px' }); }
+        async function showSuccess(t, m) { await Swal.fire({ title: t, text: m, icon: 'success', confirmButtonColor: '#007AFF' }); }
+        async function showError(t, m) { await Swal.fire({ title: t, text: m, icon: 'error', confirmButtonColor: '#007AFF' }); }
+        async function showWarning(t, m) { await Swal.fire({ title: t, text: m, icon: 'warning', confirmButtonColor: '#FF9500' }); }
+        async function showInfo(t, m) { await Swal.fire({ title: t, text: m, icon: 'info', confirmButtonColor: '#007AFF' }); }
         
-        async function captureImageFromVideo(videoElement) {
-            if (!videoElement || !videoElement.videoWidth) return null;
-            const canvas = document.createElement('canvas');
-            canvas.width = videoElement.videoWidth;
-            canvas.height = videoElement.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-            return canvas.toDataURL('image/jpeg', 0.8);
-        }
+        async function captureImage(video) { if (!video || !video.videoWidth) return null; const c = document.createElement('canvas'); c.width = video.videoWidth; c.height = video.videoHeight; c.getContext('2d').drawImage(video, 0, 0); return c.toDataURL('image/jpeg', 0.8); }
         
-        function updateUI() { if (currentPage === 'dashboard') renderDashboard(); if (currentPage === 'records') renderRecordsPage(); }
-        
-        // ==================== EXPORT PDF ====================
-        async function exportToPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const today = getTodayDate();
-            const todayAttendance = attendanceRecords.filter(r => r.date === today);
-            const todayStrangers = strangerAlerts.filter(a => a.date === today);
-            
-            doc.setFontSize(18);
-            doc.text('Laporan Kehadiran & Keselamatan', 20, 20);
-            doc.setFontSize(12);
-            doc.text(`Tarikh: ${today}`, 20, 35);
-            doc.text(`Jumlah Kehadiran: ${todayAttendance.length}`, 20, 45);
-            doc.text(`Jumlah Wajah Asing: ${todayStrangers.length}`, 20, 55);
-            
-            let y = 70;
-            doc.text('Senarai Kehadiran:', 20, y);
-            y += 10;
-            todayAttendance.forEach((att, i) => {
-                if (y > 270) { doc.addPage(); y = 20; }
-                doc.text(`${i+1}. ${att.name} (${att.className}) - ${att.status} - ${att.time}`, 20, y);
-                y += 7;
-            });
-            
-            if (todayStrangers.length > 0) {
-                y += 10;
-                doc.text('Laporan Wajah Asing:', 20, y);
-                y += 10;
-                todayStrangers.forEach((alert, i) => {
-                    if (y > 270) { doc.addPage(); y = 20; }
-                    doc.text(`${i+1}. Kelas: ${alert.className} - Masa: ${alert.time}`, 20, y);
-                    y += 7;
-                });
-            }
-            doc.save(`laporan_${today}.pdf`);
-            await showSuccess('Eksport Berjaya', 'PDF laporan telah dimuat turun.');
-        }
-        
-        // ==================== EDIT/DELETE USER ====================
-        async function editUser(user) {
-            const { value: formValues } = await Swal.fire({
-                title: 'Edit Pengguna',
-                html: `<input id="swal-name" class="swal2-input" placeholder="Nama" value="${escapeHtml(user.name)}">
-                       <select id="swal-role" class="swal2-select">
-                           <option value="student" ${user.role === 'student' ? 'selected' : ''}>Pelajar</option>
-                           <option value="teacher" ${user.role === 'teacher' ? 'selected' : ''}>Guru</option>
-                       </select>
-                       <input id="swal-class" class="swal2-input" placeholder="Kelas" value="${escapeHtml(user.className)}">`,
-                focusConfirm: false,
-                preConfirm: () => ({ name: document.getElementById('swal-name').value, role: document.getElementById('swal-role').value, className: document.getElementById('swal-class').value })
-            });
-            if (formValues) {
-                user.name = formValues.name;
-                user.role = formValues.role;
-                user.className = formValues.className;
-                saveUsersLocal();
-                await syncToFirebase();
-                buildFaceMatcher();
-                if (currentPage === 'register') renderRegisterPage();
-                if (currentPage === 'records') renderRecordsPage();
-                await showSuccess('Berjaya', 'Maklumat pengguna dikemaskini.');
-            }
-        }
-        
-        async function deleteUser(user) {
-            const confirm = await Swal.fire({ title: 'Padam Pengguna?', text: `Padam ${user.name}?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#FF3B30', confirmButtonText: 'Ya, Padam', cancelButtonText: 'Batal' });
-            if (confirm.isConfirmed) {
-                registeredUsers = registeredUsers.filter(u => u.id !== user.id);
-                saveUsersLocal();
-                await syncToFirebase();
-                buildFaceMatcher();
-                if (currentPage === 'register') renderRegisterPage();
-                if (currentPage === 'records') renderRecordsPage();
-                await showSuccess('Berjaya', 'Pengguna telah dipadam.');
-            }
-        }
+        function updateUI() { if (currentPage === 'dashboard') renderDashboard(); if (currentPage === 'records') renderRecordsPage(); if (currentPage === 'register') renderUsersTable(); }
         
         // ==================== FACE RECOGNITION ====================
-        let modelLoadPromise = null;
         async function loadFaceModels() {
-            if (modelLoadPromise) return modelLoadPromise;
-            modelLoadPromise = (async () => {
-                const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
-                await Promise.all([
-                    faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
-                ]);
-                modelsLoaded = true;
-                buildFaceMatcher();
-            })();
-            return modelLoadPromise;
+            const url = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
+            await Promise.all([faceapi.nets.ssdMobilenetv1.loadFromUri(url), faceapi.nets.faceLandmark68Net.loadFromUri(url), faceapi.nets.faceRecognitionNet.loadFromUri(url)]);
+            modelsLoaded = true;
+            buildMatcher();
         }
         
-        function buildFaceMatcher() {
-            const labeledDescriptors = [];
-            for (const user of registeredUsers) {
-                if (user.descriptor) {
-                    const descriptor = new Float32Array(user.descriptor);
-                    labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(user.id, [descriptor]));
-                }
-            }
-            if (labeledDescriptors.length > 0) faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.55);
+        function buildMatcher() {
+            const labeled = [];
+            for (const u of registeredUsers) if (u.descriptor) labeled.push(new faceapi.LabeledFaceDescriptors(u.id, [new Float32Array(u.descriptor)]));
+            if (labeled.length) faceMatcher = new faceapi.FaceMatcher(labeled, 0.55);
         }
         
         // ==================== SECURITY CAMERA ====================
@@ -446,55 +326,57 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentCameraId, width: { ideal: INPUT_SIZE }, height: { ideal: INPUT_SIZE }, frameRate: { ideal: 30 } } });
                 securityStream = stream;
-                const video = document.getElementById('securityVideo');
-                if (video) { video.srcObject = stream; video.onloadedmetadata = () => video.play(); }
+                videoTrack = stream.getVideoTracks()[0];
+                document.getElementById('securityVideo').srcObject = stream;
                 isSecurityActive = true;
                 await loadFaceModels();
                 if (securityInterval) clearInterval(securityInterval);
-                securityInterval = setInterval(detectAndProcessFaces, DETECTION_INTERVAL);
-            } catch(err) { console.error(err); }
+                securityInterval = setInterval(detectAndProcess, DETECTION_INTERVAL);
+                const s = document.getElementById('securityStatus');
+                if (s) s.innerHTML = '✅ AI Security Aktif - 5x sesaat';
+            } catch(e) { console.error(e); }
         }
         
-        function stopSecurityCamera() {
-            if (securityStream) { securityStream.getTracks().forEach(track => track.stop()); securityStream = null; }
-            if (securityInterval) { clearInterval(securityInterval); securityInterval = null; }
-            isSecurityActive = false;
-        }
+        function stopSecurityCamera() { if (securityStream) { securityStream.getTracks().forEach(t => t.stop()); securityStream = null; } if (securityInterval) clearInterval(securityInterval); isSecurityActive = false; }
         
-        async function detectAndProcessFaces() {
+        async function detectAndProcess() {
             if (!isSecurityActive || !modelsLoaded) return;
             const video = document.getElementById('securityVideo');
             const canvas = document.getElementById('securityCanvas');
             if (!video || !video.videoWidth || !canvas) return;
+            
+            const light = detectLightLevel(video);
+            lastLightLevel = light;
+            const isDark = light < 60;
+            if (isDark && currentCameraId === 'environment' && !torchEnabled && videoTrack) { await enableTorch(); autoFlashTriggered = true; }
+            else if (!isDark && autoFlashTriggered && torchEnabled) { await disableTorch(); autoFlashTriggered = false; }
+            updateLightIndicator(light);
+            
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 })).withFaceLandmarks().withFaceDescriptors();
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            let recognizedNames = [];
-            let strangerDetected = false;
-            for (const detection of detections) {
-                let bestMatch = null;
+            let recognized = [], stranger = false;
+            for (const d of detections) {
+                let best = null;
                 if (faceMatcher) {
-                    const bestMatchResult = faceMatcher.findBestMatch(detection.descriptor);
-                    if (bestMatchResult.label !== 'unknown') {
-                        const matchedUser = registeredUsers.find(u => u.id === bestMatchResult.label);
-                        if (matchedUser) bestMatch = matchedUser;
-                    }
+                    const r = faceMatcher.findBestMatch(d.descriptor);
+                    if (r.label !== 'unknown') best = registeredUsers.find(u => u.id === r.label);
                 }
-                const box = detection.detection.box;
+                const box = d.detection.box;
                 ctx.beginPath();
                 ctx.rect(box.x, box.y, box.width, box.height);
-                if (bestMatch) {
+                if (best) {
                     ctx.strokeStyle = '#34C759';
                     ctx.lineWidth = 3;
                     ctx.stroke();
                     ctx.fillStyle = '#34C759';
                     ctx.font = 'bold 14px system-ui';
-                    ctx.fillText(`${bestMatch.name}`, box.x, box.y - 5);
-                    recognizedNames.push(bestMatch.name);
-                    await autoMarkAttendance(bestMatch);
+                    ctx.fillText(best.name, box.x, box.y - 5);
+                    recognized.push(best.name);
+                    await autoMark(best);
                 } else {
                     ctx.strokeStyle = '#FF3B30';
                     ctx.lineWidth = 3;
@@ -502,384 +384,157 @@
                     ctx.fillStyle = '#FF3B30';
                     ctx.font = 'bold 14px system-ui';
                     ctx.fillText('⚠️ ASING!', box.x, box.y - 5);
-                    strangerDetected = true;
+                    stranger = true;
                 }
             }
-            const detectCountEl = document.getElementById('detectCount');
-            if (detectCountEl) detectCountEl.innerHTML = detections.length > 0 ? `👤 ${detections.length} wajah` : '👤 Tiada wajah';
-            const recognizedEl = document.getElementById('recognizedNames');
-            if (recognizedEl) recognizedEl.innerHTML = recognizedNames.length > 0 ? `✅ Dikenali: ${recognizedNames.join(', ')}` : '✅ Menunggu wajah...';
-            if (strangerDetected) {
-                const now = Date.now();
-                if (now - lastStrangerAlertTime > 8000) {
-                    lastStrangerAlertTime = now;
-                    const imageData = await captureImageFromVideo(video);
-                    await reportStrangerFace(imageData);
-                }
-            }
+            document.getElementById('detectCount').innerHTML = detections.length ? `👤 ${detections.length} wajah (${Math.round(light)}% cahaya)` : '👤 Tiada wajah';
+            document.getElementById('recognizedNames').innerHTML = recognized.length ? `✅ Dikenali: ${recognized.join(', ')}` : '✅ Menunggu wajah...';
+            if (stranger && Date.now() - lastStrangerAlertTime > 8000) { lastStrangerAlertTime = Date.now(); const img = await captureImage(video); await reportStranger(img); }
         }
         
-        async function autoMarkAttendance(user) {
-            const today = getTodayDate();
-            const session = getCurrentSession();
-            const sessionName = session === 'pagi' ? 'Sesi Pagi' : 'Sesi Petang';
-            const key = `${user.id}_${today}_${session}`;
+        async function autoMark(user) {
+            const today = getTodayDate(), session = getCurrentSession(), key = `${user.id}_${today}_${session}`;
             if (lastAttendanceTime[key] && Date.now() - lastAttendanceTime[key] < 5000) return;
-            const alreadyLogged = attendanceRecords.find(rec => rec.id === user.id && rec.date === today && rec.session === session);
-            if (!alreadyLogged) {
+            if (!attendanceRecords.find(r => r.id === user.id && r.date === today && r.session === session)) {
                 lastAttendanceTime[key] = Date.now();
-                const now = new Date();
-                const timeValue = now.getHours() * 60 + now.getMinutes();
+                const tv = new Date().getHours() * 60 + new Date().getMinutes();
                 let status = "Hadir";
-                if (session === 'pagi' && timeValue > 510) status = "Lewat";
-                if (session === 'petang' && timeValue > 810) status = "Lewat";
-                attendanceRecords.push({
-                    id: user.id, name: user.name, role: user.role, className: user.className,
-                    status: status, session: session, sessionName: sessionName,
-                    time: getCurrentTime(), date: today, timestamp: Date.now(), method: 'Face Auto'
-                });
-                saveAttendanceLocal();
-                await syncToFirebase();
-                playBeep();
-                Swal.fire({ title: '✅ Kehadiran!', html: `<strong>${escapeHtml(user.name)}</strong><br>${status} | ${sessionName}`, icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-                updateUI();
+                if (session === 'pagi' && tv > 510) status = "Lewat";
+                if (session === 'petang' && tv > 810) status = "Lewat";
+                attendanceRecords.push({ id: user.id, name: user.name, role: user.role, className: user.className, status, session, sessionName: session === 'pagi' ? 'Sesi Pagi' : 'Sesi Petang', time: getCurrentTime(), date: today, timestamp: Date.now(), method: 'Face Auto' });
+                saveLocal(); syncToFirebase(); playBeep(); updateUI();
             }
         }
         
-        async function reportStrangerFace(imageData) {
-            const alert = { id: Date.now(), className: selectedClass === "Semua Kelas" ? "Unknown" : selectedClass, time: getCurrentTime(), date: getTodayDate(), session: getCurrentSession(), imageData: imageData };
+        async function reportStranger(img) {
+            const alert = { id: Date.now(), className: selectedClass === "Semua Kelas" ? "Unknown" : selectedClass, time: getCurrentTime(), date: getTodayDate(), session: getCurrentSession(), imageData: img };
             strangerAlerts.push(alert);
-            saveStrangerAlertsLocal();
-            await syncToFirebase();
-            playAlertBeep();
-            const imageHtml = imageData ? `<img src="${imageData}" style="width: 120px; border-radius: 12px; margin: 10px 0; border: 2px solid red;">` : '';
-            await Swal.fire({ title: '⚠️ AMARAN! Wajah Asing', html: `${imageHtml}<strong>Kelas:</strong> ${alert.className}<br><strong>Masa:</strong> ${getCurrentTime()}`, icon: 'warning', confirmButtonColor: '#FF3B30', confirmButtonText: 'OK' });
+            saveLocal(); syncToFirebase(); playAlertBeep();
+            await Swal.fire({ title: '⚠️ AMARAN! Wajah Asing', html: `<img src="${img}" style="width:150px;border-radius:12px;margin:10px 0;"><br>Kelas: ${alert.className}<br>Masa: ${alert.time}`, icon: 'warning', confirmButtonColor: '#FF3B30' });
             updateUI();
         }
         
         // ==================== QR SCANNER ====================
         async function startQRScanner() {
             if (isScanning) return;
-            const qrContainer = document.getElementById('qr-reader');
-            if (!qrContainer) return;
             try {
                 html5QrCode = new Html5Qrcode("qr-reader");
-                await html5QrCode.start({ facingMode: "environment" }, { fps: 15, qrbox: { width: 250, height: 250 }, aspectRatio: 1 },
-                    async (decodedText) => {
-                        if (decodedText && !window.isProcessing) {
-                            window.isProcessing = true;
-                            try {
-                                const qrData = JSON.parse(decodedText);
-                                const user = registeredUsers.find(u => u.id === qrData.id);
-                                if (user) { await autoMarkAttendance(user); playBeep(); }
-                                else { await showError('❌ Tidak Dikenali', 'QR tidak berdaftar.'); playAlertBeep(); }
-                            } catch(e) { await showError('QR Tidak Sah', ''); playAlertBeep(); }
-                            setTimeout(() => { window.isProcessing = false; }, 1500);
-                        }
-                    }, (error) => {});
-                isScanning = true;
-            } catch(err) { await showError('Ralat Kamera', 'Kamera tidak dapat diakses.'); }
-        }
-        
-        function stopQRScanner() { if (html5QrCode && isScanning) { html5QrCode.stop().catch(e => console.log(e)); isScanning = false; } }
-        
-        // ==================== BLINK DETECTION FOR REGISTRATION ====================
-        async function startBlinkDetection() {
-            if (registerStream) stopRegisterCamera();
-            
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentCameraId, width: { ideal: INPUT_SIZE }, height: { ideal: INPUT_SIZE } } });
-                registerStream = stream;
-                const video = document.getElementById('registerVideo');
-                if (video) {
-                    video.srcObject = stream;
-                    video.onloadedmetadata = () => video.play();
-                }
-                
-                if (registerInterval) clearInterval(registerInterval);
-                registerInterval = setInterval(detectBlinkForRegistration, 150);
-                
-                const statusEl = document.getElementById('registerCameraStatus');
-                if (statusEl) {
-                    statusEl.innerHTML = '👁️ KEDIPKAN MATA 2 KALI untuk daftar otomatik!';
-                    statusEl.className = 'camera-status status-info';
-                }
-                
-                // Reset blink counter
-                blinkCount = 0;
-                isCapturing = true;
-                expectedBlinks = 2;
-                
-                // Show instruction
-                Swal.fire({
-                    title: '👁️ Auto Capture Mode',
-                    html: 'Kedipkan mata <strong>2 kali</strong> untuk daftar wajah secara automatik!<br><br>Sistem akan tangkap gambar bila anda kedip.',
-                    icon: 'info',
-                    confirmButtonText: 'OK, Sedia',
-                    timer: 5000,
-                    timerProgressBar: true
+                await html5QrCode.start({ facingMode: "environment" }, { fps: 15, qrbox: { width: 250, height: 250 } }, async (t) => {
+                    if (t && !window.processing) {
+                        window.processing = true;
+                        try { const d = JSON.parse(t), u = registeredUsers.find(x => x.id === d.id); if (u) { await autoMark(u); playBeep(); } else { await showError('❌', 'QR tidak berdaftar.'); playAlertBeep(); } } catch(e) { await showError('QR Tidak Sah', ''); playAlertBeep(); }
+                        setTimeout(() => { window.processing = false; }, 1500);
+                    }
                 });
-                
-            } catch(err) { console.error(err); }
+                isScanning = true;
+            } catch(e) { await showError('Ralat', 'Kamera tidak dapat diakses.'); }
         }
         
-        async function detectBlinkForRegistration() {
+        function stopQRScanner() { if (html5QrCode && isScanning) { html5QrCode.stop(); isScanning = false; } }
+        
+        // ==================== BLINK DETECTION FOR REGISTER ====================
+        function startBlinkCamera() {
+            if (registerStream) registerStream.getTracks().forEach(t => t.stop());
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: INPUT_SIZE }, height: { ideal: INPUT_SIZE } } }).then(s => {
+                registerStream = s;
+                document.getElementById('registerVideo').srcObject = s;
+                if (registerInterval) clearInterval(registerInterval);
+                registerInterval = setInterval(detectBlink, 150);
+                blinkCount = 0; captureTriggered = false;
+            }).catch(e => console.error(e));
+        }
+        
+        async function detectBlink() {
             const video = document.getElementById('registerVideo');
             const canvas = document.getElementById('registerCanvas');
             if (!video || !video.videoWidth || !canvas || !modelsLoaded) return;
-            
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
+            const detection = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 })).withFaceLandmarks().withFaceDescriptor();
             const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            // Detect face and landmarks for eye detection
-            const detection = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 }))
-                .withFaceLandmarks()
-                .withFaceDescriptor();
-            
-            const centerX = Math.floor(canvas.width / 4);
-            const centerY = Math.floor(canvas.height / 4);
-            const boxW = Math.floor(canvas.width / 2);
-            const boxH = Math.floor(canvas.height / 2);
-            
+            ctx.drawImage(video, 0, 0);
+            const cx = canvas.width/4, cy = canvas.height/4, w = canvas.width/2, h = canvas.height/2;
             ctx.beginPath();
-            ctx.rect(centerX, centerY, boxW, boxH);
-            
+            ctx.rect(cx, cy, w, h);
             if (detection) {
-                // Face detected - draw green box
                 ctx.strokeStyle = '#34C759';
                 ctx.lineWidth = 3;
                 ctx.stroke();
                 ctx.fillStyle = '#34C759';
                 ctx.font = 'bold 14px system-ui';
-                ctx.fillText('✓ Wajah Dikesan! Kedip mata untuk daftar', centerX, centerY - 5);
-                
-                // Simple blink detection using eye landmarks
-                const landmarks = detection.landmarks;
-                const leftEye = landmarks.getLeftEye();
-                const rightEye = landmarks.getRightEye();
-                
-                if (leftEye && rightEye) {
-                    // Calculate eye aspect ratio (simplified)
-                    const leftEAR = calculateEAR(leftEye);
-                    const rightEAR = calculateEAR(rightEye);
-                    const avgEAR = (leftEAR + rightEAR) / 2;
-                    
-                    // Detect blink (EAR drops significantly)
-                    const currentBlink = avgEAR < 0.2;
-                    
-                    if (currentBlink && !window.isBlinking) {
-                        window.isBlinking = true;
-                        blinkCount++;
-                        
-                        // Visual feedback for blink
-                        const statusEl = document.getElementById('registerCameraStatus');
-                        if (statusEl) {
-                            statusEl.innerHTML = `👁️ Kedipan ke-${blinkCount}! ${blinkCount >= expectedBlinks ? 'Auto daftar dalam 1 saat...' : `Kedip ${expectedBlinks - blinkCount} kali lagi`}`;
-                            statusEl.className = 'camera-status status-blink';
-                        }
-                        
-                        // Show blink indicator on canvas
-                        ctx.fillStyle = 'rgba(52,199,89,0.8)';
-                        ctx.font = 'bold 24px system-ui';
-                        ctx.fillText('👁️ KEDIP!', canvas.width/2 - 50, canvas.height/2);
-                        
-                        playBeep();
-                        
-                        if (blinkCount >= expectedBlinks && !window.captureTriggered) {
-                            window.captureTriggered = true;
-                            setTimeout(async () => {
-                                await autoCaptureAndRegister();
-                            }, 1000);
-                        }
-                        
-                        setTimeout(() => { window.isBlinking = false; }, 200);
-                    } else if (!currentBlink) {
-                        window.isBlinking = false;
-                    }
-                }
-                
-                const statusEl = document.getElementById('registerCameraStatus');
-                if (statusEl && !statusEl.innerHTML.includes('Kedipan')) {
-                    statusEl.innerHTML = `👁️ Wajah dikesan! Kedip ${expectedBlinks - blinkCount} kali lagi untuk daftar`;
-                }
-                
+                ctx.fillText('✓ Wajah Dikesan! Kedip mata untuk daftar', cx, cy - 5);
                 registerFaceDetected = true;
                 registerDescriptor = Array.from(detection.descriptor);
                 
+                // Blink detection using eye landmarks
+                const left = detection.landmarks.getLeftEye();
+                const right = detection.landmarks.getRightEye();
+                if (left && right) {
+                    const ear = (getEAR(left) + getEAR(right)) / 2;
+                    const isBlinkingNow = ear < 0.2;
+                    if (isBlinkingNow && !isBlinking) {
+                        isBlinking = true;
+                        blinkCount++;
+                        document.getElementById('regStatus').innerHTML = `👁️ Kedipan ke-${blinkCount}! ${blinkCount >= expectedBlinks ? 'Auto daftar...' : `Kedip ${expectedBlinks - blinkCount} lagi`}`;
+                        document.getElementById('regStatus').className = 'camera-status status-blink';
+                        playBeep();
+                        if (blinkCount >= expectedBlinks && !captureTriggered) {
+                            captureTriggered = true;
+                            setTimeout(() => autoRegisterFace(), 1000);
+                        }
+                    } else if (!isBlinkingNow) { isBlinking = false; }
+                }
+                document.getElementById('regStatus').innerHTML = `👁️ Kedip ${expectedBlinks - blinkCount} kali lagi untuk daftar automatik`;
             } else {
                 ctx.strokeStyle = '#FF9500';
                 ctx.lineWidth = 2;
                 ctx.stroke();
                 ctx.fillStyle = '#FF9500';
                 ctx.font = 'bold 14px system-ui';
-                ctx.fillText('Letakkan muka di sini', centerX, centerY - 5);
+                ctx.fillText('Letakkan muka di sini', cx, cy - 5);
                 registerFaceDetected = false;
-                
-                const statusEl = document.getElementById('registerCameraStatus');
-                if (statusEl) {
-                    statusEl.innerHTML = '● Letakkan muka dalam kotak, kemudian kedip mata untuk daftar';
-                    statusEl.className = 'camera-status status-info';
-                }
+                document.getElementById('regStatus').innerHTML = '● Letakkan muka dalam kotak, kemudian kedip mata untuk daftar';
             }
         }
         
-        function calculateEAR(eyePoints) {
-            // Simplified EAR calculation
-            if (eyePoints.length < 6) return 0.3;
-            const p1 = eyePoints[1];
-            const p2 = eyePoints[5];
-            const p3 = eyePoints[2];
-            const p4 = eyePoints[4];
-            const p5 = eyePoints[0];
-            const p6 = eyePoints[3];
-            
-            const vertical1 = Math.hypot(p1.x - p2.x, p1.y - p2.y);
-            const vertical2 = Math.hypot(p3.x - p4.x, p3.y - p4.y);
-            const horizontal = Math.hypot(p5.x - p6.x, p5.y - p6.y);
-            
-            return (vertical1 + vertical2) / (2 * horizontal);
+        function getEAR(eye) {
+            if (eye.length < 6) return 0.3;
+            const v1 = Math.hypot(eye[1].x - eye[5].x, eye[1].y - eye[5].y);
+            const v2 = Math.hypot(eye[2].x - eye[4].x, eye[2].y - eye[4].y);
+            const h = Math.hypot(eye[0].x - eye[3].x, eye[0].y - eye[3].y);
+            return (v1 + v2) / (2 * h);
         }
         
-        async function autoCaptureAndRegister() {
-            if (!pendingRegistration) {
-                await showError('Ralat', 'Sila isi nama dan kelas terlebih dahulu.');
-                registerStep = 1;
-                renderRegisterPage();
-                return;
-            }
-            
-            if (!registerFaceDetected || !registerDescriptor) {
-                await showWarning('Tiada Wajah', 'Sila pastikan muka anda dalam kotak sebelum kedip.');
-                window.captureTriggered = false;
-                blinkCount = 0;
-                return;
-            }
-            
-            // Show countdown effect
+        let registerFaceDetected = false, registerDescriptor = null, registerInterval = null;
+        
+        async function autoRegisterFace() {
+            if (!pendingRegistration) { await showError('Ralat', 'Sila isi nama dan kelas dahulu.'); registerStep = 1; renderRegisterPage(); return; }
+            if (!registerFaceDetected || !registerDescriptor) { await showWarning('Tiada Wajah', 'Pastikan muka dalam kotak.'); captureTriggered = false; blinkCount = 0; return; }
             const canvas = document.getElementById('registerCanvas');
-            const ctx = canvas.getContext('2d');
-            for (let i = 3; i > 0; i--) {
-                ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#34C759';
-                ctx.font = 'bold 48px system-ui';
-                ctx.fillText(`${i}`, canvas.width/2 - 15, canvas.height/2);
-                await new Promise(r => setTimeout(r, 300));
-            }
-            
-            const newUser = {
-                id: Date.now().toString(),
-                name: pendingRegistration.name,
-                role: pendingRegistration.role,
-                className: pendingRegistration.className,
-                descriptor: registerDescriptor,
-                registeredAt: new Date().toISOString(),
-                qrData: JSON.stringify({ id: Date.now().toString(), name: pendingRegistration.name, role: pendingRegistration.role, className: pendingRegistration.className })
-            };
-            
+            for (let i = 3; i > 0; i--) { const ctx = canvas.getContext('2d'); ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#34C759'; ctx.font = 'bold 48px system-ui'; ctx.fillText(`${i}`, canvas.width/2 - 15, canvas.height/2); await new Promise(r => setTimeout(r, 300)); }
+            const newUser = { id: Date.now().toString(), ...pendingRegistration, descriptor: registerDescriptor, registeredAt: new Date().toISOString(), qrData: JSON.stringify({ id: Date.now().toString(), name: pendingRegistration.name, role: pendingRegistration.role, className: pendingRegistration.className }) };
             registeredUsers.push(newUser);
-            saveUsersLocal();
-            await syncToFirebase();
-            buildFaceMatcher();
-            
-            await showSuccess('✅ Auto Pendaftaran Berjaya!', `${newUser.name} (${newUser.role === 'teacher' ? 'Guru' : 'Pelajar'})\nKelas: ${newUser.className}\n✅ Muka telah DIHAFAL oleh AI!\n✅ Didaftar dengan auto blink capture!`);
-            
-            pendingRegistration = null;
-            registerStep = 1;
-            blinkCount = 0;
-            window.captureTriggered = false;
-            
-            if (!availableClasses.includes(newUser.className)) {
-                availableClasses.push(newUser.className);
-                availableClasses.sort();
-            }
-            
+            saveLocal(); syncToFirebase(); buildMatcher();
+            await showSuccess('✅ Auto Pendaftaran Berjaya!', `${newUser.name} (${newUser.role === 'teacher' ? 'Guru' : 'Pelajar'})\nKelas: ${newUser.className}\n✅ Muka DIHAFAL oleh AI!\n✅ Didaftar dengan blink detection!`);
+            pendingRegistration = null; registerStep = 1; blinkCount = 0; captureTriggered = false;
+            if (!availableClasses.includes(newUser.className)) availableClasses.push(newUser.className);
             renderRegisterPage();
         }
         
-        function stopRegisterCamera() {
-            if (registerStream) {
-                registerStream.getTracks().forEach(track => track.stop());
-                registerStream = null;
-            }
-            if (registerInterval) {
-                clearInterval(registerInterval);
-                registerInterval = null;
-            }
-            blinkCount = 0;
-            window.captureTriggered = false;
-            window.isBlinking = false;
+        async function manualCaptureFace() {
+            if (!registerFaceDetected || !registerDescriptor) { await showWarning('Tiada Wajah', 'Pastikan muka dalam kotak.'); return; }
+            await autoRegisterFace();
         }
         
-        let registerInterval = null;
-        let registerFaceDetected = false;
-        let registerDescriptor = null;
-        
-        async function saveNameAndClass() {
-            const name = document.getElementById('regName').value.trim();
-            const role = document.getElementById('regRole').value;
-            let className = document.getElementById('regClass').value;
-            if (!name) { await showError('Ralat', 'Sila masukkan nama penuh.'); return false; }
-            if (!className) { await showError('Ralat', 'Sila pilih kelas.'); return false; }
-            if (registeredUsers.some(u => u.name.toLowerCase() === name.toLowerCase())) {
-                await showError('Nama Sudah Wujud', `Pengguna "${name}" sudah berdaftar.`);
-                return false;
-            }
-            pendingRegistration = { name, role, className };
-            registerStep = 2;
-            renderRegisterStep2();
-            return true;
+        // ==================== EDIT/DELETE USER ====================
+        async function editUser(user) {
+            const r = await Swal.fire({ title: 'Edit Pengguna', html: `<input id="n" class="swal2-input" value="${escapeHtml(user.name)}"><select id="r"><option value="student" ${user.role === 'student' ? 'selected' : ''}>Pelajar</option><option value="teacher" ${user.role === 'teacher' ? 'selected' : ''}>Guru</option></select><input id="c" class="swal2-input" value="${escapeHtml(user.className)}">`, preConfirm: () => ({ name: document.getElementById('n').value, role: document.getElementById('r').value, className: document.getElementById('c').value }) });
+            if (r.value) { user.name = r.value.name; user.role = r.value.role; user.className = r.value.className; saveLocal(); syncToFirebase(); buildMatcher(); updateUI(); await showSuccess('Berjaya', 'Maklumat dikemaskini.'); }
         }
         
-        function backToStep1() { 
-            registerStep = 1; 
-            pendingRegistration = null; 
-            blinkCount = 0;
-            window.captureTriggered = false;
-            renderRegisterPage(); 
-        }
-        
-        function renderRegisterStep2() {
-            const html = `
-                <div class="step-indicator"><div class="step completed"><div class="step-number">✓</div><div class="step-label">Nama & Kelas</div></div><div class="step active"><div class="step-number">2</div><div class="step-label">Kedip Mata Auto</div></div></div>
-                <div class="info-box"><i data-lucide="eye"></i><div><strong>Auto Capture dengan Kedipan Mata!</strong><br>Kedipkan mata <strong>2 KALI</strong> dan sistem akan auto daftar wajah anda</div></div>
-                <div class="camera-section">
-                    <div class="camera-container">
-                        <video id="registerVideo" autoplay playsinline></video>
-                        <canvas id="registerCanvas" class="face-canvas"></canvas>
-                    </div>
-                    <div class="camera-status" id="registerCameraStatus">👁️ Memulakan kamera... Kedip mata untuk daftar!</div>
-                </div>
-                <div class="data-table">
-                    <div class="register-form">
-                        <div style="background: #E8F5E9; padding: 12px; border-radius: 14px; margin-bottom: 16px;">
-                            <strong>📝 Maklumat Pengguna:</strong><br>
-                            Nama: ${escapeHtml(pendingRegistration?.name || '')}<br>
-                            Peranan: ${pendingRegistration?.role === 'teacher' ? 'Guru' : 'Pelajar'}<br>
-                            Kelas: ${pendingRegistration?.className || ''}
-                        </div>
-                        <div style="display: flex; gap: 12px;">
-                            <button class="btn btn-secondary" id="backBtn" style="flex:1;"><i data-lucide="arrow-left"></i> Kembali</button>
-                            <button class="btn btn-primary" id="manualCaptureBtn" style="flex:1;"><i data-lucide="camera"></i> Manual Capture</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.getElementById('mainContent').innerHTML = html;
-            lucide.createIcons();
-            startBlinkDetection();
-            document.getElementById('backBtn').onclick = backToStep1;
-            document.getElementById('manualCaptureBtn').onclick = manualCapture;
-        }
-        
-        async function manualCapture() {
-            if (!registerFaceDetected || !registerDescriptor) {
-                await showWarning('Tiada Wajah Dikesan', 'Sila pastikan muka anda dalam kotak hijau.');
-                return;
-            }
-            await autoCaptureAndRegister();
+        async function deleteUser(user) {
+            const c = await Swal.fire({ title: 'Padam?', text: `Padam ${user.name}?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#FF3B30', confirmButtonText: 'Ya' });
+            if (c.isConfirmed) { registeredUsers = registeredUsers.filter(u => u.id !== user.id); saveLocal(); syncToFirebase(); buildMatcher(); updateUI(); await showSuccess('Berjaya', 'Pengguna dipadam.'); }
         }
         
         // ==================== RENDER FUNCTIONS ====================
@@ -888,153 +543,137 @@
             const todayAttendance = attendanceRecords.filter(r => r.date === today).length;
             const totalStudents = registeredUsers.filter(u => u.role === 'student').length;
             const totalTeachers = registeredUsers.filter(u => u.role === 'teacher').length;
-            const presentToday = attendanceRecords.filter(r => r.date === today && r.status === 'Hadir').length;
-            const lateToday = attendanceRecords.filter(r => r.date === today && r.status === 'Lewat').length;
-            const strangerToday = strangerAlerts.filter(a => a.date === today).length;
-            
-            const attendanceRows = attendanceRecords
-                .filter(r => selectedClass === "Semua Kelas" || r.className === selectedClass)
-                .slice(-8).reverse()
-                .map(r => `
-                    <tr>
-                        <td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td>${r.sessionName || r.session}</td>
-                        <td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td>
-                        <td>${r.time}</td>
-                    </tr>
-                `).join('');
-            
-            const noDataRow = '<tr><td colspan="5">Tiada rekod</td><tr>';
-            
-            const html = `
-                <div class="class-selector"><select id="classFilterSelect"><option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 Semua Kelas</option>${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Kelas ${c}</option>`).join('')}</select></div>
-                <div class="stats-grid">
-                    <div class="stat-card"><div class="stat-info"><h3>👥 Pengguna</h3><div class="stat-number">${registeredUsers.length}</div></div><div class="stat-icon"><i data-lucide="users"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3>✅ Hadir</h3><div class="stat-number">${todayAttendance}</div></div><div class="stat-icon"><i data-lucide="check-circle"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3>🎓 Pelajar</h3><div class="stat-number">${totalStudents}</div></div><div class="stat-icon"><i data-lucide="graduation-cap"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3>👩‍🏫 Guru</h3><div class="stat-number">${totalTeachers}</div></div><div class="stat-icon"><i data-lucide="chalkboard"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3>😊 Hadir</h3><div class="stat-number">${presentToday}</div></div><div class="stat-icon"><i data-lucide="smile"></i></div></div>
-                    <div class="stat-card"><div class="stat-info"><h3>⏰ Lewat</h3><div class="stat-number">${lateToday}</div></div><div class="stat-icon"><i data-lucide="clock"></i></div></div>
-                    <div class="stat-card" onclick="navigateTo('records')"><div class="stat-info"><h3>⚠️ Asing</h3><div class="stat-number">${strangerToday}</div></div><div class="stat-icon"><i data-lucide="alert-triangle"></i></div></div>
-                </div>
-                <div class="charts-row"><div class="chart-card"><h3><i data-lucide="pie-chart"></i> Kehadiran Hari Ini</h3><canvas id="attendanceChartCanvas"></canvas></div></div>
-                <div class="data-table"><h3>👁️ Auto Capture with Blink Detection</h3><p style="font-size: 13px;">✅ Daftar muka: Kedip mata <strong>2 kali</strong> untuk auto register!<br>✅ AI Security: Auto detect + rekod kehadiran<br>✅ Wajah asing: Alert + bunyi + gambar disimpan</p></div>
-                <div class="data-table"><h3>📋 Kehadiran Terkini</h3><div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Sesi</th><th>Status</th><th>Masa</th></tr></thead><tbody>${attendanceRows || noDataRow}</tbody></table></div></div>`;
-            
+            const present = attendanceRecords.filter(r => r.date === today && r.status === 'Hadir').length;
+            const late = attendanceRecords.filter(r => r.date === today && r.status === 'Lewat').length;
+            const strangers = strangerAlerts.filter(a => a.date === today).length;
+            const rows = attendanceRecords.filter(r => selectedClass === "Semua Kelas" || r.className === selectedClass).slice(-8).reverse().map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td>${r.sessionName}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td>`).join('');
+            const html = `<div class="class-selector"><select id="cf"><option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 Semua Kelas</option>${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Kelas ${c}</option>`).join('')}</select></div>
+                <div class="stats-grid"><div class="stat-card"><div><h3>👥 Pengguna</h3><div class="stat-number">${registeredUsers.length}</div></div><div class="stat-icon"><i data-lucide="users"></i></div></div>
+                <div class="stat-card"><div><h3>✅ Hadir</h3><div class="stat-number">${todayAttendance}</div></div><div class="stat-icon"><i data-lucide="check-circle"></i></div></div>
+                <div class="stat-card"><div><h3>🎓 Pelajar</h3><div class="stat-number">${totalStudents}</div></div><div class="stat-icon"><i data-lucide="graduation-cap"></i></div></div>
+                <div class="stat-card"><div><h3>👩‍🏫 Guru</h3><div class="stat-number">${totalTeachers}</div></div><div class="stat-icon"><i data-lucide="chalkboard"></i></div></div>
+                <div class="stat-card"><div><h3>😊 Hadir</h3><div class="stat-number">${present}</div></div><div class="stat-icon"><i data-lucide="smile"></i></div></div>
+                <div class="stat-card"><div><h3>⏰ Lewat</h3><div class="stat-number">${late}</div></div><div class="stat-icon"><i data-lucide="clock"></i></div></div>
+                <div class="stat-card" onclick="navigateTo('records')"><div><h3>⚠️ Asing</h3><div class="stat-number">${strangers}</div></div><div class="stat-icon"><i data-lucide="alert-triangle"></i></div></div></div>
+                <div class="chart-card"><h3><i data-lucide="pie-chart"></i> Kehadiran Hari Ini</h3><canvas id="ac"></canvas></div>
+                <div class="data-table"><h3>🔦 Auto Flash & Blink Register</h3><p>✅ Flash AUTO bila gelap | Detection 5x sesaat<br>✅ Daftar muka: KEDIP MATA 2 KALI auto register!<br>✅ Wajah dikenali → Auto hadir | Asing → Alert + gambar</p></div>
+                <div class="data-table"><h3>📋 Kehadiran Terkini</h3><div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Sesi</th><th>Status</th><th>Masa</th></thead><tbody>${rows || '<tr><td colspan="5">Tiada rekod</td></td>'}</tbody></div></div>`;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
-            
-            const ctx = document.getElementById('attendanceChartCanvas')?.getContext('2d');
+            const ctx = document.getElementById('ac')?.getContext('2d');
             if (ctx && attendanceChart) attendanceChart.destroy();
-            if (ctx) {
-                const filtered = attendanceRecords.filter(r => r.date === today && (selectedClass === "Semua Kelas" || r.className === selectedClass));
-                const present = filtered.filter(r => r.status === 'Hadir').length;
-                const late = filtered.filter(r => r.status === 'Lewat').length;
-                attendanceChart = new Chart(ctx, { type: 'doughnut', data: { labels: ['Hadir', 'Lewat'], datasets: [{ data: [present, late], backgroundColor: ['#34C759', '#FF9500'] }] } });
-            }
-            
-            document.getElementById('classFilterSelect').onchange = (e) => { selectedClass = e.target.value; localStorage.setItem('selected_class', selectedClass); renderDashboard(); };
+            if (ctx) attendanceChart = new Chart(ctx, { type: 'doughnut', data: { labels: ['Hadir', 'Lewat'], datasets: [{ data: [present, late], backgroundColor: ['#34C759', '#FF9500'] }] } });
+            document.getElementById('cf').onchange = (e) => { selectedClass = e.target.value; saveLocal(); renderDashboard(); };
         }
         
         function renderSecurityPage() {
-            const html = `
-                <div class="camera-section">
-                    <div class="camera-selector"><select id="cameraSelect"><option value="user">📱 Kamera Depan</option><option value="environment">📷 Kamera Belakang</option></select></div>
-                    <h3><i data-lucide="shield-check"></i> AI Security - Fast Detection</h3>
-                    <div class="camera-container"><video id="securityVideo" autoplay playsinline></video><canvas id="securityCanvas" class="face-canvas"></canvas><div class="detected-face" id="detectCount">👤 Memuatkan...</div></div>
-                    <div class="camera-status" id="securityStatus">⚡ Memulakan AI pantas...</div>
-                    <div class="camera-status" id="recognizedNames" style="margin-top:5px;">✅ Menunggu wajah...</div>
-                </div>
-                <div class="data-table"><h3>⚡ Detection Speed</h3><p>✓ Detection setiap <strong>0.25 saat</strong><br>✓ Kotak HIJAU = Dikenali → Auto hadir<br>✓ Kotak MERAH = Asing → Alert + gambar + bunyi</p></div>`;
+            const html = `<div class="camera-section"><div class="camera-selector"><select id="cs"><option value="user">📱 Depan</option><option value="environment">📷 Belakang (Flash)</option></select></div>
+                <div class="camera-container"><video id="securityVideo" autoplay></video><canvas id="securityCanvas" class="face-canvas"></canvas>
+                <div class="light-indicator" id="lightIndicator">☀️ Mengukur...</div><button class="torch-btn" id="torchBtn"><i data-lucide="sun"></i> Flash OFF</button>
+                <div class="detected-face" id="detectCount">👤 Memuatkan...</div></div>
+                <div class="camera-status" id="securityStatus">⚡ Memulakan...</div><div class="camera-status" id="recognizedNames">✅ Menunggu wajah...</div></div>`;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
-            document.getElementById('cameraSelect').onchange = (e) => { currentCameraId = e.target.value; startSecurityCamera(); };
+            document.getElementById('cs').onchange = (e) => { currentCameraId = e.target.value; startSecurityCamera(); };
+            document.getElementById('torchBtn').onclick = () => toggleTorch();
             startSecurityCamera();
         }
         
         function renderQRPage() {
-            const html = `<div class="camera-section"><h3><i data-lucide="qr-code"></i> QR Code Attendance</h3><div class="qr-container" id="qr-reader"></div><div class="camera-status" id="qrStatus">● Memulakan scanner...</div></div><div class="data-table"><h3>Alternatif Cepat</h3><p>Scan QR jika muka tidak jelas</p></div>`;
-            document.getElementById('mainContent').innerHTML = html;
+            document.getElementById('mainContent').innerHTML = `<div class="camera-section"><h3><i data-lucide="qr-code"></i> QR Code</h3><div class="qr-container" id="qr-reader"></div><div class="camera-status">● Memulakan...</div></div>`;
             lucide.createIcons();
             setTimeout(() => startQRScanner(), 100);
         }
         
         function renderRegisterPage() {
-            const html = `
-                <div class="step-indicator"><div class="step active"><div class="step-number">1</div><div class="step-label">Nama & Kelas</div></div><div class="step"><div class="step-number">2</div><div class="step-label">Kedip Mata Auto</div></div></div>
-                <div class="info-box"><i data-lucide="info"></i><div><strong>Langkah 1/2: Isi Maklumat</strong><br>Masukkan nama dan kelas terlebih dahulu, kemudian tekan "Teruskan"</div></div>
-                <div class="data-table"><div class="register-form"><input type="text" id="regName" placeholder="Nama Penuh *"><select id="regRole"><option value="student">👨‍🎓 Pelajar</option><option value="teacher">👩‍🏫 Guru</option></select><select id="regClass"><option value="">Pilih Kelas *</option>${availableClasses.map(c => `<option value="${c}">Kelas ${c}</option>`).join('')}<option value="Lain-lain">Kelas Lain (isi sendiri)</option></select><input type="text" id="regClassOther" placeholder="Kelas lain" style="display:none;"><button class="btn btn-primary" id="continueBtn"><i data-lucide="arrow-right"></i> Teruskan ke Kedip Mata</button></div></div>
-                <div class="data-table"><h3><i data-lucide="users"></i> Senarai Muka Dihafal</h3><div class="table-container" id="usersTableContainer"></div></div>`;
+            const html = `<div class="step-indicator"><div class="step active"><div class="step-number">1</div><div class="step-label">Nama & Kelas</div></div><div class="step"><div class="step-number">2</div><div class="step-label">Kedip Mata</div></div></div>
+                <div class="data-table"><input type="text" id="rn" placeholder="Nama Penuh *"><select id="rr"><option value="student">👨‍🎓 Pelajar</option><option value="teacher">👩‍🏫 Guru</option></select>
+                <select id="rc"><option value="">Pilih Kelas</option>${availableClasses.map(c => `<option value="${c}">Kelas ${c}</option>`).join('')}<option value="Lain-lain">Lain-lain</option></select>
+                <input type="text" id="rco" placeholder="Kelas lain" style="display:none;"><button class="btn btn-primary" id="cb"><i data-lucide="arrow-right"></i> Teruskan ke Kedip Mata</button></div>
+                <div class="data-table"><h3>👥 Pengguna Berdaftar</h3><div id="ul"></div></div>`;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
-            const classSelect = document.getElementById('regClass');
-            const classOther = document.getElementById('regClassOther');
-            classSelect.onchange = () => { classOther.style.display = classSelect.value === 'Lain-lain' ? 'block' : 'none'; };
-            document.getElementById('continueBtn').onclick = async () => {
-                let className = document.getElementById('regClass').value;
-                if (className === 'Lain-lain') { className = document.getElementById('regClassOther').value.trim(); if (!className) { await showError('Ralat', 'Sila masukkan nama kelas.'); return; } }
-                document.getElementById('regClass').value = className;
-                await saveNameAndClass();
+            document.getElementById('rc').onchange = () => { document.getElementById('rco').style.display = document.getElementById('rc').value === 'Lain-lain' ? 'block' : 'none'; };
+            document.getElementById('cb').onclick = async () => {
+                let c = document.getElementById('rc').value;
+                if (c === 'Lain-lain') c = document.getElementById('rco').value.trim();
+                if (!c) { await showError('Ralat', 'Pilih kelas.'); return; }
+                const n = document.getElementById('rn').value.trim();
+                if (!n) { await showError('Ralat', 'Masukkan nama.'); return; }
+                if (registeredUsers.some(u => u.name === n)) { await showError('Nama wujud', 'Pengguna sudah berdaftar.'); return; }
+                pendingRegistration = { name: n, role: document.getElementById('rr').value, className: c };
+                renderRegisterStep2();
             };
             renderUsersTable();
         }
         
         function renderUsersTable() {
-            const container = document.getElementById('usersTableContainer');
+            const container = document.getElementById('ul');
             if (!container) return;
-            container.innerHTML = `<table><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th><th>Status</th><th>Tindakan</th></tr></thead><tbody>${registeredUsers.map(u => `<tr><td>${escapeHtml(u.name)}</td><td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Guru' : 'Pelajar'}</span></td><td>${escapeHtml(u.className)}</td><td style="color:#34C759;">✅ Muka Dihafal</td><td class="action-buttons"><button class="edit-btn" onclick="editUserById('${u.id}')"><i data-lucide="edit-2"></i></button><button class="delete-btn" onclick="deleteUserById('${u.id}')"><i data-lucide="trash-2"></i></button></td></tr>`).join('') || '<tr><td colspan="5">Tiada pengguna berdaftar</td></tr>'}</tbody></table>`;
+            container.innerHTML = `<div class="table-container"><table><thead><tr><th>Nama</th><th>Peranan</th><th>Kelas</th><th></th></thead><tbody>${registeredUsers.map(u => `<tr><td>${escapeHtml(u.name)}</td><td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Guru' : 'Pelajar'}</span></td><td>${escapeHtml(u.className)}</td><td class="action-buttons"><button class="edit-btn" onclick="editUserById('${u.id}')"><i data-lucide="edit-2"></i></button><button class="delete-btn" onclick="deleteUserById('${u.id}')"><i data-lucide="trash-2"></i></button></td>`).join('') || '<tr><td colspan="4">Tiada pengguna</td></tr>'}</tbody></div>`;
             lucide.createIcons();
         }
         
-        window.editUserById = (id) => { const user = registeredUsers.find(u => u.id === id); if (user) editUser(user); };
-        window.deleteUserById = (id) => { const user = registeredUsers.find(u => u.id === id); if (user) deleteUser(user); };
+        window.editUserById = (id) => { const u = registeredUsers.find(x => x.id === id); if (u) editUser(u); };
+        window.deleteUserById = (id) => { const u = registeredUsers.find(x => x.id === id); if (u) deleteUser(u); };
+        
+        function renderRegisterStep2() {
+            const html = `<div class="step-indicator"><div class="step completed"><div class="step-number">✓</div><div class="step-label">Nama & Kelas</div></div><div class="step active"><div class="step-number">2</div><div class="step-label">Kedip Mata</div></div></div>
+                <div class="info-box"><i data-lucide="eye"></i><div><strong>Kedipkan MATA 2 KALI untuk daftar automatik!</strong><br>Sistem akan auto tangkap wajah bila anda kedip</div></div>
+                <div class="camera-container"><video id="registerVideo" autoplay></video><canvas id="registerCanvas" class="face-canvas"></canvas></div>
+                <div class="camera-status" id="regStatus">● Sedia...</div>
+                <div class="data-table"><div style="background:#E8F5E9;padding:12px;border-radius:14px;"><strong>📝 ${escapeHtml(pendingRegistration.name)}</strong><br>${pendingRegistration.role === 'teacher' ? 'Guru' : 'Pelajar'} | Kelas ${pendingRegistration.className}</div>
+                <div style="display:flex;gap:12px;margin-top:12px;"><button class="btn btn-secondary" id="bb" style="flex:1;">Kembali</button><button class="btn btn-primary" id="mcb" style="flex:1;">Manual Capture</button></div></div>`;
+            document.getElementById('mainContent').innerHTML = html;
+            lucide.createIcons();
+            startBlinkCamera();
+            document.getElementById('bb').onclick = () => { registerStep = 1; renderRegisterPage(); };
+            document.getElementById('mcb').onclick = manualCaptureFace;
+        }
+        
+        async function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text('Laporan Kehadiran', 20, 20);
+            doc.text(`Tarikh: ${getTodayDate()}`, 20, 35);
+            doc.text(`Jumlah Kehadiran: ${attendanceRecords.filter(r => r.date === getTodayDate()).length}`, 20, 45);
+            doc.save(`laporan_${getTodayDate()}.pdf`);
+            await showSuccess('Eksport', 'PDF selesai.');
+        }
+        
+        async function exportToHTML() {
+            const today = getTodayDate();
+            const strangers = strangerAlerts.filter(a => a.date === today);
+            let html = `<html><head><title>Laporan Wajah Asing ${today}</title><style>body{font-family:Arial;padding:20px;}img{max-width:200px;}</style></head><body><h1>Laporan Wajah Asing</h1><p>Tarikh: ${today} | Jumlah: ${strangers.length}</p><hr>`;
+            for (const a of strangers) html += `<div><p><strong>Masa:</strong> ${a.time}</p><p><strong>Kelas:</strong> ${a.className}</p>${a.imageData ? `<img src="${a.imageData}"><br><a href="${a.imageData}" download="stranger_${a.id}.jpg">Download Gambar</a>` : ''}<hr></div>`;
+            html += `</body></html>`;
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `laporan_asing_${today}.html`; a.click();
+            URL.revokeObjectURL(url);
+            await showSuccess('Eksport', 'HTML selesai.');
+        }
         
         function renderRecordsPage() {
             const today = getTodayDate();
-            const todayStrangers = strangerAlerts.filter(a => a.date === today && (selectedClass === "Semua Kelas" || a.className === selectedClass));
-            const attendanceRows = attendanceRecords.filter(r => r.date === today && (selectedClass === "Semua Kelas" || r.className === selectedClass)).map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td>${r.sessionName || r.session}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('');
-            const noDataRow = '<tr><td colspan="5">Tiada rekod</td></tr>';
-            
-            const html = `
-                <div class="class-selector"><select id="recordClassFilter"><option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 Semua Kelas</option>${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Kelas ${c}</option>`).join('')}</select></div>
-                <div class="data-table"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><h3><i data-lucide="alert-triangle"></i> Wajah Asing (${todayStrangers.length})</h3><div><button class="btn-small btn-primary" id="exportPDFBtn" style="width:auto;padding:8px 16px;"><i data-lucide="file-text"></i> PDF</button><button class="btn-small btn-warning" id="exportStrangerBtn" style="width:auto;padding:8px 16px;"><i data-lucide="download"></i> HTML</button></div></div><div id="strangerListContainer"></div></div>
-                <div class="data-table"><h3>📋 Kehadiran Hari Ini</h3><div class="table-container"><table><thead><tr><th>Nama</th><th>Kelas</th><th>Sesi</th><th>Status</th><th>Masa</th></tr></thead><tbody>${attendanceRows || noDataRow}</tbody></table></div></div>`;
+            const strangers = strangerAlerts.filter(a => a.date === today && (selectedClass === "Semua Kelas" || a.className === selectedClass));
+            const html = `<div class="class-selector"><select id="rcf"><option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 Semua Kelas</option>${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Kelas ${c}</option>`).join('')}</select></div>
+                <div class="data-table"><div style="display:flex;justify-content:space-between;align-items:center;"><h3>⚠️ Wajah Asing (${strangers.length})</h3><div><button class="btn-small btn-primary" id="pdfBtn">📄 PDF</button><button class="btn-small btn-warning" id="htmlBtn">📁 HTML</button></div></div><div id="sl"></div></div>
+                <div class="data-table"><h3>📋 Kehadiran Hari Ini</h3><div class="table-container"><tr><thead><tr><th>Nama</th><th>Kelas</th><th>Sesi</th><th>Status</th><th>Masa</th></thead><tbody>${attendanceRecords.filter(r => r.date === today && (selectedClass === "Semua Kelas" || r.className === selectedClass)).map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td>${r.sessionName}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td>`).join('') || '<tr><td colspan="5">Tiada rekod</td></td>'}</tbody></div></div>`;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
-            
-            const strangerContainer = document.getElementById('strangerListContainer');
-            if (strangerContainer) {
-                strangerContainer.innerHTML = todayStrangers.length === 0 ? '<p style="text-align:center;padding:20px;">✅ Tiada laporan wajah asing</p>' :
-                    todayStrangers.map(a => `<div class="danger-banner"><div>${a.imageData ? `<img src="${a.imageData}" class="stranger-image" onclick="viewStrangerImage('${a.imageData}')" style="cursor:pointer;">` : '<div style="width:60px;height:60px;background:#ddd;border-radius:10px;">📷</div>'}</div><div style="flex:1;"><strong>⚠️ Wajah Asing</strong><br><small>Kelas: ${a.className} | Masa: ${a.time}</small></div>${a.imageData ? `<button class="btn-small btn-primary" onclick="downloadStrangerImage('${a.imageData}', ${a.id})"><i data-lucide="download"></i> Simpan</button>` : ''}</div>`).join('');
-                lucide.createIcons();
-            }
-            document.getElementById('recordClassFilter').onchange = (e) => { selectedClass = e.target.value; localStorage.setItem('selected_class', selectedClass); renderRecordsPage(); };
-            document.getElementById('exportPDFBtn').onclick = () => exportToPDF();
-            document.getElementById('exportStrangerBtn').onclick = () => exportStrangerData();
+            document.getElementById('sl').innerHTML = strangers.length ? strangers.map(a => `<div class="danger-banner"><div>${a.imageData ? `<img src="${a.imageData}" class="stranger-image" onclick="Swal.fire({imageUrl:'${a.imageData}',imageWidth:300})">` : '📷'}</div><div><strong>⚠️ Wajah Asing</strong><br>Kelas: ${a.className} | ${a.time}</div><button class="btn-small btn-primary" onclick="downloadImage('${a.imageData}',${a.id})">💾 Simpan</button></div>`).join('') : '<p>✅ Tiada laporan</p>';
+            document.getElementById('rcf').onchange = (e) => { selectedClass = e.target.value; saveLocal(); renderRecordsPage(); };
+            document.getElementById('pdfBtn').onclick = exportToPDF;
+            document.getElementById('htmlBtn').onclick = exportToHTML;
         }
         
-        window.viewStrangerImage = function(imageData) { Swal.fire({ title: 'Gambar Wajah Asing', imageUrl: imageData, imageWidth: 300, confirmButtonColor: '#007AFF' }); };
-        window.downloadStrangerImage = function(imageData, id) { const a = document.createElement('a'); a.href = imageData; a.download = `stranger_${id}_${getTodayDate()}.jpg`; a.click(); };
-        
-        async function exportStrangerData() {
-            const todayStrangers = strangerAlerts.filter(a => a.date === getTodayDate() && (selectedClass === "Semua Kelas" || a.className === selectedClass));
-            if (todayStrangers.length === 0) { await showWarning('Tiada Data', 'Tiada laporan untuk hari ini.'); return; }
-            let reportHtml = `<html><head><title>Laporan Wajah Asing - ${getTodayDate()}</title><style>body{font-family:Arial;padding:20px;}img{max-width:200px;border-radius:8px;}</style></head><body><h1>Laporan Wajah Asing</h1><p>Tarikh: ${getTodayDate()} | Jumlah: ${todayStrangers.length}</p><hr>`;
-            for (const alert of todayStrangers) { reportHtml += `<div style="border:1px solid #ccc;margin:10px 0;padding:10px;border-radius:8px;"><p><strong>Masa:</strong> ${alert.time}</p><p><strong>Kelas:</strong> ${alert.className}</p>${alert.imageData ? `<img src="${alert.imageData}"><br><a href="${alert.imageData}" download="stranger_${alert.id}.jpg">Download Gambar</a>` : ''}</div>`; }
-            reportHtml += `</body></html>`;
-            const blob = new Blob([reportHtml], { type: 'text/html' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `laporan_asing_${getTodayDate()}.html`; a.click(); URL.revokeObjectURL(url);
-            await showSuccess('Eksport Berjaya', 'Laporan telah dimuat turun.');
-        }
-        
-        // Dark Mode
-        let darkMode = localStorage.getItem('darkMode') === 'true';
-        if (darkMode) document.body.classList.add('dark');
-        document.getElementById('darkModeToggle').onclick = () => { document.body.classList.toggle('dark'); localStorage.setItem('darkMode', document.body.classList.contains('dark')); lucide.createIcons(); };
+        window.downloadImage = (data, id) => { const a = document.createElement('a'); a.href = data; a.download = `stranger_${id}.jpg`; a.click(); };
         
         function navigateTo(page) {
             currentPage = page;
-            document.querySelectorAll('.nav-item').forEach(item => { item.classList.toggle('active', item.dataset.page === page); });
-            stopSecurityCamera(); stopQRScanner(); stopRegisterCamera();
-            registerStep = 1; pendingRegistration = null; blinkCount = 0; window.captureTriggered = false;
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.toggle('active', i.dataset.page === page));
+            stopSecurityCamera(); stopQRScanner(); if (registerStream) registerStream.getTracks().forEach(t => t.stop());
             if (page === 'dashboard') renderDashboard();
             else if (page === 'security') renderSecurityPage();
             else if (page === 'qrcode') renderQRPage();
@@ -1042,23 +681,19 @@
             else if (page === 'records') renderRecordsPage();
         }
         
-        document.querySelectorAll('.nav-item').forEach(item => { item.addEventListener('click', () => navigateTo(item.dataset.page)); });
+        document.querySelectorAll('.nav-item').forEach(i => i.addEventListener('click', () => navigateTo(i.dataset.page)));
         window.navigateTo = navigateTo;
         
-        function updateClock() { document.getElementById('currentTime').innerText = new Date().toLocaleTimeString('en-GB'); }
-        setInterval(updateClock, 1000);
-        updateClock();
+        setInterval(() => { document.getElementById('currentTime').innerText = new Date().toLocaleTimeString('en-GB'); }, 1000);
         
-        loadLocalData();
-        loadFromFirebase().then(() => {
-            buildFaceMatcher();
-            renderDashboard();
-            lucide.createIcons();
-            loadFaceModels();
-            Notification.requestPermission();
-        });
+        let dark = localStorage.getItem('darkMode') === 'true';
+        if (dark) document.body.classList.add('dark');
+        document.getElementById('darkModeToggle').onclick = () => { document.body.classList.toggle('dark'); localStorage.setItem('darkMode', document.body.classList.contains('dark')); lucide.createIcons(); };
         
-        setTimeout(() => { showInfo('👁️ Auto Capture dengan Blink Detection', '✅ Daftar muka: Isi nama & kelas, kemudian KEDIPKAN MATA 2 KALI!\n✅ Sistem akan auto tangkap dan daftar wajah anda\n✅ Mudah dan cepat!'); }, 1500);
+        loadLocal();
+        loadFromFirebase().then(() => { buildMatcher(); renderDashboard(); lucide.createIcons(); loadFaceModels(); if ('Notification' in window) Notification.requestPermission(); });
+        
+        setTimeout(() => showInfo('🎯 SEMUA FEATURE LENGKAP!', '✅ Auto Flash - ON bila gelap\n✅ Detection 5x sesaat (paling pantas!)\n✅ Daftar muka: KEDIP MATA 2 KALI auto register\n✅ Edit/Padam Pengguna\n✅ Export PDF + HTML\n✅ Light indicator real-time'), 2000);
     </script>
 </body>
 </html>
