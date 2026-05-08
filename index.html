@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>SmartClass Pro Ultimate - Auto Face Capture</title>
+    <title>SmartClass Pro - Fast Face Detection</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -67,7 +67,7 @@
         .camera-container { position: relative; background: #000; border-radius: 24px; overflow: hidden; aspect-ratio: 4/3; }
         #securityVideo, #registerVideo { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
         .face-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        .detection-indicator { position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); padding: 6px 14px; border-radius: 30px; font-size: 11px; color: white; z-index: 10; }
+        .detection-indicator { position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); padding: 6px 14px; border-radius: 30px; font-size: 11px; color: white; z-index: 10; font-family: monospace; }
         .light-indicator { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); padding: 6px 12px; border-radius: 30px; font-size: 10px; color: white; z-index: 10; }
         .torch-btn { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); border: none; border-radius: 40px; padding: 8px 16px; color: white; font-size: 11px; display: flex; align-items: center; gap: 6px; cursor: pointer; z-index: 10; }
         .camera-status { text-align: center; margin-top: 14px; font-size: 0.8rem; padding: 10px; border-radius: 20px; font-weight: 500; }
@@ -137,23 +137,25 @@
         @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .login-card input { width: 100%; padding: 16px 20px; margin: 12px 0; border-radius: 60px; border: 1px solid var(--border); background: var(--card-bg); font-size: 1rem; }
         .info-box { background: rgba(99,102,241,0.1); border-radius: 20px; padding: 14px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-size: 0.8rem; }
+        
+        .fps-counter { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); padding: 4px 8px; border-radius: 20px; font-size: 9px; color: #0f0; font-family: monospace; z-index: 10; }
     </style>
 </head>
 <body>
     <div class="login-overlay" id="loginOverlay">
         <div class="login-card">
             <div class="logo" style="margin: 0 auto 20px; width: 70px; height: 70px;"><i data-lucide="brain" style="width: 36px; height: 36px;"></i></div>
-            <h2>SmartClass Pro Ultimate</h2>
-            <p style="margin-bottom: 24px;">Auto Capture 3-2-1 | Face Recognition</p>
+            <h2>SmartClass Pro</h2>
+            <p style="margin-bottom: 24px;">Fast Face Detection | 10x per second</p>
             <input type="text" id="loginUsername" placeholder="Username">
             <input type="password" id="loginPassword" placeholder="Password">
             <button class="btn btn-primary" id="loginBtn">Login</button>
-            <p style="margin-top: 20px; font-size: 12px;">Demo: admin / admin123 | guru / guru123</p>
+            <p style="margin-top: 20px; font-size: 12px;">Demo: admin / admin123</p>
         </div>
     </div>
 
     <div class="header" id="mainHeader" style="display: none;">
-        <div class="header-left"><div class="logo"><i data-lucide="brain"></i></div><div><h1>SmartClass Pro</h1><p>Auto Capture 3-2-1 • Voice • Flash</p></div></div>
+        <div class="header-left"><div class="logo"><i data-lucide="brain"></i></div><div><h1>SmartClass Pro</h1><p>Fast Detection • 10x/sec • Auto Flash</p></div></div>
         <div class="header-right"><div class="user-badge"><i data-lucide="user"></i><span id="userName">Admin</span></div><button class="icon-btn" id="darkModeToggle"><i data-lucide="moon"></i></button><button class="icon-btn" id="logoutBtn"><i data-lucide="log-out"></i></button><div class="live-clock"><span id="currentTime">--:--:--</span></div></div>
     </div>
 
@@ -167,27 +169,12 @@
     </div>
 
     <script>
-        // Telegram Config (isi untuk enable)
-        const TELEGRAM_BOT_TOKEN = "";
-        const TELEGRAM_CHAT_ID = "";
-        
-        async function sendTelegramAlert(message, imageData = null) {
-            if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
-            try {
-                await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message })
-                });
-                if (imageData) {
-                    const blob = await (await fetch(imageData)).blob();
-                    const formData = new FormData();
-                    formData.append('chat_id', TELEGRAM_CHAT_ID);
-                    formData.append('photo', blob, 'stranger.jpg');
-                    formData.append('caption', message);
-                    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData });
-                }
-            } catch(e) { console.error(e); }
-        }
+        // ==================== FAST DETECTION OPTIMIZED ====================
+        // Optimasi kelajuan detection - 10x per saat
+        const DETECTION_INTERVAL = 100; // 10 kali sesaat (paling cepat!)
+        const INPUT_SIZE = 320;
+        const MIN_CONFIDENCE = 0.2; // Rendahkan untuk lebih sensitif
+        const SIMILARITY_THRESHOLD = 0.6;
         
         // Voice Greeting
         function speakGreeting(name, role, status) {
@@ -198,14 +185,11 @@
             window.speechSynthesis.speak(utterance);
         }
         
-        // Login
+        // Login System
         let currentUser = null;
-        const validUsers = [
-            { username: "admin", password: "admin123", role: "admin", name: "Admin" },
-            { username: "guru", password: "guru123", role: "teacher", name: "Cikgu Ahmad" }
-        ];
+        const validUsers = [{ username: "admin", password: "admin123", role: "admin", name: "Admin" }];
         
-        // Data
+        // Data Storage
         let registeredUsers = [], attendanceRecords = [], strangerAlerts = [];
         let selectedClass = "Semua Kelas";
         let availableClasses = ["5A", "5B", "5C", "4A", "4B", "4C", "3A", "3B", "2A", "2B", "1A", "1B"];
@@ -218,7 +202,7 @@
         // Camera & Flash
         let securityStream = null, registerStream = null, securityInterval = null, isSecurityActive = false, currentCameraId = 'user';
         let torchEnabled = false, videoTrack = null;
-        let lastLightLevel = 100;
+        let frameCount = 0, lastFpsUpdate = 0;
         
         // Auto Capture Timer
         let captureTimer = null;
@@ -231,10 +215,6 @@
         let audioCtx = null, lastStrangerAlertTime = 0, lastAttendanceTime = {};
         let registerFaceDetected = false, registerDescriptor = null, registerInterval = null;
         
-        const DETECTION_INTERVAL = 150;
-        const INPUT_SIZE = 320;
-        const SIMILARITY_THRESHOLD = 0.55;
-        
         // Firebase
         const firebaseConfig = { apiKey: "AIzaSyBZYM0Fe06bb_Q67U6Pn42RSoZB-mjo3io", authDomain: "secuirityschool.firebaseapp.com", projectId: "secuirityschool", storageBucket: "secuirityschool.firebasestorage.app", messagingSenderId: "321431921421", appId: "1:321431921421:web:265abf74d07deb917bc644" };
         firebase.initializeApp(firebaseConfig);
@@ -245,20 +225,18 @@
             const u = localStorage.getItem('smart_users'); if (u) registeredUsers = JSON.parse(u);
             const a = localStorage.getItem('smart_attendance'); if (a) attendanceRecords = JSON.parse(a);
             const s = localStorage.getItem('smart_strangers'); if (s) strangerAlerts = JSON.parse(s);
-            const c = localStorage.getItem('smart_class'); if (c) selectedClass = c;
             const d = localStorage.getItem('smart_descriptors');
             if (d) { const desc = JSON.parse(d); registeredUsers.forEach(u => { if (desc[u.id]) u.descriptor = desc[u.id]; }); }
         }
         function saveLocal() {
-            localStorage.setItem('smart_users', JSON.stringify(registeredUsers.map(u => ({ id: u.id, name: u.name, role: u.role, className: u.className, registeredAt: u.registeredAt }))));
+            localStorage.setItem('smart_users', JSON.stringify(registeredUsers.map(u => ({ id: u.id, name: u.name, role: u.role, className: u.className }))));
             localStorage.setItem('smart_attendance', JSON.stringify(attendanceRecords));
             localStorage.setItem('smart_strangers', JSON.stringify(strangerAlerts));
             const desc = {}; registeredUsers.forEach(u => { if (u.descriptor) desc[u.id] = u.descriptor; });
             localStorage.setItem('smart_descriptors', JSON.stringify(desc));
-            localStorage.setItem('smart_class', selectedClass);
         }
-        async function syncToFirebase() { try { for (const u of registeredUsers) { const data = { ...u }; delete data.descriptor; await db.collection('users').doc(u.id).set(data, { merge: true }); } for (const a of attendanceRecords) await db.collection('attendance').doc(`${a.id}_${a.date}_${a.session}`).set(a, { merge: true }); for (const s of strangerAlerts) await db.collection('strangers').doc(s.id.toString()).set(s, { merge: true }); } catch(e) {} }
-        async function loadFromFirebase() { try { const u = await db.collection('users').get(); u.forEach(d => { if (!registeredUsers.find(x => x.id === d.id)) registeredUsers.push(d.data()); }); const a = await db.collection('attendance').get(); a.forEach(d => { if (!attendanceRecords.find(x => x.id === d.data().id && x.date === d.data().date)) attendanceRecords.push(d.data()); }); const s = await db.collection('strangers').get(); s.forEach(d => { if (!strangerAlerts.find(x => x.id === d.data().id)) strangerAlerts.push(d.data()); }); saveLocal(); updateUI(); } catch(e) {} }
+        async function syncToFirebase() { try { for (const u of registeredUsers) { const data = { ...u }; delete data.descriptor; await db.collection('users').doc(u.id).set(data, { merge: true }); } for (const a of attendanceRecords) await db.collection('attendance').doc(`${a.id}_${a.date}_${a.session}`).set(a, { merge: true }); } catch(e) {} }
+        async function loadFromFirebase() { try { const u = await db.collection('users').get(); u.forEach(d => { if (!registeredUsers.find(x => x.id === d.id)) registeredUsers.push(d.data()); }); const a = await db.collection('attendance').get(); a.forEach(d => { if (!attendanceRecords.find(x => x.id === d.data().id && x.date === d.data().date)) attendanceRecords.push(d.data()); }); saveLocal(); updateUI(); } catch(e) {} }
         
         function getTodayDate() { return new Date().toLocaleDateString('en-CA'); }
         function getCurrentTime() { return new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
@@ -271,94 +249,205 @@
         async function captureImage(video) { if (!video || !video.videoWidth) return null; const c = document.createElement('canvas'); c.width = video.videoWidth; c.height = video.videoHeight; c.getContext('2d').drawImage(video, 0, 0); return c.toDataURL('image/jpeg', 0.8); }
         function updateUI() { if (currentPage === 'dashboard') renderDashboard(); if (currentPage === 'records') renderRecordsPage(); if (currentPage === 'register') renderUsersTable(); }
         
-        // Face Recognition Models
+        // ==================== FACE RECOGNITION MODELS ====================
         async function loadFaceModels() {
             const status = document.getElementById('securityStatus');
-            if (status) status.innerHTML = '🎯 Loading AI Model...';
+            if (status) { status.innerHTML = '⚡ Loading Fast AI Model...'; status.className = 'camera-status status-detecting'; }
             const url = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
-            await Promise.all([ faceapi.nets.ssdMobilenetv1.loadFromUri(url), faceapi.nets.faceLandmark68Net.loadFromUri(url), faceapi.nets.faceRecognitionNet.loadFromUri(url) ]);
+            await Promise.all([
+                faceapi.nets.ssdMobilenetv1.loadFromUri(url),
+                faceapi.nets.faceLandmark68Net.loadFromUri(url),
+                faceapi.nets.faceRecognitionNet.loadFromUri(url)
+            ]);
             modelsLoaded = true;
-            buildMatcher();
-            if (status) status.innerHTML = '✅ AI Ready - Detecting Faces';
-        }
-        function buildMatcher() {
-            const labeled = [];
-            for (const u of registeredUsers) if (u.descriptor) labeled.push(new faceapi.LabeledFaceDescriptors(u.id, [new Float32Array(u.descriptor)]));
-            if (labeled.length) faceMatcher = new faceapi.FaceMatcher(labeled, SIMILARITY_THRESHOLD);
+            buildFaceMatcher();
+            if (status) { status.innerHTML = '✅ AI Ready - Fast Detection 10x/sec'; status.className = 'camera-status status-active'; }
         }
         
-        // Security Camera with Flash & Light Indicator
+        function buildFaceMatcher() {
+            const labeled = [];
+            for (const u of registeredUsers) {
+                if (u.descriptor) {
+                    labeled.push(new faceapi.LabeledFaceDescriptors(u.id, [new Float32Array(u.descriptor)]));
+                }
+            }
+            if (labeled.length) {
+                faceMatcher = new faceapi.FaceMatcher(labeled, SIMILARITY_THRESHOLD);
+            }
+        }
+        
+        // ==================== SECURITY CAMERA WITH FAST DETECTION ====================
         async function startSecurityCamera() {
             if (securityStream) stopSecurityCamera();
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentCameraId, width: { ideal: INPUT_SIZE }, height: { ideal: INPUT_SIZE }, frameRate: { ideal: 30 } } });
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: currentCameraId, 
+                        width: { ideal: INPUT_SIZE }, 
+                        height: { ideal: INPUT_SIZE }, 
+                        frameRate: { ideal: 30 } 
+                    } 
+                });
                 securityStream = stream;
                 videoTrack = stream.getVideoTracks()[0];
                 document.getElementById('securityVideo').srcObject = stream;
                 isSecurityActive = true;
                 if (!modelsLoaded) await loadFaceModels();
                 if (securityInterval) clearInterval(securityInterval);
-                securityInterval = setInterval(detectAndProcessFaces, DETECTION_INTERVAL);
-            } catch(e) { console.error(e); }
+                securityInterval = setInterval(detectFacesFast, DETECTION_INTERVAL);
+                
+                // FPS counter
+                lastFpsUpdate = Date.now();
+                setInterval(() => {
+                    if (isSecurityActive) {
+                        const fps = Math.round(frameCount / ((Date.now() - lastFpsUpdate) / 1000));
+                        const fpsEl = document.getElementById('fpsCounter');
+                        if (fpsEl) fpsEl.innerHTML = `${fps}fps`;
+                        frameCount = 0;
+                        lastFpsUpdate = Date.now();
+                    }
+                }, 1000);
+                
+                const status = document.getElementById('securityStatus');
+                if (status) { status.innerHTML = '🎯 Camera Active - Fast Detection 10x/sec'; status.className = 'camera-status status-active'; }
+            } catch(e) { console.error(e); showError('Camera Error', 'Please allow camera access'); }
         }
-        function stopSecurityCamera() { if (securityStream) { securityStream.getTracks().forEach(t => t.stop()); securityStream = null; } if (securityInterval) clearInterval(securityInterval); isSecurityActive = false; }
+        
+        function stopSecurityCamera() { 
+            if (securityStream) { securityStream.getTracks().forEach(t => t.stop()); securityStream = null; } 
+            if (securityInterval) { clearInterval(securityInterval); securityInterval = null; } 
+            isSecurityActive = false; 
+        }
         
         function detectLightLevel(video) {
             if (!video || !video.videoWidth) return 100;
-            const canvas = document.createElement('canvas'); canvas.width = 50; canvas.height = 50;
-            const ctx = canvas.getContext('2d'); ctx.drawImage(video, 0, 0, 50, 50);
+            const canvas = document.createElement('canvas');
+            canvas.width = 50; canvas.height = 50;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, 50, 50);
             const data = ctx.getImageData(0, 0, 50, 50).data;
             let total = 0;
-            for (let i = 0; i < data.length; i += 4) total += (data[i] + data[i+1] + data[i+2]) / 3;
+            for (let i = 0; i < data.length; i += 4) {
+                total += (data[i] + data[i+1] + data[i+2]) / 3;
+            }
             return total / 2500;
         }
-        async function enableTorch() { if (videoTrack) { try { await videoTrack.applyConstraints({ advanced: [{ torch: true }] }); torchEnabled = true; updateTorchButton(true); } catch(e) {} } }
-        async function disableTorch() { if (videoTrack) { try { await videoTrack.applyConstraints({ advanced: [{ torch: false }] }); torchEnabled = false; updateTorchButton(false); } catch(e) {} } }
-        function updateTorchButton(on) { const btn = document.getElementById('torchBtn'); if (btn) btn.innerHTML = on ? '🔦 ON' : '🔦 OFF'; }
+        
+        async function enableTorch() { 
+            if (videoTrack) { 
+                try { 
+                    await videoTrack.applyConstraints({ advanced: [{ torch: true }] }); 
+                    torchEnabled = true; 
+                    const btn = document.getElementById('torchBtn');
+                    if (btn) btn.innerHTML = '🔦 ON';
+                } catch(e) { console.log('Torch not supported'); } 
+            } 
+        }
+        
+        async function disableTorch() { 
+            if (videoTrack) { 
+                try { 
+                    await videoTrack.applyConstraints({ advanced: [{ torch: false }] }); 
+                    torchEnabled = false; 
+                    const btn = document.getElementById('torchBtn');
+                    if (btn) btn.innerHTML = '🔦 OFF';
+                } catch(e) {} 
+            } 
+        }
+        
         function toggleTorch() { torchEnabled ? disableTorch() : enableTorch(); }
         
-        async function detectAndProcessFaces() {
+        async function detectFacesFast() {
             if (!isSecurityActive || !modelsLoaded) return;
+            frameCount++;
+            
             const video = document.getElementById('securityVideo');
             const canvas = document.getElementById('securityCanvas');
             if (!video || !video.videoWidth || !canvas) return;
-            const light = detectLightLevel(video);
-            lastLightLevel = light;
-            const indicator = document.getElementById('lightIndicator');
-            if (indicator) indicator.innerHTML = light < 60 ? '🌙 Dark' : (light > 100 ? '☀️ Bright' : '☀️ Good');
-            if (light < 60 && currentCameraId === 'environment' && !torchEnabled && videoTrack) await enableTorch();
             
-            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-            const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 })).withFaceLandmarks().withFaceDescriptors();
+            // Check light level and auto flash
+            const light = detectLightLevel(video);
+            const lightEl = document.getElementById('lightIndicator');
+            if (lightEl) {
+                lightEl.innerHTML = light < 50 ? '🌙 Dark' : (light > 100 ? '☀️ Bright' : '☀️ Good');
+                lightEl.style.backgroundColor = light < 50 ? 'rgba(245,158,11,0.9)' : 'rgba(0,0,0,0.7)';
+            }
+            
+            // Auto enable torch in low light for back camera
+            if (light < 50 && currentCameraId === 'environment' && !torchEnabled && videoTrack) {
+                await enableTorch();
+            } else if (light > 80 && torchEnabled) {
+                await disableTorch();
+            }
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // SUPER FAST detection with lower confidence threshold
+            const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: MIN_CONFIDENCE }))
+                .withFaceLandmarks()
+                .withFaceDescriptors();
+            
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            let recognized = [], stranger = false;
-            for (const d of detections) {
-                let best = null;
+            
+            let recognizedNames = [];
+            let strangerDetected = false;
+            
+            for (const detection of detections) {
+                let bestMatch = null;
+                let confidence = 0;
+                
                 if (faceMatcher) {
-                    const result = faceMatcher.findBestMatch(d.descriptor);
-                    if (result.label !== 'unknown') best = registeredUsers.find(u => u.id === result.label);
+                    const result = faceMatcher.findBestMatch(detection.descriptor);
+                    if (result.label !== 'unknown') {
+                        bestMatch = registeredUsers.find(u => u.id === result.label);
+                        confidence = Math.round((1 - result.distance) * 100);
+                    }
                 }
-                const box = d.detection.box;
-                ctx.beginPath(); ctx.rect(box.x, box.y, box.width, box.height);
-                if (best) {
-                    const confidence = Math.round((1 - result.distance) * 100);
-                    ctx.strokeStyle = '#10b981'; ctx.lineWidth = 3; ctx.stroke();
-                    ctx.fillStyle = '#10b981'; ctx.font = 'bold 14px system-ui';
-                    ctx.fillText(`${best.name} (${confidence}%)`, box.x, box.y - 5);
-                    recognized.push(best.name);
-                    await autoMarkAttendance(best, confidence);
+                
+                const box = detection.detection.box;
+                ctx.beginPath();
+                ctx.rect(box.x, box.y, box.width, box.height);
+                
+                if (bestMatch) {
+                    // Recognized face - GREEN box
+                    ctx.strokeStyle = '#10b981';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    ctx.fillStyle = '#10b981';
+                    ctx.font = 'bold 14px system-ui';
+                    ctx.fillText(`${bestMatch.name} (${confidence}%)`, box.x, box.y - 5);
+                    recognizedNames.push(bestMatch.name);
+                    await autoMarkAttendance(bestMatch, confidence);
                 } else {
-                    ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.stroke();
-                    ctx.fillStyle = '#ef4444'; ctx.font = 'bold 14px system-ui';
-                    ctx.fillText('⚠️ STRANGER', box.x, box.y - 5);
-                    stranger = true;
+                    // Stranger face - RED box
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    ctx.fillStyle = '#ef4444';
+                    ctx.font = 'bold 14px system-ui';
+                    ctx.fillText('⚠️ STRANGER!', box.x, box.y - 5);
+                    strangerDetected = true;
                 }
             }
-            document.getElementById('detectCount').innerHTML = detections.length ? `👤 ${detections.length} face(s)` : '👤 No face';
-            document.getElementById('recognizedNames').innerHTML = recognized.length ? `✅ Recognized: ${recognized.join(', ')}` : '✅ Waiting...';
-            if (stranger && Date.now() - lastStrangerAlertTime > 8000) {
+            
+            // Update UI indicators
+            const detectEl = document.getElementById('detectCount');
+            if (detectEl) {
+                detectEl.innerHTML = detections.length ? `👤 ${detections.length} face(s) | Light: ${Math.round(light)}%` : '👤 No face detected';
+            }
+            
+            const recognizedEl = document.getElementById('recognizedNames');
+            if (recognizedEl) {
+                recognizedEl.innerHTML = recognizedNames.length ? `✅ Recognized: ${recognizedNames.join(', ')}` : '✅ Waiting for face...';
+                if (detections.length > 0) recognizedEl.className = 'camera-status status-active';
+                else recognizedEl.className = 'camera-status';
+            }
+            
+            // Stranger alert
+            if (strangerDetected && Date.now() - lastStrangerAlertTime > 8000) {
                 lastStrangerAlertTime = Date.now();
                 const img = await captureImage(video);
                 await reportStranger(img);
@@ -366,33 +455,69 @@
         }
         
         async function autoMarkAttendance(user, confidence) {
-            const today = getTodayDate(), session = getCurrentSession(), key = `${user.id}_${today}_${session}`;
+            const today = getTodayDate();
+            const session = getCurrentSession();
+            const key = `${user.id}_${today}_${session}`;
+            
+            // Prevent duplicate within 3 seconds
             if (lastAttendanceTime[key] && Date.now() - lastAttendanceTime[key] < 3000) return;
-            const already = attendanceRecords.find(r => r.id === user.id && r.date === today && r.session === session);
-            if (!already) {
+            
+            const alreadyLogged = attendanceRecords.find(r => r.id === user.id && r.date === today && r.session === session);
+            if (!alreadyLogged) {
                 lastAttendanceTime[key] = Date.now();
-                const tv = new Date().getHours() * 60 + new Date().getMinutes();
-                let statusName = "Hadir", statusText = "Present";
-                if (session === 'pagi' && tv > 510) { statusName = "Lewat"; statusText = "Late"; }
-                if (session === 'petang' && tv > 810) { statusName = "Lewat"; statusText = "Late"; }
-                attendanceRecords.push({ id: user.id, name: user.name, role: user.role, className: user.className, status: statusName, session, sessionName: session === 'pagi' ? 'Morning' : 'Afternoon', time: getCurrentTime(), date: today, timestamp: Date.now(), method: 'Face Auto', confidence });
-                saveLocal(); syncToFirebase(); playBeep();
+                
+                const now = new Date();
+                const timeValue = now.getHours() * 60 + now.getMinutes();
+                let statusName = "Hadir";
+                let statusText = "Present";
+                
+                if (session === 'pagi' && timeValue > 510) { statusName = "Lewat"; statusText = "Late"; }
+                if (session === 'petang' && timeValue > 810) { statusName = "Lewat"; statusText = "Late"; }
+                
+                attendanceRecords.push({
+                    id: user.id, name: user.name, role: user.role, className: user.className,
+                    status: statusName, session: session, sessionName: session === 'pagi' ? 'Morning' : 'Afternoon',
+                    time: getCurrentTime(), date: today, timestamp: Date.now(), method: 'Face Auto', confidence: confidence
+                });
+                saveLocal();
+                syncToFirebase();
+                playBeep();
+                
+                // Voice greeting
                 speakGreeting(user.name, user.role, statusText);
-                Swal.fire({ title: '✅ Attendance Recorded!', html: `<strong>${escapeHtml(user.name)}</strong><br>Status: ${statusText}<br>Confidence: ${confidence}%`, icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                
+                // Toast notification
+                Swal.fire({
+                    title: '✅ Attendance Recorded!',
+                    html: `<strong>${escapeHtml(user.name)}</strong><br>Status: ${statusText}<br>Confidence: ${confidence}%<br>Time: ${getCurrentTime()}`,
+                    icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 2500,
+                    background: 'white', borderRadius: '20px'
+                });
                 updateUI();
             }
         }
         
         async function reportStranger(img) {
-            const alert = { id: Date.now(), className: selectedClass === "Semua Kelas" ? "Unknown" : selectedClass, time: getCurrentTime(), date: getTodayDate(), session: getCurrentSession(), imageData: img };
+            const alert = {
+                id: Date.now(),
+                className: selectedClass === "Semua Kelas" ? "Unknown" : selectedClass,
+                time: getCurrentTime(), date: getTodayDate(), session: getCurrentSession(),
+                imageData: img
+            };
             strangerAlerts.push(alert);
-            saveLocal(); syncToFirebase(); playAlertBeep();
-            await sendTelegramAlert(`⚠️ STRANGER ALERT! Class: ${alert.className} at ${alert.time}`, img);
-            await Swal.fire({ title: '⚠️ SECURITY ALERT!', html: `<img src="${img}" style="width:150px;border-radius:16px;margin:10px 0;"><br><strong>Stranger detected!</strong><br>Class: ${alert.className}<br>Time: ${alert.time}`, icon: 'warning', confirmButtonColor: '#ef4444' });
+            saveLocal();
+            syncToFirebase();
+            playAlertBeep();
+            
+            await Swal.fire({
+                title: '⚠️ SECURITY ALERT!',
+                html: `<img src="${img}" style="width:150px;border-radius:16px;margin:10px 0;"><br><strong>Stranger detected in class!</strong><br>Class: ${alert.className}<br>Time: ${alert.time}`,
+                icon: 'warning', confirmButtonColor: '#ef4444', confirmButtonText: 'Acknowledge', borderRadius: '28px'
+            });
             updateUI();
         }
         
-        // QR Scanner
+        // ==================== QR SCANNER ====================
         async function startQRScanner() {
             if (isScanning) return;
             try {
@@ -400,41 +525,71 @@
                 await html5QrCode.start({ facingMode: "environment" }, { fps: 15, qrbox: { width: 250, height: 250 } }, async (t) => {
                     if (t && !window.processing) {
                         window.processing = true;
-                        try { const d = JSON.parse(t), u = registeredUsers.find(x => x.id === d.id); if (u) { await autoMarkAttendance(u, 100); playBeep(); } else { await showError('❌', 'QR not registered'); playAlertBeep(); } } catch(e) { await showError('Invalid QR', ''); playAlertBeep(); }
+                        try {
+                            const d = JSON.parse(t);
+                            const u = registeredUsers.find(x => x.id === d.id);
+                            if (u) {
+                                await autoMarkAttendance(u, 100);
+                                playBeep();
+                            } else {
+                                await showError('❌', 'QR not registered');
+                                playAlertBeep();
+                            }
+                        } catch(e) {
+                            await showError('Invalid QR', '');
+                            playAlertBeep();
+                        }
                         setTimeout(() => { window.processing = false; }, 1500);
                     }
                 });
                 isScanning = true;
             } catch(e) { await showError('Camera Error', 'Cannot access camera'); }
         }
+        
         function stopQRScanner() { if (html5QrCode && isScanning) { html5QrCode.stop(); isScanning = false; } }
         
-        // ==================== REGISTER FACE WITH AUTO CAPTURE 3-2-1 ====================
+        // ==================== REGISTER FACE (Auto Capture 3-2-1) ====================
         function startRegisterCamera() {
             if (registerStream) stopRegisterCamera();
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: INPUT_SIZE }, height: { ideal: INPUT_SIZE } } }).then(s => {
-                registerStream = s;
-                document.getElementById('registerVideo').srcObject = s;
-                if (registerInterval) clearInterval(registerInterval);
-                registerInterval = setInterval(checkFaceForRegister, 100);
-            }).catch(e => console.error(e));
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: INPUT_SIZE }, height: { ideal: INPUT_SIZE } } })
+                .then(s => {
+                    registerStream = s;
+                    document.getElementById('registerVideo').srcObject = s;
+                    if (registerInterval) clearInterval(registerInterval);
+                    registerInterval = setInterval(checkFaceForRegister, 100);
+                }).catch(e => console.error(e));
         }
-        function stopRegisterCamera() { if (registerStream) { registerStream.getTracks().forEach(t => t.stop()); registerStream = null; } if (registerInterval) clearInterval(registerInterval); if (captureTimer) clearTimeout(captureTimer); isCountingDown = false; }
+        
+        function stopRegisterCamera() { 
+            if (registerStream) { registerStream.getTracks().forEach(t => t.stop()); registerStream = null; } 
+            if (registerInterval) clearInterval(registerInterval); 
+            if (captureTimer) clearTimeout(captureTimer);
+            isCountingDown = false;
+        }
         
         async function checkFaceForRegister() {
             const video = document.getElementById('registerVideo');
             const canvas = document.getElementById('registerCanvas');
             if (!video || !video.videoWidth || !canvas || !modelsLoaded) return;
-            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-            const detection = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 })).withFaceLandmarks().withFaceDescriptor();
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const detection = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: MIN_CONFIDENCE }))
+                .withFaceLandmarks()
+                .withFaceDescriptor();
+            
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0);
             const cx = canvas.width/4, cy = canvas.height/4, w = canvas.width/2, h = canvas.height/2;
-            ctx.beginPath(); ctx.rect(cx, cy, w, h);
+            ctx.beginPath();
+            ctx.rect(cx, cy, w, h);
             
             if (detection) {
-                ctx.strokeStyle = '#10b981'; ctx.lineWidth = 3; ctx.stroke();
-                ctx.fillStyle = '#10b981'; ctx.font = 'bold 14px system-ui';
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.fillStyle = '#10b981';
+                ctx.font = 'bold 14px system-ui';
                 ctx.fillText('✓ Face Detected! Auto capture in 3...', cx, cy - 5);
                 
                 if (!registerFaceDetected) {
@@ -443,8 +598,11 @@
                     startAutoCaptureCountdown(video, canvas);
                 }
             } else {
-                ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2; ctx.stroke();
-                ctx.fillStyle = '#f59e0b'; ctx.font = 'bold 14px system-ui';
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.fillStyle = '#f59e0b';
+                ctx.font = 'bold 14px system-ui';
                 ctx.fillText('Place your face in the box', cx, cy - 5);
                 registerFaceDetected = false;
                 if (captureTimer) clearTimeout(captureTimer);
@@ -460,7 +618,7 @@
             
             const showCountdown = () => {
                 if (!registerFaceDetected) { isCountingDown = false; return; }
-                // Show countdown circle on canvas
+                
                 const ctx = canvas.getContext('2d');
                 ctx.fillStyle = 'rgba(0,0,0,0.7)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -481,101 +639,373 @@
         }
         
         async function autoRegisterFace() {
-            if (!pendingRegistration) { await showError('Error', 'Fill name and class first'); registerStep = 1; renderRegisterPage(); return; }
-            if (!registerFaceDetected || !registerDescriptor) { await showWarning('No Face', 'Position face in green box'); return; }
+            if (!pendingRegistration) {
+                await showError('Error', 'Fill name and class first');
+                registerStep = 1;
+                renderRegisterPage();
+                return;
+            }
+            if (!registerFaceDetected || !registerDescriptor) {
+                await showWarning('No Face', 'Position face in green box');
+                return;
+            }
             
-            const newUser = { id: Date.now().toString(), ...pendingRegistration, descriptor: registerDescriptor, registeredAt: new Date().toISOString(), qrData: JSON.stringify({ id: Date.now().toString(), name: pendingRegistration.name, role: pendingRegistration.role, className: pendingRegistration.className }) };
-            registeredUsers.push(newUser); saveLocal(); syncToFirebase(); buildMatcher();
+            const newUser = {
+                id: Date.now().toString(),
+                ...pendingRegistration,
+                descriptor: registerDescriptor,
+                registeredAt: new Date().toISOString(),
+                qrData: JSON.stringify({ id: Date.now().toString(), name: pendingRegistration.name, role: pendingRegistration.role, className: pendingRegistration.className })
+            };
+            registeredUsers.push(newUser);
+            saveLocal();
+            syncToFirebase();
+            buildFaceMatcher();
+            
             await showSuccess('✅ Registration Successful!', `${newUser.name} (${newUser.role === 'teacher' ? 'Teacher' : 'Student'})\nClass: ${newUser.className}\n✅ Face saved to AI database!`);
             speakGreeting(newUser.name, newUser.role, "Registration successful");
-            pendingRegistration = null; registerStep = 1;
-            if (!availableClasses.includes(newUser.className)) { availableClasses.push(newUser.className); availableClasses.sort(); }
+            pendingRegistration = null;
+            registerStep = 1;
+            if (!availableClasses.includes(newUser.className)) {
+                availableClasses.push(newUser.className);
+                availableClasses.sort();
+            }
             renderRegisterPage();
         }
-        async function showWarning(title, msg) { await Swal.fire({ title, text: msg, icon: 'warning', confirmButtonColor: '#f59e0b', borderRadius: '24px' }); }
+        
+        async function showWarning(title, msg) {
+            await Swal.fire({ title, text: msg, icon: 'warning', confirmButtonColor: '#f59e0b', borderRadius: '24px' });
+        }
         
         async function saveNameAndClass() {
-            const name = document.getElementById('regName').value.trim(), role = document.getElementById('regRole').value;
+            const name = document.getElementById('regName').value.trim();
+            const role = document.getElementById('regRole').value;
             let className = document.getElementById('regClass').value;
+            
             if (!name) { await showError('Error', 'Please enter name'); return false; }
             if (!className) { await showError('Error', 'Please select class'); return false; }
-            if (registeredUsers.some(u => u.name.toLowerCase() === name.toLowerCase())) { await showError('Name Exists', `"${name}" already registered`); return false; }
+            if (registeredUsers.some(u => u.name.toLowerCase() === name.toLowerCase())) {
+                await showError('Name Exists', `"${name}" already registered`);
+                return false;
+            }
             pendingRegistration = { name, role, className };
             registerStep = 2;
             renderRegisterStep2();
             return true;
         }
-        function backToStep1() { registerStep = 1; pendingRegistration = null; renderRegisterPage(); }
         
-        // Edit/Delete
+        function backToStep1() {
+            registerStep = 1;
+            pendingRegistration = null;
+            renderRegisterPage();
+        }
+        
+        // ==================== EDIT/DELETE USER ====================
         async function editUser(user) {
-            const r = await Swal.fire({ title: 'Edit User', html: `<input id="n" class="swal2-input" value="${escapeHtml(user.name)}"><select id="r"><option value="student" ${user.role === 'student' ? 'selected' : ''}>Student</option><option value="teacher" ${user.role === 'teacher' ? 'selected' : ''}>Teacher</option></select><input id="c" class="swal2-input" value="${escapeHtml(user.className)}">`, preConfirm: () => ({ name: document.getElementById('n').value, role: document.getElementById('r').value, className: document.getElementById('c').value }) });
-            if (r.value) { user.name = r.value.name; user.role = r.value.role; user.className = r.value.className; saveLocal(); syncToFirebase(); buildMatcher(); updateUI(); await showSuccess('Updated', 'User info updated'); }
-        }
-        async function deleteUser(user) {
-            const c = await Swal.fire({ title: 'Delete User?', text: `Delete ${user.name}?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Yes' });
-            if (c.isConfirmed) { registeredUsers = registeredUsers.filter(u => u.id !== user.id); saveLocal(); syncToFirebase(); buildMatcher(); updateUI(); await showSuccess('Deleted', 'User removed'); }
+            const r = await Swal.fire({
+                title: 'Edit User',
+                html: `<input id="n" class="swal2-input" value="${escapeHtml(user.name)}"><select id="r"><option value="student" ${user.role === 'student' ? 'selected' : ''}>Student</option><option value="teacher" ${user.role === 'teacher' ? 'selected' : ''}>Teacher</option></select><input id="c" class="swal2-input" value="${escapeHtml(user.className)}">`,
+                preConfirm: () => ({ name: document.getElementById('n').value, role: document.getElementById('r').value, className: document.getElementById('c').value })
+            });
+            if (r.value) {
+                user.name = r.value.name;
+                user.role = r.value.role;
+                user.className = r.value.className;
+                saveLocal();
+                syncToFirebase();
+                buildFaceMatcher();
+                updateUI();
+                await showSuccess('Updated', 'User info updated');
+            }
         }
         
-        // Export
+        async function deleteUser(user) {
+            const c = await Swal.fire({
+                title: 'Delete User?',
+                text: `Delete ${user.name}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Yes',
+                cancelButtonText: 'Cancel'
+            });
+            if (c.isConfirmed) {
+                registeredUsers = registeredUsers.filter(u => u.id !== user.id);
+                saveLocal();
+                syncToFirebase();
+                buildFaceMatcher();
+                updateUI();
+                await showSuccess('Deleted', 'User removed');
+            }
+        }
+        
+        // ==================== EXPORT FUNCTIONS ====================
         function exportToCSV() {
             let csv = "Name,Class,Status,Session,Date,Time,Confidence\n";
             const filtered = getFilteredAttendance();
-            for (const r of filtered) csv += `"${r.name}","${r.className}","${r.status}","${r.sessionName}","${r.date}","${r.time}","${r.confidence || 100}%"\n`;
-            const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `attendance_${getTodayDate()}.csv`; a.click(); URL.revokeObjectURL(url);
+            for (const r of filtered) {
+                csv += `"${r.name}","${r.className}","${r.status}","${r.sessionName}","${r.date}","${r.time}","${r.confidence || 100}%"\n`;
+            }
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `attendance_${getTodayDate()}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
             showSuccess('Export Complete', 'CSV file downloaded');
         }
-        async function exportToPDF() { const { jsPDF } = window.jspdf; const doc = new jsPDF(); doc.setFontSize(18); doc.text('Attendance Report', 20, 20); doc.setFontSize(12); doc.text(`Date: ${getTodayDate()}`, 20, 35); doc.text(`Total Present: ${getFilteredAttendance().length}`, 20, 45); doc.save(`attendance_${getTodayDate()}.pdf`); await showSuccess('Export Complete', 'PDF file downloaded'); }
-        function getFilteredAttendance() { let filtered = [...attendanceRecords]; if (selectedClass !== "Semua Kelas") filtered = filtered.filter(r => r.className === selectedClass); if (searchQuery) filtered = filtered.filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase())); if (startDate) filtered = filtered.filter(r => r.date >= startDate); if (endDate) filtered = filtered.filter(r => r.date <= endDate); return filtered; }
-        function getPaginatedData(data) { const start = (currentPageNum - 1) * itemsPerPage; return data.slice(start, start + itemsPerPage); }
-        function renderPagination(totalItems) { const totalPages = Math.ceil(totalItems / itemsPerPage); let html = '<div class="pagination">'; for (let i = 1; i <= Math.min(totalPages, 6); i++) html += `<button class="page-btn ${i === currentPageNum ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`; html += '</div>'; return html; }
+        
+        async function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFontSize(18);
+            doc.text('Attendance Report', 20, 20);
+            doc.setFontSize(12);
+            doc.text(`Date: ${getTodayDate()}`, 20, 35);
+            doc.text(`Total Present: ${getFilteredAttendance().length}`, 20, 45);
+            doc.save(`attendance_${getTodayDate()}.pdf`);
+            await showSuccess('Export Complete', 'PDF file downloaded');
+        }
+        
+        function getFilteredAttendance() {
+            let filtered = [...attendanceRecords];
+            if (selectedClass !== "Semua Kelas") filtered = filtered.filter(r => r.className === selectedClass);
+            if (searchQuery) filtered = filtered.filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase()));
+            if (startDate) filtered = filtered.filter(r => r.date >= startDate);
+            if (endDate) filtered = filtered.filter(r => r.date <= endDate);
+            return filtered;
+        }
+        
+        function getPaginatedData(data) {
+            const start = (currentPageNum - 1) * itemsPerPage;
+            return data.slice(start, start + itemsPerPage);
+        }
+        
+        function renderPagination(totalItems) {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            let html = '<div class="pagination">';
+            for (let i = 1; i <= Math.min(totalPages, 6); i++) {
+                html += `<button class="page-btn ${i === currentPageNum ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+            }
+            html += '</div>';
+            return html;
+        }
+        
         window.goToPage = (page) => { currentPageNum = page; renderRecordsPage(); };
         
         // ==================== RENDER FUNCTIONS ====================
         function renderDashboard() {
             const today = getTodayDate();
             const todayAttendance = attendanceRecords.filter(r => r.date === today).length;
-            const totalStudents = registeredUsers.filter(u => u.role === 'student').length, totalTeachers = registeredUsers.filter(u => u.role === 'teacher').length;
-            const present = attendanceRecords.filter(r => r.date === today && r.status === 'Hadir').length, late = attendanceRecords.filter(r => r.date === today && r.status === 'Lewat').length, strangers = strangerAlerts.filter(a => a.date === today).length;
-            const rows = attendanceRecords.filter(r => selectedClass === "Semua Kelas" || r.className === selectedClass).slice(-8).reverse().map(r => `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.className)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td><td>${r.confidence || 100}%</td>`).join('');
-            const html = `<div class="class-selector"><select id="classFilter"><option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 All Classes</option>${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Class ${c}</option>`).join('')}</select></div><div class="stats-grid"><div class="stat-card"><div><h3>Total Users</h3><div class="stat-number">${registeredUsers.length}</div></div><div class="stat-icon"><i data-lucide="users"></i></div></div><div class="stat-card"><div><h3>Today's Present</h3><div class="stat-number">${todayAttendance}</div></div><div class="stat-icon"><i data-lucide="check-circle"></i></div></div><div class="stat-card"><div><h3>Students</h3><div class="stat-number">${totalStudents}</div></div><div class="stat-icon"><i data-lucide="graduation-cap"></i></div></div><div class="stat-card"><div><h3>Teachers</h3><div class="stat-number">${totalTeachers}</div></div><div class="stat-icon"><i data-lucide="chalkboard"></i></div></div><div class="stat-card"><div><h3>Present</h3><div class="stat-number">${present}</div></div><div class="stat-icon"><i data-lucide="smile"></i></div></div><div class="stat-card"><div><h3>Late</h3><div class="stat-number">${late}</div></div><div class="stat-icon"><i data-lucide="clock"></i></div></div><div class="stat-card" onclick="navigateTo('records')"><div><h3>Stranger Alerts</h3><div class="stat-number">${strangers}</div></div><div class="stat-icon"><i data-lucide="alert-triangle"></i></div></div></div><div class="chart-card"><h3><i data-lucide="pie-chart"></i> Today's Attendance</h3><canvas id="attChart"></canvas></div><div class="data-table"><h3>📋 Recent Attendance</h3><div class="table-container"><table><thead><tr><th>Name</th><th>Class</th><th>Status</th><th>Time</th><th>Confidence</th></tr></thead><tbody>${rows || '<tr><td colspan="5">No records</td>'}</tbody></table></div></div>`;
-            document.getElementById('mainContent').innerHTML = html; lucide.createIcons();
+            const totalStudents = registeredUsers.filter(u => u.role === 'student').length;
+            const totalTeachers = registeredUsers.filter(u => u.role === 'teacher').length;
+            const present = attendanceRecords.filter(r => r.date === today && r.status === 'Hadir').length;
+            const late = attendanceRecords.filter(r => r.date === today && r.status === 'Lewat').length;
+            const strangers = strangerAlerts.filter(a => a.date === today).length;
+            
+            const rows = attendanceRecords.filter(r => selectedClass === "Semua Kelas" || r.className === selectedClass).slice(-8).reverse().map(r => `
+                <tr>
+                    <td><strong>${escapeHtml(r.name)}</strong></td>
+                    <td>${escapeHtml(r.className)}</td>
+                    <td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td>
+                    <td>${r.time}</td>
+                    <td>${r.confidence || 100}%</td>
+                </tr>
+            `).join('');
+            
+            const html = `
+                <div class="class-selector">
+                    <select id="classFilter">
+                        <option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 All Classes</option>
+                        ${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Class ${c}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card"><div><h3>Total Users</h3><div class="stat-number">${registeredUsers.length}</div></div><div class="stat-icon"><i data-lucide="users"></i></div></div>
+                    <div class="stat-card"><div><h3>Today's Present</h3><div class="stat-number">${todayAttendance}</div></div><div class="stat-icon"><i data-lucide="check-circle"></i></div></div>
+                    <div class="stat-card"><div><h3>Students</h3><div class="stat-number">${totalStudents}</div></div><div class="stat-icon"><i data-lucide="graduation-cap"></i></div></div>
+                    <div class="stat-card"><div><h3>Teachers</h3><div class="stat-number">${totalTeachers}</div></div><div class="stat-icon"><i data-lucide="chalkboard"></i></div></div>
+                    <div class="stat-card"><div><h3>Present</h3><div class="stat-number">${present}</div></div><div class="stat-icon"><i data-lucide="smile"></i></div></div>
+                    <div class="stat-card"><div><h3>Late</h3><div class="stat-number">${late}</div></div><div class="stat-icon"><i data-lucide="clock"></i></div></div>
+                    <div class="stat-card" onclick="navigateTo('records')"><div><h3>Stranger Alerts</h3><div class="stat-number">${strangers}</div></div><div class="stat-icon"><i data-lucide="alert-triangle"></i></div></div>
+                </div>
+                <div class="chart-card"><h3><i data-lucide="pie-chart"></i> Today's Attendance</h3><canvas id="attChart"></canvas></div>
+                <div class="data-table"><h3>📋 Recent Attendance (Fast Recognition)</h3><div class="table-container"><table><thead><tr><th>Name</th><th>Class</th><th>Status</th><th>Time</th><th>Confidence</th></thead><tbody>${rows || '<tr><td colspan="5">No records</td>'}</tbody>49€</div></div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+            lucide.createIcons();
+            
             const ctx = document.getElementById('attChart')?.getContext('2d');
             if (ctx && attendanceChart) attendanceChart.destroy();
-            if (ctx) attendanceChart = new Chart(ctx, { type: 'doughnut', data: { labels: ['Present', 'Late'], datasets: [{ data: [present, late], backgroundColor: ['#10b981', '#f59e0b'] }] } });
-            document.getElementById('classFilter').onchange = (e) => { selectedClass = e.target.value; saveLocal(); renderDashboard(); };
+            if (ctx) {
+                attendanceChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: { labels: ['Present', 'Late'], datasets: [{ data: [present, late], backgroundColor: ['#10b981', '#f59e0b'] }] }
+                });
+            }
+            
+            document.getElementById('classFilter').onchange = (e) => {
+                selectedClass = e.target.value;
+                saveLocal();
+                renderDashboard();
+            };
         }
         
         function renderSecurityPage() {
-            const html = `<div class="camera-section"><div class="camera-selector"><select id="cameraSelect"><option value="user">📱 Front Camera</option><option value="environment">📷 Back Camera (Flash)</option></select></div><div class="camera-container"><video id="securityVideo" autoplay playsinline></video><canvas id="securityCanvas" class="face-canvas"></canvas><div class="detection-indicator" id="detectCount">👤 Initializing...</div><div class="light-indicator" id="lightIndicator">☀️ Good</div><button class="torch-btn" id="torchBtn">🔦 OFF</button></div><div class="camera-status" id="securityStatus">🎯 Starting AI Security...</div><div class="camera-status" id="recognizedNames">✅ Waiting for face...</div></div><div class="data-table"><h3>🔒 Complete Features</h3><p>✓ Auto face detection | Voice greeting | Confidence score<br>✓ Auto flash in low light | Stranger alert + Telegram<br>✓ Real-time light indicator | Dark mode support</p></div>`;
-            document.getElementById('mainContent').innerHTML = html; lucide.createIcons();
+            const html = `
+                <div class="camera-section">
+                    <div class="camera-selector">
+                        <select id="cameraSelect">
+                            <option value="user">📱 Front Camera</option>
+                            <option value="environment">📷 Back Camera (with Flash)</option>
+                        </select>
+                    </div>
+                    <div class="camera-container">
+                        <video id="securityVideo" autoplay playsinline></video>
+                        <canvas id="securityCanvas" class="face-canvas"></canvas>
+                        <div class="fps-counter" id="fpsCounter">0fps</div>
+                        <div class="detection-indicator" id="detectCount">👤 Initializing...</div>
+                        <div class="light-indicator" id="lightIndicator">☀️ Good</div>
+                        <button class="torch-btn" id="torchBtn">🔦 OFF</button>
+                    </div>
+                    <div class="camera-status" id="securityStatus">⚡ Starting Fast Detection (10x/sec)...</div>
+                    <div class="camera-status" id="recognizedNames">✅ Waiting for face...</div>
+                </div>
+                <div class="data-table">
+                    <h3>⚡ Fast Detection Mode</h3>
+                    <p>✓ Detection speed: <strong>10 times per second</strong> (100ms)<br>
+                    ✓ Auto flash in low light | Light indicator real-time<br>
+                    ✓ Green box = Recognized → Auto attendance<br>
+                    ✓ Red box = Stranger → Alert + image saved</p>
+                </div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+            lucide.createIcons();
+            
             document.getElementById('cameraSelect').onchange = (e) => { currentCameraId = e.target.value; startSecurityCamera(); };
             document.getElementById('torchBtn').onclick = () => toggleTorch();
             startSecurityCamera();
         }
         
-        function renderQRPage() { document.getElementById('mainContent').innerHTML = `<div class="camera-section"><h3><i data-lucide="qr-code"></i> QR Code Scan</h3><div class="qr-container" id="qr-reader"></div><div class="camera-status">● Starting scanner...</div></div>`; lucide.createIcons(); setTimeout(() => startQRScanner(), 100); }
+        function renderQRPage() {
+            document.getElementById('mainContent').innerHTML = `
+                <div class="camera-section">
+                    <h3><i data-lucide="qr-code"></i> QR Code Scan (Backup)</h3>
+                    <div class="qr-container" id="qr-reader"></div>
+                    <div class="camera-status">● Starting scanner...</div>
+                </div>
+                <div class="data-table">
+                    <h3>📱 QR Code Alternative</h3>
+                    <p>Use QR code if face detection has issues</p>
+                </div>
+            `;
+            lucide.createIcons();
+            setTimeout(() => startQRScanner(), 100);
+        }
         
         function renderRegisterPage() {
-            const html = `<div class="step-indicator"><div class="step active"><div class="step-number">1</div><div class="step-label">Info</div></div><div class="step"><div class="step-number">2</div><div class="step-label">Auto Capture</div></div></div><div class="data-table"><div class="register-form"><input type="text" id="regName" placeholder="Full Name *"><select id="regRole"><option value="student">🎓 Student</option><option value="teacher">👩‍🏫 Teacher</option></select><select id="regClass"><option value="">Select Class *</option>${availableClasses.map(c => `<option value="${c}">Class ${c}</option>`).join('')}<option value="Lain-lain">Other Class</option></select><input type="text" id="regClassOther" placeholder="Other class" style="display:none;"><button class="btn btn-primary" id="continueBtn">Continue →</button></div></div><div class="data-table"><h3>👥 Registered Users</h3><div id="usersList"></div></div>`;
-            document.getElementById('mainContent').innerHTML = html; lucide.createIcons();
-            document.getElementById('regClass').onchange = () => { document.getElementById('regClassOther').style.display = document.getElementById('regClass').value === 'Lain-lain' ? 'block' : 'none'; };
-            document.getElementById('continueBtn').onclick = async () => { let className = document.getElementById('regClass').value; if (className === 'Lain-lain') className = document.getElementById('regClassOther').value.trim(); if (!className) { await showError('Error', 'Please select class'); return; } await saveNameAndClass(); };
+            const html = `
+                <div class="step-indicator">
+                    <div class="step active"><div class="step-number">1</div><div class="step-label">Info</div></div>
+                    <div class="step"><div class="step-number">2</div><div class="step-label">Auto Capture</div></div>
+                </div>
+                <div class="data-table">
+                    <div class="register-form">
+                        <input type="text" id="regName" placeholder="Full Name *">
+                        <select id="regRole">
+                            <option value="student">🎓 Student</option>
+                            <option value="teacher">👩‍🏫 Teacher</option>
+                        </select>
+                        <select id="regClass">
+                            <option value="">Select Class *</option>
+                            ${availableClasses.map(c => `<option value="${c}">Class ${c}</option>`).join('')}
+                            <option value="Lain-lain">Other Class</option>
+                        </select>
+                        <input type="text" id="regClassOther" placeholder="Other class" style="display:none;">
+                        <button class="btn btn-primary" id="continueBtn">Continue →</button>
+                    </div>
+                </div>
+                <div class="data-table">
+                    <h3>👥 Registered Users</h3>
+                    <div id="usersList"></div>
+                </div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+            lucide.createIcons();
+            
+            document.getElementById('regClass').onchange = () => {
+                document.getElementById('regClassOther').style.display = document.getElementById('regClass').value === 'Lain-lain' ? 'block' : 'none';
+            };
+            
+            document.getElementById('continueBtn').onclick = async () => {
+                let className = document.getElementById('regClass').value;
+                if (className === 'Lain-lain') {
+                    className = document.getElementById('regClassOther').value.trim();
+                    if (!className) {
+                        await showError('Error', 'Please select class');
+                        return;
+                    }
+                }
+                await saveNameAndClass();
+            };
             renderUsersTable();
         }
         
         function renderUsersTable() {
             const container = document.getElementById('usersList');
             if (!container) return;
-            container.innerHTML = `<div class="table-container"><table><thead><tr><th>Name</th><th>Role</th><th>Class</th><th></th></thead><tbody>${registeredUsers.map(u => `<tr><td><strong>${escapeHtml(u.name)}</strong></td><td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Teacher' : 'Student'}</span></td><td>${escapeHtml(u.className)}</td><td class="action-buttons"><button class="edit-btn" onclick="editUserById('${u.id}')"><i data-lucide="edit-2"></i></button><button class="delete-btn" onclick="deleteUserById('${u.id}')"><i data-lucide="trash-2"></i></button></td>`).join('') || '<tr><td colspan="4">No users registered</td>'}</tbody> </div>`;
+            container.innerHTML = `
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Name</th><th>Role</th><th>Class</th><th></th></tr></thead>
+                        <tbody>
+                            ${registeredUsers.map(u => `
+                                <tr>
+                                    <td><strong>${escapeHtml(u.name)}</strong></td>
+                                    <td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Teacher' : 'Student'}</span></td>
+                                    <td>${escapeHtml(u.className)}</td>
+                                    <td class="action-buttons">
+                                        <button class="edit-btn" onclick="editUserById('${u.id}')"><i data-lucide="edit-2"></i></button>
+                                        <button class="delete-btn" onclick="deleteUserById('${u.id}')"><i data-lucide="trash-2"></i></button>
+                                    </td>
+                                </tr>
+                            `).join('') || '<tr><td colspan="4">No users registered</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            `;
             lucide.createIcons();
         }
+        
         window.editUserById = (id) => { const u = registeredUsers.find(x => x.id === id); if (u) editUser(u); };
         window.deleteUserById = (id) => { const u = registeredUsers.find(x => x.id === id); if (u) deleteUser(u); };
         
         function renderRegisterStep2() {
-            const html = `<div class="step-indicator"><div class="step completed"><div class="step-number">✓</div><div class="step-label">Info</div></div><div class="step active"><div class="step-number">2</div><div class="step-label">Auto 3-2-1</div></div></div><div class="info-box"><i data-lucide="camera"></i><div><strong>Auto Capture in 3...2...1...</strong><br>Position your face in the green box, system will auto capture after 3 seconds!</div></div><div class="camera-container"><video id="registerVideo" autoplay playsinline></video><canvas id="registerCanvas" class="face-canvas"></canvas></div><div class="camera-status" id="regCameraStatus">● Position your face, auto capture in 3 seconds</div><div class="data-table"><div style="background:rgba(16,185,129,0.1);padding:16px;border-radius:20px;"><strong>📝 ${escapeHtml(pendingRegistration.name)}</strong><br>${pendingRegistration.role === 'teacher' ? 'Teacher' : 'Student'} | Class ${pendingRegistration.className}</div><button class="btn btn-secondary" id="backBtn" style="margin-top:16px;">← Back</button></div>`;
-            document.getElementById('mainContent').innerHTML = html; lucide.createIcons();
+            const html = `
+                <div class="step-indicator">
+                    <div class="step completed"><div class="step-number">✓</div><div class="step-label">Info</div></div>
+                    <div class="step active"><div class="step-number">2</div><div class="step-label">Auto 3-2-1</div></div>
+                </div>
+                <div class="info-box">
+                    <i data-lucide="camera"></i>
+                    <div><strong>Auto Capture in 3...2...1...</strong><br>Position your face in the green box, system will auto capture after 3 seconds!</div>
+                </div>
+                <div class="camera-container">
+                    <video id="registerVideo" autoplay playsinline></video>
+                    <canvas id="registerCanvas" class="face-canvas"></canvas>
+                </div>
+                <div class="camera-status" id="regCameraStatus">● Position your face, auto capture in 3 seconds</div>
+                <div class="data-table">
+                    <div style="background:rgba(16,185,129,0.1);padding:16px;border-radius:20px;margin-bottom:16px;">
+                        <strong>📝 ${escapeHtml(pendingRegistration.name)}</strong><br>
+                        ${pendingRegistration.role === 'teacher' ? 'Teacher' : 'Student'} | Class ${pendingRegistration.className}
+                    </div>
+                    <button class="btn btn-secondary" id="backBtn" style="margin-top:16px;">← Back</button>
+                </div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+            lucide.createIcons();
             startRegisterCamera();
             document.getElementById('backBtn').onclick = backToStep1;
         }
@@ -584,9 +1014,70 @@
             let filtered = getFilteredAttendance();
             const paginated = getPaginatedData(filtered);
             const todayStrangers = strangerAlerts.filter(a => a.date === getTodayDate() && (selectedClass === "Semua Kelas" || a.className === selectedClass));
-            const html = `<div class="class-selector"><select id="recordClassFilter"><option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 All Classes</option>${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Class ${c}</option>`).join('')}</select></div><div class="search-bar"><input type="text" id="searchInput" placeholder="🔍 Search by name..." value="${escapeHtml(searchQuery)}"><button class="btn-small btn-primary" id="searchBtn">Search</button></div><div class="date-filter"><input type="date" id="startDateInput" value="${startDate}"><input type="date" id="endDateInput" value="${endDate}"><button class="btn-small btn-primary" id="filterBtn">Filter</button><button class="btn-small btn-secondary" id="resetBtn">Reset</button></div><div class="data-table"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;"><h3>⚠️ Stranger Alerts (${todayStrangers.length})</h3><div><button class="btn-small btn-primary" id="pdfBtn">📄 PDF</button><button class="btn-small btn-success" id="excelBtn">📊 Excel</button></div></div><div id="strangerList"></div></div><div class="data-table"><h3>📋 Attendance Records (${filtered.length})</h3><div class="table-container"><table><thead><tr><th>Name</th><th>Class</th><th>Session</th><th>Status</th><th>Date</th><th>Time</th><th>Confidence</th></tr></thead><tbody>${paginated.map(r => `<tr><td><strong>${escapeHtml(r.name)}</strong></td><td>${escapeHtml(r.className)}</td><td>${r.sessionName}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.date}</td><td>${r.time}</td><td>${r.confidence || 100}%</td>`).join('') || '<tr><td colspan="7">No records</td>'}</tbody> </div>${renderPagination(filtered.length)}</div>`;
-            document.getElementById('mainContent').innerHTML = html; lucide.createIcons();
-            document.getElementById('strangerList').innerHTML = todayStrangers.length ? todayStrangers.map(a => `<div class="danger-banner"><div>${a.imageData ? `<img src="${a.imageData}" class="stranger-image" onclick="viewStranger('${a.imageData}')">` : '📷'}</div><div><strong>⚠️ Stranger Detected!</strong><br>Class: ${a.className} | Time: ${a.time}</div><button class="btn-small btn-primary" onclick="downloadImage('${a.imageData}',${a.id})">💾 Save Image</button></div>`).join('') : '<p>✅ No stranger alerts today</p>';
+            
+            const html = `
+                <div class="class-selector">
+                    <select id="recordClassFilter">
+                        <option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 All Classes</option>
+                        ${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Class ${c}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="🔍 Search by name..." value="${escapeHtml(searchQuery)}">
+                    <button class="btn-small btn-primary" id="searchBtn">Search</button>
+                </div>
+                <div class="date-filter">
+                    <input type="date" id="startDateInput" value="${startDate}">
+                    <input type="date" id="endDateInput" value="${endDate}">
+                    <button class="btn-small btn-primary" id="filterBtn">Filter</button>
+                    <button class="btn-small btn-secondary" id="resetBtn">Reset</button>
+                </div>
+                <div class="data-table">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+                        <h3>⚠️ Stranger Alerts (${todayStrangers.length})</h3>
+                        <div>
+                            <button class="btn-small btn-primary" id="pdfBtn">📄 PDF</button>
+                            <button class="btn-small btn-success" id="excelBtn">📊 Excel</button>
+                        </div>
+                    </div>
+                    <div id="strangerList"></div>
+                </div>
+                <div class="data-table">
+                    <h3>📋 Attendance Records (${filtered.length})</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr><th>Name</th><th>Class</th><th>Session</th><th>Status</th><th>Date</th><th>Time</th><th>Confidence</th></tr>
+                            </thead>
+                            <tbody>
+                                ${paginated.map(r => `
+                                    <tr>
+                                        <td><strong>${escapeHtml(r.name)}</strong></td>
+                                        <td>${escapeHtml(r.className)}</td>
+                                        <td>${r.sessionName}</td>
+                                        <td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td>
+                                        <td>${r.date}</td>
+                                        <td>${r.time}</td>
+                                        <td>${r.confidence || 100}%</td>
+                                    </tr>
+                                `).join('') || '<tr><td colspan="7">No records</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                    ${renderPagination(filtered.length)}
+                </div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+            lucide.createIcons();
+            
+            document.getElementById('strangerList').innerHTML = todayStrangers.length ? todayStrangers.map(a => `
+                <div class="danger-banner">
+                    <div>${a.imageData ? `<img src="${a.imageData}" class="stranger-image" onclick="viewStranger('${a.imageData}')">` : '📷'}</div>
+                    <div><strong>⚠️ Stranger Detected!</strong><br>Class: ${a.className} | Time: ${a.time}</div>
+                    <button class="btn-small btn-primary" onclick="downloadImage('${a.imageData}',${a.id})">💾 Save Image</button>
+                </div>
+            `).join('') : '<p>✅ No stranger alerts today</p>';
+            
             document.getElementById('recordClassFilter').onchange = (e) => { selectedClass = e.target.value; saveLocal(); currentPageNum = 1; renderRecordsPage(); };
             document.getElementById('searchBtn').onclick = () => { searchQuery = document.getElementById('searchInput').value; currentPageNum = 1; renderRecordsPage(); };
             document.getElementById('filterBtn').onclick = () => { startDate = document.getElementById('startDateInput').value; endDate = document.getElementById('endDateInput').value; currentPageNum = 1; renderRecordsPage(); };
@@ -594,13 +1085,17 @@
             document.getElementById('pdfBtn').onclick = exportToPDF;
             document.getElementById('excelBtn').onclick = exportToCSV;
         }
+        
         window.viewStranger = (img) => { Swal.fire({ imageUrl: img, imageWidth: 300, confirmButtonColor: '#6366f1', borderRadius: '24px' }); };
         window.downloadImage = (data, id) => { const a = document.createElement('a'); a.href = data; a.download = `stranger_${id}.jpg`; a.click(); };
         
         function navigateTo(page) {
             currentPage = page;
             document.querySelectorAll('.nav-item').forEach(i => i.classList.toggle('active', i.dataset.page === page));
-            stopSecurityCamera(); stopQRScanner(); stopRegisterCamera();
+            stopSecurityCamera();
+            stopQRScanner();
+            stopRegisterCamera();
+            
             if (page === 'dashboard') renderDashboard();
             else if (page === 'security') renderSecurityPage();
             else if (page === 'qrcode') renderQRPage();
@@ -608,6 +1103,7 @@
             else if (page === 'records') renderRecordsPage();
         }
         
+        // ==================== LOGIN & INIT ====================
         function login() {
             const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
@@ -620,22 +1116,44 @@
                 document.getElementById('mainContent').style.display = 'block';
                 document.getElementById('bottomNav').style.display = 'flex';
                 document.getElementById('userName').innerText = currentUser.name;
-                loadLocal(); loadFromFirebase().then(() => { buildMatcher(); renderDashboard(); lucide.createIcons(); loadFaceModels(); });
-            } else { showError('Login Failed', 'Invalid username or password'); }
+                loadLocal();
+                loadFromFirebase().then(() => {
+                    buildFaceMatcher();
+                    renderDashboard();
+                    lucide.createIcons();
+                    loadFaceModels();
+                });
+            } else {
+                showError('Login Failed', 'Invalid username or password');
+            }
         }
-        function logout() { localStorage.removeItem('loggedInUser'); location.reload(); }
+        
+        function logout() {
+            localStorage.removeItem('loggedInUser');
+            currentUser = null;
+            location.reload();
+        }
         
         // Dark Mode
         let darkMode = localStorage.getItem('darkMode') === 'true';
         if (darkMode) document.body.classList.add('dark');
-        document.getElementById('darkModeToggle').onclick = () => { document.body.classList.toggle('dark'); localStorage.setItem('darkMode', document.body.classList.contains('dark')); lucide.createIcons(); };
+        document.getElementById('darkModeToggle').onclick = () => {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+            lucide.createIcons();
+        };
         
         document.getElementById('loginBtn').onclick = login;
         document.getElementById('logoutBtn').onclick = logout;
         document.getElementById('loginPassword').addEventListener('keypress', (e) => { if (e.key === 'Enter') login(); });
         document.querySelectorAll('.nav-item').forEach(i => i.addEventListener('click', () => navigateTo(i.dataset.page)));
         window.navigateTo = navigateTo;
-        setInterval(() => { if (document.getElementById('currentTime')) document.getElementById('currentTime').innerText = new Date().toLocaleTimeString('en-GB'); }, 1000);
+        
+        setInterval(() => {
+            if (document.getElementById('currentTime')) {
+                document.getElementById('currentTime').innerText = new Date().toLocaleTimeString('en-GB');
+            }
+        }, 1000);
         
         const savedUser = localStorage.getItem('loggedInUser');
         if (savedUser) {
@@ -645,10 +1163,20 @@
             document.getElementById('mainContent').style.display = 'block';
             document.getElementById('bottomNav').style.display = 'flex';
             document.getElementById('userName').innerText = currentUser.name;
-            loadLocal(); loadFromFirebase().then(() => { buildMatcher(); renderDashboard(); lucide.createIcons(); loadFaceModels(); });
+            loadLocal();
+            loadFromFirebase().then(() => {
+                buildFaceMatcher();
+                renderDashboard();
+                lucide.createIcons();
+                loadFaceModels();
+            });
         }
         
-        setTimeout(() => { if (!currentUser) showInfo('SmartClass Pro Ultimate', '✨ Complete Features:\n✓ Auto capture 3-2-1\n✓ Voice greeting\n✓ Auto flash + light indicator\n✓ Telegram alert\n✓ Dark mode\n✓ Export PDF/Excel\n✓ Stranger image capture\n\nLogin: admin / admin123'); }, 1000);
+        setTimeout(() => {
+            if (!currentUser) {
+                showInfo('⚡ Fast Face Detection Mode', '✨ Optimized Features:\n✓ Detection: 10x per second (100ms)\n✓ Auto flash in low light\n✓ Voice greeting on attendance\n✓ Export PDF/Excel\n✓ Stranger image capture\n\nLogin: admin / admin123');
+            }
+        }, 1000);
     </script>
 </body>
 </html>
