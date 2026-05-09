@@ -2,494 +2,217 @@
 <html lang="ms">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>SmartClass Pro Ultimate - Complete AI Security System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SmartClass - Face Recognition System</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- SheetJS untuk export ke Excel/Google Sheets -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-    <!-- TensorFlow Lite untuk emotion detection -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --primary: #6366f1;
-            --primary-light: #818cf8;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --purple: #8b5cf6;
-            --pink: #ec4899;
-            --bg: #f8fafc;
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --border: rgba(203, 213, 225, 0.5);
-            --shadow-lg: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            --primary: #007AFF;
+            --success: #34C759;
+            --danger: #FF3B30;
+            --bg: #F2F2F7;
+            --card-bg: #FFFFFF;
+            --text-primary: #1C1C1E;
+            --text-secondary: #8E8E93;
+            --border: #E5E5EA;
         }
-        body.dark {
-            --bg: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.95);
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --border: rgba(51, 65, 85, 0.5);
-        }
-        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; background: var(--bg); color: var(--text-primary); transition: all 0.3s; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text-primary); }
         
-        /* Header */
-        .header { position: sticky; top: 0; z-index: 100; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; background: var(--card-bg); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
-        .header-left { display: flex; align-items: center; gap: 12px; }
-        .logo { width: 44px; height: 44px; background: linear-gradient(135deg, var(--primary), var(--purple)); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; }
-        .header-left h1 { font-size: 1.4rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--purple)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .header-left p { font-size: 0.7rem; color: var(--text-secondary); }
-        .header-right { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-        .user-badge { display: flex; align-items: center; gap: 8px; background: var(--bg); padding: 6px 16px; border-radius: 40px; }
-        .icon-btn { width: 40px; height: 40px; border-radius: 40px; display: flex; align-items: center; justify-content: center; background: var(--bg); border: none; cursor: pointer; color: var(--text-primary); }
-        .logout-btn { background: rgba(239,68,68,0.15); color: var(--danger); border: none; padding: 8px 20px; border-radius: 40px; font-weight: 600; cursor: pointer; }
-        .live-clock { background: var(--bg); padding: 8px 16px; border-radius: 40px; font-family: monospace; font-weight: 600; font-size: 0.85rem; }
+        .header { background: var(--card-bg); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 99; }
+        .header-left { display: flex; align-items: center; gap: 10px; }
+        .header-left h1 { font-size: 18px; margin: 0; }
+        .live-clock { background: var(--bg); padding: 6px 12px; border-radius: 25px; font-size: 13px; font-weight: 600; font-family: monospace; }
         
-        /* Bottom Navigation */
-        .bottom-nav { position: fixed; bottom: 20px; left: 20px; right: 20px; background: var(--card-bg); backdrop-filter: blur(20px); border-radius: 60px; display: flex; justify-content: space-around; padding: 8px 16px; z-index: 100; border: 1px solid var(--border); box-shadow: var(--shadow-lg); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 20px; border-radius: 50px; cursor: pointer; transition: all 0.2s; color: var(--text-secondary); font-size: 0.7rem; font-weight: 500; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 12px 20px; z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; border-radius: 30px; cursor: pointer; transition: all 0.2s; color: var(--text-secondary); font-size: 11px; font-weight: 500; flex: 1; text-align: center; }
         .nav-item i { width: 22px; height: 22px; }
-        .nav-item.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
+        .nav-item.active { background: var(--primary); color: white; }
         
-        .main-content { padding: 20px 16px 100px; max-width: 600px; margin: 0 auto; }
+        .main-content { padding: 16px 16px 80px; max-width: 600px; margin: 0 auto; }
         
-        /* Stats Cards */
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 24px; }
-        .stat-card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 24px; padding: 18px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.2s; }
-        .stat-card:active { transform: scale(0.97); }
-        .stat-info h3 { font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 4px; }
-        .stat-number { font-size: 1.8rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--purple)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .stat-icon { width: 48px; height: 48px; background: rgba(99,102,241,0.1); border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: var(--card-bg); border-radius: 20px; padding: 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .stat-info h3 { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+        .stat-number { font-size: 28px; font-weight: 700; }
+        .stat-icon { width: 44px; height: 44px; border-radius: 25px; display: flex; align-items: center; justify-content: center; background: rgba(0,122,255,0.1); color: var(--primary); }
         
-        /* Camera Section */
-        .camera-section { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 28px; padding: 20px; margin-bottom: 20px; }
-        .camera-container { position: relative; background: #000; border-radius: 24px; overflow: hidden; aspect-ratio: 4/3; }
+        .camera-section { background: var(--card-bg); border-radius: 24px; padding: 16px; margin-bottom: 20px; }
+        .camera-container { position: relative; background: #000; border-radius: 20px; overflow: hidden; aspect-ratio: 4/3; }
         #securityVideo, #registerVideo { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        .face-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        .detection-indicator { position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); padding: 6px 14px; border-radius: 30px; font-size: 11px; color: white; z-index: 10; font-family: monospace; }
-        .light-indicator { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); padding: 6px 12px; border-radius: 30px; font-size: 10px; color: white; z-index: 10; }
-        .torch-btn { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); border: none; border-radius: 40px; padding: 8px 16px; color: white; font-size: 11px; display: flex; align-items: center; gap: 6px; cursor: pointer; z-index: 10; }
-        .emotion-indicator { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); padding: 4px 10px; border-radius: 20px; font-size: 10px; color: white; z-index: 10; }
-        .camera-status { text-align: center; margin-top: 14px; font-size: 0.8rem; padding: 10px; border-radius: 20px; font-weight: 500; }
-        .status-active { background: rgba(16,185,129,0.15); color: var(--success); }
-        .status-detecting { background: rgba(99,102,241,0.15); color: var(--primary); animation: pulse 1s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        .face-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; background: transparent; }
+        .camera-status { text-align: center; margin-top: 12px; font-size: 12px; padding: 8px; border-radius: 12px; }
+        .status-active { background: #E8F5E9; color: #2E7D32; }
+        .detection-indicator { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 4px 10px; border-radius: 20px; font-size: 10px; color: white; z-index: 10; }
         
-        .qr-container { background: #000; border-radius: 24px; overflow: hidden; aspect-ratio: 1; max-width: 300px; margin: 0 auto; }
-        #qr-reader { width: 100%; height: 100%; }
-        
-        .data-table { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 28px; padding: 20px; margin-bottom: 20px; }
-        .data-table h3 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .data-table { background: var(--card-bg); border-radius: 24px; padding: 16px; margin-bottom: 16px; }
+        .data-table h3 { font-size: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
         .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-        th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid var(--border); }
-        th { font-weight: 600; color: var(--text-secondary); }
-        .badge { padding: 4px 12px; border-radius: 30px; font-size: 0.7rem; font-weight: 600; display: inline-block; }
-        .badge-hadir { background: rgba(16,185,129,0.15); color: var(--success); }
-        .badge-lewat { background: rgba(245,158,11,0.15); color: var(--warning); }
-        .badge-teacher { background: rgba(99,102,241,0.15); color: var(--primary); }
-        .badge-student { background: rgba(139,92,246,0.15); color: var(--purple); }
-        .badge-emotion-happy { background: rgba(16,185,129,0.15); color: var(--success); }
-        .badge-emotion-sad { background: rgba(59,130,246,0.15); color: #3b82f6; }
-        .badge-emotion-angry { background: rgba(239,68,68,0.15); color: var(--danger); }
-        .badge-emotion-surprise { background: rgba(245,158,11,0.15); color: var(--warning); }
-        .badge-emotion-neutral { background: rgba(100,116,139,0.15); color: #64748b; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
+        .badge-hadir { background: #E8F5E9; color: #2E7D32; }
+        .badge-lewat { background: #FFF3E0; color: #E65100; }
         
-        .register-form input, .register-form select { width: 100%; padding: 16px; border-radius: 60px; border: 1px solid var(--border); background: var(--card-bg); margin-bottom: 12px; font-size: 0.9rem; color: var(--text-primary); }
-        .btn { padding: 14px 20px; border-radius: 60px; font-weight: 600; border: none; cursor: pointer; width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--purple)); color: white; box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
+        .btn { padding: 14px 20px; border-radius: 30px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+        .btn-primary { background: var(--primary); color: white; }
         .btn-success { background: var(--success); color: white; }
-        .btn-secondary { background: var(--text-secondary); color: white; }
+        .btn-secondary { background: #8E8E93; color: white; }
         .btn:active { transform: scale(0.97); }
-        .btn-small { padding: 8px 16px; font-size: 0.75rem; width: auto; }
         
-        .search-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-        .search-bar input { flex: 1; padding: 12px 18px; border-radius: 60px; border: 1px solid var(--border); background: var(--card-bg); font-size: 0.8rem; }
-        .date-filter { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-        .date-filter input { flex: 1; padding: 12px 16px; border-radius: 60px; border: 1px solid var(--border); background: var(--card-bg); }
-        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
-        .page-btn { padding: 8px 14px; border-radius: 30px; border: 1px solid var(--border); background: var(--card-bg); cursor: pointer; }
+        .register-form input, .register-form select { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid var(--border); margin-bottom: 12px; font-size: 15px; background: var(--card-bg); }
+        .chart-card { background: var(--card-bg); border-radius: 24px; padding: 16px; margin-bottom: 20px; }
+        canvas { max-height: 200px; }
+        .class-selector { margin-bottom: 16px; }
+        .class-selector select { width: 100%; padding: 12px; border-radius: 14px; border: 1px solid var(--border); background: var(--card-bg); }
+        .search-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+        .search-bar input { flex: 1; padding: 12px; border-radius: 30px; border: 1px solid var(--border); background: var(--card-bg); }
+        .date-filter { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .date-filter input { flex: 1; padding: 10px; border-radius: 30px; border: 1px solid var(--border); background: var(--card-bg); }
+        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 16px; }
+        .page-btn { padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--card-bg); cursor: pointer; }
         .page-btn.active { background: var(--primary); color: white; }
+        .btn-small { padding: 8px 16px; font-size: 12px; width: auto; }
         
-        .danger-banner { background: rgba(239,68,68,0.1); border-left: 4px solid var(--danger); border-radius: 16px; padding: 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; animation: shake 0.3s ease; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-        .stranger-image { width: 55px; height: 55px; border-radius: 16px; object-fit: cover; border: 2px solid var(--danger); cursor: pointer; }
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 10000; display: flex; align-items: center; justify-content: center; }
+        .login-card { background: var(--card-bg); border-radius: 48px; padding: 32px; width: 90%; max-width: 380px; text-align: center; }
+        .login-card input { width: 100%; padding: 16px; margin: 12px 0; border-radius: 30px; border: 1px solid var(--border); background: var(--card-bg); font-size: 16px; }
         
         .action-buttons { display: flex; gap: 8px; }
-        .edit-btn, .delete-btn { background: none; border: none; cursor: pointer; padding: 6px 10px; border-radius: 20px; }
+        .edit-btn, .delete-btn { background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
         .edit-btn { color: var(--primary); }
         .delete-btn { color: var(--danger); }
         
-        .step-indicator { display: flex; justify-content: center; gap: 24px; margin-bottom: 24px; }
-        .step { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        .step-number { width: 44px; height: 44px; border-radius: 44px; background: var(--border); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; color: var(--text-secondary); }
-        .step.active .step-number { background: linear-gradient(135deg, var(--primary), var(--purple)); color: white; }
+        .step-indicator { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; }
+        .step { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .step-number { width: 36px; height: 36px; border-radius: 36px; background: var(--border); display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .step.active .step-number { background: var(--primary); color: white; }
         .step.completed .step-number { background: var(--success); color: white; }
-        .step-label { font-size: 0.7rem; font-weight: 500; color: var(--text-secondary); }
-        .step.active .step-label { color: var(--primary); font-weight: 600; }
+        .camera-selector { margin-bottom: 12px; }
+        .camera-selector select { width: 100%; padding: 10px; border-radius: 14px; border: 1px solid var(--border); background: var(--card-bg); }
         
-        .chart-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 28px; padding: 20px; margin-bottom: 20px; }
-        canvas { max-height: 200px; }
-        
-        .class-selector, .camera-selector { margin-bottom: 16px; }
-        .class-selector select, .camera-selector select { width: 100%; padding: 12px 16px; border-radius: 60px; border: 1px solid var(--border); background: var(--card-bg); font-size: 0.85rem; }
-        
-        .countdown-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; background: rgba(0,0,0,0.85); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 56px; font-weight: bold; color: white; z-index: 20; animation: pop 0.2s ease; border: 3px solid var(--success); }
-        @keyframes pop { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
-        
-        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(20px); z-index: 10000; display: flex; align-items: center; justify-content: center; }
-        .login-card { background: var(--card-bg); backdrop-filter: blur(20px); border-radius: 56px; padding: 40px; width: 90%; max-width: 380px; text-align: center; border: 1px solid var(--border); animation: slideUp 0.4s ease; }
-        @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .login-card input { width: 100%; padding: 16px 20px; margin: 12px 0; border-radius: 60px; border: 1px solid var(--border); background: var(--card-bg); font-size: 1rem; }
-        .info-box { background: rgba(99,102,241,0.1); border-radius: 20px; padding: 14px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-size: 0.8rem; }
-        
-        .fps-counter { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); padding: 4px 8px; border-radius: 20px; font-size: 9px; color: #0f0; font-family: monospace; z-index: 10; }
-        
-        /* Push Notification Permission */
-        .notification-banner { background: rgba(99,102,241,0.15); border-radius: 20px; padding: 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-        .enable-notif-btn { background: var(--primary); color: white; border: none; padding: 8px 20px; border-radius: 40px; cursor: pointer; font-weight: 600; }
-        
-        /* Multi-Face Register */
-        .face-sample { display: inline-block; margin: 5px; padding: 5px 10px; background: var(--bg); border-radius: 20px; font-size: 11px; }
-        .face-sample.selected { background: var(--success); color: white; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 40px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+        .user-row { display: flex; align-items: center; gap: 12px; }
+        .face-preview { width: 50px; height: 50px; border-radius: 25px; object-fit: cover; background: var(--bg); border: 2px solid var(--primary); }
+        .danger-banner { background: #FFEBEE; border-left: 4px solid var(--danger); padding: 12px; border-radius: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+        .stranger-image { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="login-overlay" id="loginOverlay">
         <div class="login-card">
-            <div class="logo" style="margin: 0 auto 20px; width: 70px; height: 70px;"><i data-lucide="brain" style="width: 36px; height: 36px;"></i></div>
-            <h2>SmartClass Pro Ultimate</h2>
-            <p style="margin-bottom: 24px;">Complete AI Security System</p>
+            <h2>SmartClass</h2>
+            <p style="margin-bottom: 20px;">Face Recognition System</p>
             <input type="text" id="loginUsername" placeholder="Username">
             <input type="password" id="loginPassword" placeholder="Password">
             <button class="btn btn-primary" id="loginBtn">Login</button>
-            <p style="margin-top: 20px; font-size: 12px;">Demo: admin / admin123 | guru / guru123</p>
+            <p style="margin-top: 15px; font-size: 12px;">Demo: admin / admin123</p>
         </div>
     </div>
 
     <div class="header" id="mainHeader" style="display: none;">
-        <div class="header-left"><div class="logo"><i data-lucide="brain"></i></div><div><h1>SmartClass Pro</h1><p>Ultimate AI • All Features</p></div></div>
-        <div class="header-right">
-            <div class="user-badge"><i data-lucide="user"></i><span id="userName">Admin</span></div>
-            <button class="icon-btn" id="darkModeToggle"><i data-lucide="moon"></i></button>
-            <button class="icon-btn" id="logoutBtn"><i data-lucide="log-out"></i></button>
-            <div class="live-clock"><span id="currentTime">--:--:--</span></div>
-        </div>
+        <div class="header-left"><div><h1>SmartClass</h1><p>Face Recognition</p></div></div>
+        <div class="live-clock"><span id="currentTime">--:--:--</span></div>
     </div>
 
     <div class="main-content" id="mainContent" style="display: none;"></div>
+
     <div class="bottom-nav" id="bottomNav" style="display: none;">
-        <div class="nav-item active" data-page="dashboard"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></div>
-        <div class="nav-item" data-page="security"><i data-lucide="shield-check"></i><span>Security</span></div>
-        <div class="nav-item" data-page="qrcode"><i data-lucide="qr-code"></i><span>QR Scan</span></div>
+        <div class="nav-item active" data-page="dashboard"><i data-lucide="layout-dashboard"></i><span>Home</span></div>
+        <div class="nav-item" data-page="security"><i data-lucide="camera"></i><span>Camera</span></div>
         <div class="nav-item" data-page="register"><i data-lucide="user-plus"></i><span>Register</span></div>
         <div class="nav-item" data-page="records"><i data-lucide="clipboard-list"></i><span>Records</span></div>
-        <div class="nav-item" data-page="analytics"><i data-lucide="trending-up"></i><span>Analytics</span></div>
+        <div class="nav-item" data-page="users"><i data-lucide="users"></i><span>Users</span></div>
     </div>
 
     <script>
-        // ==================== ENHANCEMENT 1: LIVENESS DETECTION ====================
-        let livenessVerified = false;
-        let lastBlinkTime = 0;
-        let blinkCount = 0;
-        
-        function detectLiveness(landmarks) {
-            if (!landmarks) return false;
-            const leftEye = landmarks.getLeftEye();
-            const rightEye = landmarks.getRightEye();
-            if (!leftEye || !rightEye) return false;
-            
-            function getEAR(eye) {
-                if (eye.length < 6) return 0.3;
-                const v1 = Math.hypot(eye[1].x - eye[5].x, eye[1].y - eye[5].y);
-                const v2 = Math.hypot(eye[2].x - eye[4].x, eye[2].y - eye[4].y);
-                const h = Math.hypot(eye[0].x - eye[3].x, eye[0].y - eye[3].y);
-                return (v1 + v2) / (2 * h);
-            }
-            
-            const ear = (getEAR(leftEye) + getEAR(rightEye)) / 2;
-            const isBlinking = ear < 0.2;
-            
-            if (isBlinking && Date.now() - lastBlinkTime > 200) {
-                lastBlinkTime = Date.now();
-                blinkCount++;
-                if (blinkCount >= 2) {
-                    livenessVerified = true;
-                    return true;
-                }
-            }
-            return livenessVerified;
-        }
-        
-        // ==================== ENHANCEMENT 2: MULTI-FACE REGISTER ====================
-        let faceSamples = []; // Store multiple face descriptors per user
-        
-        function addFaceSample(userId, descriptor) {
-            if (!faceSamples[userId]) faceSamples[userId] = [];
-            faceSamples[userId].push(Array.from(descriptor));
-            saveFaceSamples();
-        }
-        
-        function getBestMatch(descriptor) {
-            let bestMatch = null;
-            let bestDistance = 0.55;
-            for (const user of registeredUsers) {
-                const samples = faceSamples[user.id] || [];
-                if (user.descriptor) samples.unshift(user.descriptor);
-                for (const sample of samples) {
-                    const distance = faceapi.euclideanDistance(descriptor, new Float32Array(sample));
-                    if (distance < bestDistance) {
-                        bestDistance = distance;
-                        bestMatch = user;
-                    }
-                }
-            }
-            return { bestMatch, confidence: Math.round((1 - bestDistance) * 100) };
-        }
-        
-        function saveFaceSamples() {
-            localStorage.setItem('face_samples', JSON.stringify(faceSamples));
-        }
-        
-        function loadFaceSamples() {
-            const saved = localStorage.getItem('face_samples');
-            if (saved) faceSamples = JSON.parse(saved);
-        }
-        
-        // ==================== ENHANCEMENT 3: PUSH NOTIFICATION ====================
-        let pushEnabled = false;
-        
-        async function enablePushNotification() {
-            if ('Notification' in window) {
-                const permission = await Notification.requestPermission();
-                if (permission === 'granted') {
-                    pushEnabled = true;
-                    localStorage.setItem('push_enabled', 'true');
-                    showSuccess('Notifications Enabled', 'You will receive alerts for strangers');
-                }
-            }
-        }
-        
-        function sendPushNotification(title, body, icon = null) {
-            if (pushEnabled && 'Notification' in window && Notification.permission === 'granted') {
-                new Notification(title, { body: body, icon: icon || '/favicon.ico', silent: false });
-            }
-        }
-        
-        // ==================== ENHANCEMENT 4: EXPORT TO GOOGLE SHEETS ====================
-        async function exportToGoogleSheets() {
-            const data = getFilteredAttendance();
-            const worksheet = XLSX.utils.json_to_sheet(data.map(r => ({
-                Name: r.name, Class: r.className, Session: r.sessionName,
-                Status: r.status, Date: r.date, Time: r.time, Confidence: `${r.confidence || 100}%`
-            })));
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance');
-            XLSX.writeFile(workbook, `attendance_${getTodayDate()}.xlsx`);
-            showSuccess('Export Complete', 'Excel file ready for Google Sheets');
-        }
-        
-        // ==================== ENHANCEMENT 5: TRAINING MODE ====================
-        let trainingMode = false;
-        let currentTrainingUser = null;
-        
-        function startTrainingMode(user) {
-            trainingMode = true;
-            currentTrainingUser = user;
-            showInfo('Training Mode', `Position your face at different angles. System will learn 5 samples.`);
-        }
-        
-        // ==================== ENHANCEMENT 6: WEEKLY REPORT VIA EMAIL ====================
-        async function sendWeeklyReport() {
-            const today = getTodayDate();
-            const weekAgo = new Date();
-            weekAgo.setDate(weekAgo.getDate() - 7);
-            const weekData = attendanceRecords.filter(r => new Date(r.date) >= weekAgo);
-            
-            // Simulate email send (would need backend)
-            const report = `Weekly Attendance Report\nPeriod: ${weekAgo.toLocaleDateString()} - ${today}\nTotal Attendance: ${weekData.length}\n\nDetails:\n${weekData.map(r => `${r.name} - ${r.date} - ${r.status}`).join('\n')}`;
-            
-            // Download as text file for demo
-            const blob = new Blob([report], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `weekly_report_${today}.txt`;
-            a.click();
-            URL.revokeObjectURL(url);
-            showSuccess('Report Generated', 'Weekly report downloaded');
-        }
-        
-        // ==================== ENHANCEMENT 7: EMOTION DETECTION ====================
-        let emotionModel = null;
-        let currentEmotion = 'neutral';
-        const emotions = ['happy', 'sad', 'angry', 'surprise', 'neutral'];
-        
-        async function loadEmotionModel() {
-            // Simplified emotion detection using face landmarks
-            console.log('Emotion detection ready');
-        }
-        
-        function detectEmotion(landmarks) {
-            if (!landmarks) return 'neutral';
-            // Simple heuristic based on mouth shape
-            const mouth = landmarks.getMouth();
-            if (mouth && mouth.length > 10) {
-                const mouthWidth = Math.abs(mouth[0].x - mouth[6].x);
-                const mouthHeight = Math.abs(mouth[3].y - mouth[9].y);
-                if (mouthHeight > mouthWidth * 0.5) return 'happy';
-                if (mouthHeight < mouthWidth * 0.2) return 'surprise';
-            }
-            return currentEmotion;
-        }
-        
-        // ==================== ENHANCEMENT 8: VOICE COMMAND ====================
-        let recognition = null;
-        
-        function initVoiceCommand() {
-            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                recognition = new SpeechRecognition();
-                recognition.continuous = false;
-                recognition.lang = 'ms-MY';
-                recognition.onresult = (event) => {
-                    const command = event.results[0][0].transcript.toLowerCase();
-                    if (command.includes('hadir') || command.includes('present')) {
-                        showInfo('Voice Command', 'Please show your face to the camera');
-                    }
-                };
-            }
-        }
-        
-        function startVoiceCommand() {
-            if (recognition) recognition.start();
-        }
-        
-        // ==================== ENHANCEMENT 9: WHITELIST/BLACKLIST ====================
-        let whitelist = [];
-        let blacklist = [];
-        
-        function addToWhitelist(name) {
-            whitelist.push(name);
-            localStorage.setItem('whitelist', JSON.stringify(whitelist));
-        }
-        
-        function addToBlacklist(name) {
-            blacklist.push(name);
-            localStorage.setItem('blacklist', JSON.stringify(blacklist));
-        }
-        
-        function isWhitelisted(name) { return whitelist.includes(name); }
-        function isBlacklisted(name) { return blacklist.includes(name); }
-        
-        // ==================== ENHANCEMENT 10: PWA OFFLINE MODE ====================
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js').catch(e => console.log('SW not registered'));
-        }
-        
-        // ==================== ENHANCEMENT 11: MASK DETECTION ====================
-        function detectMask(landmarks) {
-            if (!landmarks) return false;
-            const nose = landmarks.getNose();
-            const mouth = landmarks.getMouth();
-            if (nose && mouth) {
-                const noseY = nose[0].y;
-                const mouthY = mouth[0].y;
-                return (mouthY - noseY) < 15; // Mask covers mouth area
-            }
-            return false;
-        }
-        
-        // ==================== MAIN SYSTEM VARIABLES ====================
-        const DETECTION_INTERVAL = 100;
-        const INPUT_SIZE = 320;
-        const MIN_CONFIDENCE = 0.2;
-        const SIMILARITY_THRESHOLD = 0.6;
-        
+        // Login System
         let currentUser = null;
-        const validUsers = [
-            { username: "admin", password: "admin123", role: "admin", name: "Admin" },
-            { username: "guru", password: "guru123", role: "teacher", name: "Cikgu Ahmad" }
-        ];
+        const validUsers = [{ username: "admin", password: "admin123", role: "admin", name: "Admin" }];
         
-        let registeredUsers = [], attendanceRecords = [], strangerAlerts = [];
+        // Data Storage
+        let registeredUsers = [];
+        let attendanceRecords = [];
+        let strangerAlerts = [];
         let selectedClass = "Semua Kelas";
-        let availableClasses = ["5A", "5B", "5C", "4A", "4B", "4C", "3A", "3B", "2A", "2B", "1A", "1B"];
+        let availableClasses = ["5A","5B","5C","4A","4B","4C","3A","3B","2A","2B","1A","1B"];
         let currentPage = 'dashboard';
-        let attendanceChart = null, trendChart = null;
+        let attendanceChart = null;
         let registerStep = 1;
         let pendingRegistration = null;
         let currentPageNum = 1, itemsPerPage = 10, searchQuery = "", startDate = "", endDate = "";
         
+        // Camera
         let securityStream = null, registerStream = null, securityInterval = null, isSecurityActive = false, currentCameraId = 'user';
-        let torchEnabled = false, videoTrack = null;
-        let frameCount = 0, lastFpsUpdate = 0;
-        
-        let captureTimer = null, countdownValue = 3, isCountingDown = false;
-        
         let modelsLoaded = false, faceMatcher = null;
-        let html5QrCode = null, isScanning = false;
         let audioCtx = null, lastStrangerAlertTime = 0, lastAttendanceTime = {};
+        
+        // Register
         let registerFaceDetected = false, registerDescriptor = null, registerInterval = null;
+        let captureTimer = null, countdown = 3, isCountingDown = false;
+        let capturedFaceImage = null;
         
-        const firebaseConfig = { apiKey: "AIzaSyBZYM0Fe06bb_Q67U6Pn42RSoZB-mjo3io", authDomain: "secuirityschool.firebaseapp.com", projectId: "secuirityschool", storageBucket: "secuirityschool.firebasestorage.app", messagingSenderId: "321431921421", appId: "1:321431921421:web:265abf74d07deb917bc644" };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        const DETECTION_INTERVAL = 200;
+        const INPUT_SIZE = 320;
         
-        function speakGreeting(name, role, status) {
-            const utterance = new SpeechSynthesisUtterance(`Welcome ${name}. ${role === 'teacher' ? 'Teacher' : 'Student'}. ${status}.`);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.9;
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(utterance);
+        // Helper Functions
+        function loadLocalData() {
+            const savedUsers = localStorage.getItem('smart_users');
+            if (savedUsers) registeredUsers = JSON.parse(savedUsers);
+            const savedAttendance = localStorage.getItem('smart_attendance');
+            if (savedAttendance) attendanceRecords = JSON.parse(savedAttendance);
+            const savedAlerts = localStorage.getItem('smart_strangers');
+            if (savedAlerts) strangerAlerts = JSON.parse(savedAlerts);
+            const savedClass = localStorage.getItem('smart_class');
+            if (savedClass) selectedClass = savedClass;
+            const savedDescriptors = localStorage.getItem('smart_descriptors');
+            if (savedDescriptors) {
+                const desc = JSON.parse(savedDescriptors);
+                registeredUsers.forEach(u => { if (desc[u.id]) u.descriptor = desc[u.id]; });
+            }
         }
         
-        function loadLocal() {
-            const u = localStorage.getItem('smart_users'); if (u) registeredUsers = JSON.parse(u);
-            const a = localStorage.getItem('smart_attendance'); if (a) attendanceRecords = JSON.parse(a);
-            const s = localStorage.getItem('smart_strangers'); if (s) strangerAlerts = JSON.parse(s);
-            const d = localStorage.getItem('smart_descriptors');
-            if (d) { const desc = JSON.parse(d); registeredUsers.forEach(u => { if (desc[u.id]) u.descriptor = desc[u.id]; }); }
-            loadFaceSamples();
-            const wl = localStorage.getItem('whitelist'); if (wl) whitelist = JSON.parse(wl);
-            const bl = localStorage.getItem('blacklist'); if (bl) blacklist = JSON.parse(bl);
-            pushEnabled = localStorage.getItem('push_enabled') === 'true';
-        }
-        
-        function saveLocal() {
-            localStorage.setItem('smart_users', JSON.stringify(registeredUsers.map(u => ({ id: u.id, name: u.name, role: u.role, className: u.className }))));
+        function saveLocalData() {
+            localStorage.setItem('smart_users', JSON.stringify(registeredUsers.map(u => ({ id: u.id, name: u.name, role: u.role, className: u.className, faceImage: u.faceImage }))));
             localStorage.setItem('smart_attendance', JSON.stringify(attendanceRecords));
             localStorage.setItem('smart_strangers', JSON.stringify(strangerAlerts));
-            const desc = {}; registeredUsers.forEach(u => { if (u.descriptor) desc[u.id] = u.descriptor; });
+            const desc = {};
+            registeredUsers.forEach(u => { if (u.descriptor) desc[u.id] = u.descriptor; });
             localStorage.setItem('smart_descriptors', JSON.stringify(desc));
+            localStorage.setItem('smart_class', selectedClass);
         }
         
-        async function syncToFirebase() { try { for (const u of registeredUsers) { const data = { ...u }; delete data.descriptor; await db.collection('users').doc(u.id).set(data, { merge: true }); } for (const a of attendanceRecords) await db.collection('attendance').doc(`${a.id}_${a.date}_${a.session}`).set(a, { merge: true }); } catch(e) {} }
-        async function loadFromFirebase() { try { const u = await db.collection('users').get(); u.forEach(d => { if (!registeredUsers.find(x => x.id === d.id)) registeredUsers.push(d.data()); }); const a = await db.collection('attendance').get(); a.forEach(d => { if (!attendanceRecords.find(x => x.id === d.data().id && x.date === d.data().date)) attendanceRecords.push(d.data()); }); saveLocal(); updateUI(); } catch(e) {} }
-        
         function getTodayDate() { return new Date().toLocaleDateString('en-CA'); }
-        function getCurrentTime() { return new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
+        function getCurrentTime() { return new Date().toLocaleTimeString('ms-MY', { hour:'2-digit', minute:'2-digit', second:'2-digit' }); }
         function getCurrentSession() { return new Date().getHours() < 13 ? "pagi" : "petang"; }
         function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m); }
-        async function showSuccess(t, m) { await Swal.fire({ title: t, text: m, icon: 'success', confirmButtonColor: '#6366f1', borderRadius: '24px' }); }
-        async function showError(t, m) { await Swal.fire({ title: t, text: m, icon: 'error', confirmButtonColor: '#6366f1', borderRadius: '24px' }); }
-        async function showInfo(t, m) { await Swal.fire({ title: t, text: m, icon: 'info', confirmButtonColor: '#6366f1', borderRadius: '24px' }); }
+        
+        async function showSuccess(title, msg) { await Swal.fire({ title, text: msg, icon: 'success', confirmButtonColor: '#007AFF' }); }
+        async function showError(title, msg) { await Swal.fire({ title, text: msg, icon: 'error', confirmButtonColor: '#007AFF' }); }
+        async function showWarning(title, msg) { await Swal.fire({ title, text: msg, icon: 'warning', confirmButtonColor: '#FF9500' }); }
         
         function playBeep() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value = 880; g.gain.value = 0.2; o.start(); g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2); setTimeout(() => o.stop(), 200); } catch(e) {} }
         function playAlertBeep() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); for (let i = 0; i < 3; i++) { setTimeout(() => { const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value = 880; g.gain.value = 0.3; o.start(); g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.15); setTimeout(() => o.stop(), 150); }, i * 200); } } catch(e) {} if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]); }
-        async function captureImage(video) { if (!video || !video.videoWidth) return null; const c = document.createElement('canvas'); c.width = video.videoWidth; c.height = video.videoHeight; c.getContext('2d').drawImage(video, 0, 0); return c.toDataURL('image/jpeg', 0.8); }
-        function updateUI() { if (currentPage === 'dashboard') renderDashboard(); if (currentPage === 'records') renderRecordsPage(); if (currentPage === 'register') renderUsersTable(); if (currentPage === 'analytics') renderAnalyticsPage(); }
         
+        async function captureImageFromVideo(video) {
+            if (!video || !video.videoWidth) return null;
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            return canvas.toDataURL('image/jpeg', 0.8);
+        }
+        
+        function updateUI() {
+            if (currentPage === 'dashboard') renderDashboard();
+            if (currentPage === 'records') renderRecordsPage();
+            if (currentPage === 'users') renderUsersPage();
+        }
+        
+        // Face Recognition
         async function loadFaceModels() {
             const url = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
             await Promise.all([
@@ -498,156 +221,122 @@
                 faceapi.nets.faceRecognitionNet.loadFromUri(url)
             ]);
             modelsLoaded = true;
-            await loadEmotionModel();
-            buildFaceMatcher();
+            buildMatcher();
         }
         
-        function buildFaceMatcher() {
+        function buildMatcher() {
             const labeled = [];
             for (const u of registeredUsers) {
-                const samples = faceSamples[u.id] || [];
-                if (u.descriptor) samples.unshift(u.descriptor);
-                for (const sample of samples) {
-                    labeled.push(new faceapi.LabeledFaceDescriptors(u.id, [new Float32Array(sample)]));
-                }
+                if (u.descriptor) labeled.push(new faceapi.LabeledFaceDescriptors(u.id, [new Float32Array(u.descriptor)]));
             }
-            if (labeled.length) faceMatcher = new faceapi.FaceMatcher(labeled, SIMILARITY_THRESHOLD);
+            if (labeled.length) faceMatcher = new faceapi.FaceMatcher(labeled, 0.55);
         }
         
+        // Security Camera - FIXED: No double screen!
         async function startSecurityCamera() {
             if (securityStream) stopSecurityCamera();
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentCameraId, width: { ideal: INPUT_SIZE }, height: { ideal: INPUT_SIZE }, frameRate: { ideal: 30 } } });
                 securityStream = stream;
-                videoTrack = stream.getVideoTracks()[0];
-                document.getElementById('securityVideo').srcObject = stream;
+                const videoEl = document.getElementById('securityVideo');
+                if (videoEl) videoEl.srcObject = stream;
                 isSecurityActive = true;
                 if (!modelsLoaded) await loadFaceModels();
                 if (securityInterval) clearInterval(securityInterval);
-                securityInterval = setInterval(detectFacesFast, DETECTION_INTERVAL);
-                lastFpsUpdate = Date.now();
-                setInterval(() => {
-                    if (isSecurityActive) {
-                        const fps = Math.round(frameCount / ((Date.now() - lastFpsUpdate) / 1000));
-                        const fpsEl = document.getElementById('fpsCounter');
-                        if (fpsEl) fpsEl.innerHTML = `${fps}fps`;
-                        frameCount = 0;
-                        lastFpsUpdate = Date.now();
-                    }
-                }, 1000);
+                securityInterval = setInterval(detectFaces, DETECTION_INTERVAL);
+                const statusEl = document.getElementById('securityStatus');
+                if (statusEl) { statusEl.innerHTML = '✅ Camera Active'; statusEl.className = 'camera-status status-active'; }
             } catch(e) { console.error(e); showError('Camera Error', 'Please allow camera access'); }
         }
         
-        function stopSecurityCamera() { if (securityStream) { securityStream.getTracks().forEach(t => t.stop()); securityStream = null; } if (securityInterval) clearInterval(securityInterval); isSecurityActive = false; }
-        
-        function detectLightLevel(video) {
-            if (!video || !video.videoWidth) return 100;
-            const canvas = document.createElement('canvas'); canvas.width = 50; canvas.height = 50;
-            const ctx = canvas.getContext('2d'); ctx.drawImage(video, 0, 0, 50, 50);
-            const data = ctx.getImageData(0, 0, 50, 50).data;
-            let total = 0;
-            for (let i = 0; i < data.length; i += 4) total += (data[i] + data[i+1] + data[i+2]) / 3;
-            return total / 2500;
+        function stopSecurityCamera() {
+            if (securityStream) { securityStream.getTracks().forEach(t => t.stop()); securityStream = null; }
+            if (securityInterval) { clearInterval(securityInterval); securityInterval = null; }
+            isSecurityActive = false;
         }
         
-        async function enableTorch() { if (videoTrack) { try { await videoTrack.applyConstraints({ advanced: [{ torch: true }] }); torchEnabled = true; const btn = document.getElementById('torchBtn'); if (btn) btn.innerHTML = '🔦 ON'; } catch(e) {} } }
-        async function disableTorch() { if (videoTrack) { try { await videoTrack.applyConstraints({ advanced: [{ torch: false }] }); torchEnabled = false; const btn = document.getElementById('torchBtn'); if (btn) btn.innerHTML = '🔦 OFF'; } catch(e) {} } }
-        function toggleTorch() { torchEnabled ? disableTorch() : enableTorch(); }
-        
-        async function detectFacesFast() {
+        async function detectFaces() {
             if (!isSecurityActive || !modelsLoaded) return;
-            frameCount++;
             const video = document.getElementById('securityVideo');
             const canvas = document.getElementById('securityCanvas');
             if (!video || !video.videoWidth || !canvas) return;
             
-            const light = detectLightLevel(video);
-            const lightEl = document.getElementById('lightIndicator');
-            if (lightEl) {
-                lightEl.innerHTML = light < 50 ? '🌙 Dark' : (light > 100 ? '☀️ Bright' : '☀️ Good');
-                lightEl.style.backgroundColor = light < 50 ? 'rgba(245,158,11,0.9)' : 'rgba(0,0,0,0.7)';
-            }
-            if (light < 50 && currentCameraId === 'environment' && !torchEnabled && videoTrack) await enableTorch();
-            else if (light > 80 && torchEnabled) await disableTorch();
-            
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: MIN_CONFIDENCE })).withFaceLandmarks().withFaceDescriptors();
+            
+            const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 }))
+                .withFaceLandmarks()
+                .withFaceDescriptors();
+            
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            // IMPORTANT: DO NOT draw video here to avoid double screen!
+            // Only draw bounding boxes
             
-            let recognizedNames = [], recognizedData = [];
-            let strangerDetected = false;
+            let recognized = [];
+            let stranger = false;
             
-            for (const detection of detections) {
-                const landmarks = detection.landmarks;
-                const emotion = detectEmotion(landmarks);
-                const hasMask = detectMask(landmarks);
-                const isLive = detectLiveness(landmarks);
-                
-                let bestMatch = null;
-                let confidence = 0;
-                const result = faceMatcher ? faceMatcher.findBestMatch(detection.descriptor) : null;
-                if (result && result.label !== 'unknown') {
-                    bestMatch = registeredUsers.find(u => u.id === result.label);
-                    confidence = Math.round((1 - result.distance) * 100);
+            for (const d of detections) {
+                let best = null;
+                if (faceMatcher) {
+                    const result = faceMatcher.findBestMatch(d.descriptor);
+                    if (result.label !== 'unknown') best = registeredUsers.find(u => u.id === result.label);
                 }
-                
-                const box = detection.detection.box;
+                const box = d.detection.box;
                 ctx.beginPath();
                 ctx.rect(box.x, box.y, box.width, box.height);
-                
-                if (bestMatch && isLive) {
-                    ctx.strokeStyle = '#10b981'; ctx.lineWidth = 3; ctx.stroke();
-                    ctx.fillStyle = '#10b981'; ctx.font = 'bold 12px system-ui';
-                    ctx.fillText(`${bestMatch.name} (${confidence}%) ${hasMask ? '😷' : ''} ${emotion}`, box.x, box.y - 5);
-                    recognizedNames.push(bestMatch.name);
-                    recognizedData.push({ user: bestMatch, confidence, emotion, hasMask });
-                    await autoMarkAttendance(bestMatch, confidence, emotion);
-                } else if (bestMatch && !isLive) {
-                    ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 3; ctx.stroke();
-                    ctx.fillStyle = '#f59e0b'; ctx.font = 'bold 12px system-ui';
-                    ctx.fillText(`⚠️ Blink to verify!`, box.x, box.y - 5);
+                if (best) {
+                    ctx.strokeStyle = '#34C759';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    ctx.fillStyle = '#34C759';
+                    ctx.font = 'bold 14px system-ui';
+                    ctx.fillText(`${best.name}`, box.x, box.y - 5);
+                    recognized.push(best.name);
+                    await autoMarkAttendance(best);
                 } else {
-                    ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.stroke();
-                    ctx.fillStyle = '#ef4444'; ctx.font = 'bold 12px system-ui';
-                    ctx.fillText(`⚠️ STRANGER! ${hasMask ? '😷' : ''}`, box.x, box.y - 5);
-                    strangerDetected = true;
+                    ctx.strokeStyle = '#FF3B30';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    ctx.fillStyle = '#FF3B30';
+                    ctx.font = 'bold 14px system-ui';
+                    ctx.fillText('⚠️ STRANGER', box.x, box.y - 5);
+                    stranger = true;
                 }
             }
             
-            document.getElementById('detectCount').innerHTML = detections.length ? `👤 ${detections.length} face(s) | Light: ${Math.round(light)}%` : '👤 No face detected';
-            document.getElementById('recognizedNames').innerHTML = recognizedNames.length ? `✅ Recognized: ${recognizedNames.join(', ')}` : '✅ Waiting for face...';
+            const detectEl = document.getElementById('detectCount');
+            if (detectEl) detectEl.innerHTML = detections.length ? `👤 ${detections.length} face(s)` : '👤 No face';
+            const recognizedEl = document.getElementById('recognizedNames');
+            if (recognizedEl) recognizedEl.innerHTML = recognized.length ? `✅ Recognized: ${recognized.join(', ')}` : '✅ Waiting...';
             
-            if (strangerDetected && Date.now() - lastStrangerAlertTime > 8000) {
+            if (stranger && Date.now() - lastStrangerAlertTime > 8000) {
                 lastStrangerAlertTime = Date.now();
-                const img = await captureImage(video);
+                const img = await captureImageFromVideo(video);
                 await reportStranger(img);
-                sendPushNotification('⚠️ Security Alert!', 'Stranger detected in classroom!');
             }
         }
         
-        async function autoMarkAttendance(user, confidence, emotion) {
+        async function autoMarkAttendance(user) {
             const today = getTodayDate();
             const session = getCurrentSession();
             const key = `${user.id}_${today}_${session}`;
             if (lastAttendanceTime[key] && Date.now() - lastAttendanceTime[key] < 3000) return;
-            const alreadyLogged = attendanceRecords.find(r => r.id === user.id && r.date === today && r.session === session);
-            if (!alreadyLogged) {
+            const already = attendanceRecords.find(r => r.id === user.id && r.date === today && r.session === session);
+            if (!already) {
                 lastAttendanceTime[key] = Date.now();
-                const timeValue = new Date().getHours() * 60 + new Date().getMinutes();
-                let statusName = "Hadir", statusText = "Present";
-                if (session === 'pagi' && timeValue > 510) { statusName = "Lewat"; statusText = "Late"; }
-                if (session === 'petang' && timeValue > 810) { statusName = "Lewat"; statusText = "Late"; }
+                const tv = new Date().getHours() * 60 + new Date().getMinutes();
+                let status = "Hadir";
+                if (session === 'pagi' && tv > 510) status = "Lewat";
+                if (session === 'petang' && tv > 810) status = "Lewat";
                 attendanceRecords.push({
                     id: user.id, name: user.name, role: user.role, className: user.className,
-                    status: statusName, session, sessionName: session === 'pagi' ? 'Morning' : 'Afternoon',
-                    time: getCurrentTime(), date: today, timestamp: Date.now(), method: 'Face Auto',
-                    confidence: confidence, emotion: emotion
+                    status: status, session: session, sessionName: session === 'pagi' ? 'Morning' : 'Afternoon',
+                    time: getCurrentTime(), date: today, timestamp: Date.now(), method: 'Face Auto'
                 });
-                saveLocal(); syncToFirebase(); playBeep();
-                speakGreeting(user.name, user.role, statusText);
+                saveLocalData();
+                playBeep();
+                Swal.fire({ title: '✅ Attendance!', html: `<strong>${escapeHtml(user.name)}</strong><br>${status} at ${getCurrentTime()}`, icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 2500 });
                 updateUI();
             }
         }
@@ -655,126 +344,194 @@
         async function reportStranger(img) {
             const alert = { id: Date.now(), className: selectedClass === "Semua Kelas" ? "Unknown" : selectedClass, time: getCurrentTime(), date: getTodayDate(), session: getCurrentSession(), imageData: img };
             strangerAlerts.push(alert);
-            saveLocal(); syncToFirebase(); playAlertBeep();
-            sendPushNotification('⚠️ SECURITY ALERT!', `Stranger detected in class ${alert.className} at ${alert.time}`);
-            await Swal.fire({ title: '⚠️ SECURITY ALERT!', html: `<img src="${img}" style="width:150px;border-radius:16px;margin:10px 0;"><br><strong>Stranger detected!</strong><br>Class: ${alert.className}<br>Time: ${alert.time}`, icon: 'warning', confirmButtonColor: '#ef4444' });
+            saveLocalData();
+            playAlertBeep();
+            await Swal.fire({ title: '⚠️ SECURITY ALERT!', html: `<img src="${img}" style="width:150px;border-radius:16px;margin:10px 0;"><br><strong>Stranger detected!</strong><br>Class: ${alert.className}<br>Time: ${alert.time}`, icon: 'warning', confirmButtonColor: '#FF3B30' });
             updateUI();
         }
         
-        async function startQRScanner() {
-            if (isScanning) return;
-            try {
-                html5QrCode = new Html5Qrcode("qr-reader");
-                await html5QrCode.start({ facingMode: "environment" }, { fps: 15, qrbox: { width: 250, height: 250 } }, async (t) => {
-                    if (t && !window.processing) {
-                        window.processing = true;
-                        try { const d = JSON.parse(t), u = registeredUsers.find(x => x.id === d.id); if (u) { await autoMarkAttendance(u, 100, 'neutral'); playBeep(); } else { await showError('❌', 'QR not registered'); playAlertBeep(); } } catch(e) { await showError('Invalid QR', ''); playAlertBeep(); }
-                        setTimeout(() => { window.processing = false; }, 1500);
-                    }
-                });
-                isScanning = true;
-            } catch(e) { await showError('Camera Error', 'Cannot access camera'); }
-        }
-        
-        function stopQRScanner() { if (html5QrCode && isScanning) { html5QrCode.stop(); isScanning = false; } }
-        
+        // Register Face - Auto capture after 3 seconds
         function startRegisterCamera() {
             if (registerStream) stopRegisterCamera();
             navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: INPUT_SIZE }, height: { ideal: INPUT_SIZE } } })
-                .then(s => { registerStream = s; document.getElementById('registerVideo').srcObject = s; if (registerInterval) clearInterval(registerInterval); registerInterval = setInterval(checkFaceForRegister, 100); })
-                .catch(e => console.error(e));
+                .then(s => {
+                    registerStream = s;
+                    const videoEl = document.getElementById('registerVideo');
+                    if (videoEl) videoEl.srcObject = s;
+                    if (registerInterval) clearInterval(registerInterval);
+                    registerInterval = setInterval(checkRegisterFace, 150);
+                }).catch(e => console.error(e));
         }
         
-        function stopRegisterCamera() { if (registerStream) { registerStream.getTracks().forEach(t => t.stop()); registerStream = null; } if (registerInterval) clearInterval(registerInterval); if (captureTimer) clearTimeout(captureTimer); isCountingDown = false; }
+        function stopRegisterCamera() {
+            if (registerStream) { registerStream.getTracks().forEach(t => t.stop()); registerStream = null; }
+            if (registerInterval) clearInterval(registerInterval);
+            if (captureTimer) clearTimeout(captureTimer);
+            isCountingDown = false;
+        }
         
-        async function checkFaceForRegister() {
+        async function checkRegisterFace() {
             const video = document.getElementById('registerVideo');
             const canvas = document.getElementById('registerCanvas');
             if (!video || !video.videoWidth || !canvas || !modelsLoaded) return;
-            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-            const detection = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: MIN_CONFIDENCE })).withFaceLandmarks().withFaceDescriptor();
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const detection = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 }))
+                .withFaceLandmarks()
+                .withFaceDescriptor();
+            
             const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Don't draw video here to avoid double screen!
+            
             const cx = canvas.width/4, cy = canvas.height/4, w = canvas.width/2, h = canvas.height/2;
-            ctx.beginPath(); ctx.rect(cx, cy, w, h);
+            ctx.beginPath();
+            ctx.rect(cx, cy, w, h);
             
             if (detection) {
-                ctx.strokeStyle = '#10b981'; ctx.lineWidth = 3; ctx.stroke();
-                ctx.fillStyle = '#10b981'; ctx.font = 'bold 14px system-ui';
-                ctx.fillText('✓ Face Detected! Auto capture in 3...', cx, cy - 5);
+                ctx.strokeStyle = '#34C759';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.fillStyle = '#34C759';
+                ctx.font = 'bold 14px system-ui';
+                ctx.fillText('✓ Face Detected!', cx, cy - 5);
                 if (!registerFaceDetected) {
                     registerFaceDetected = true;
                     registerDescriptor = Array.from(detection.descriptor);
-                    startAutoCaptureCountdown(video, canvas);
+                    capturedFaceImage = await captureImageFromVideo(video);
+                    startCountdown();
                 }
             } else {
-                ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2; ctx.stroke();
-                ctx.fillStyle = '#f59e0b'; ctx.font = 'bold 14px system-ui';
-                ctx.fillText('Place your face in the box', cx, cy - 5);
+                ctx.strokeStyle = '#FF9500';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.fillStyle = '#FF9500';
+                ctx.font = 'bold 14px system-ui';
+                ctx.fillText('Place your face here', cx, cy - 5);
                 registerFaceDetected = false;
                 if (captureTimer) clearTimeout(captureTimer);
                 isCountingDown = false;
-                document.getElementById('regCameraStatus').innerHTML = '● Position your face, auto capture in 3 seconds';
+                const statusEl = document.getElementById('regCameraStatus');
+                if (statusEl) statusEl.innerHTML = '● Position your face';
             }
         }
         
-        function startAutoCaptureCountdown(video, canvas) {
+        function startCountdown() {
             if (isCountingDown) return;
             isCountingDown = true;
-            countdownValue = 3;
-            const showCountdown = () => {
+            countdown = 3;
+            const showCount = () => {
                 if (!registerFaceDetected) { isCountingDown = false; return; }
-                const ctx = canvas.getContext('2d');
-                ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = 'white';
-                ctx.font = 'bold 56px system-ui';
-                ctx.fillText(`${countdownValue}`, canvas.width/2 - 20, canvas.height/2 + 20);
-                document.getElementById('regCameraStatus').innerHTML = `🎯 Auto capturing in ${countdownValue}...`;
-                if (countdownValue === 0) { isCountingDown = false; autoRegisterFace(); }
-                else { countdownValue--; setTimeout(showCountdown, 1000); }
+                const statusEl = document.getElementById('regCameraStatus');
+                if (statusEl) statusEl.innerHTML = `🎯 Capturing in ${countdown}...`;
+                if (countdown === 0) {
+                    isCountingDown = false;
+                    autoRegister();
+                } else {
+                    countdown--;
+                    setTimeout(showCount, 1000);
+                }
             };
-            showCountdown();
+            showCount();
         }
         
-        async function autoRegisterFace() {
-            if (!pendingRegistration) { await showError('Error', 'Fill name and class first'); registerStep = 1; renderRegisterPage(); return; }
-            if (!registerFaceDetected || !registerDescriptor) { await showWarning('No Face', 'Position face in green box'); return; }
-            const newUser = { id: Date.now().toString(), ...pendingRegistration, descriptor: registerDescriptor, registeredAt: new Date().toISOString(), qrData: JSON.stringify({ id: Date.now().toString(), name: pendingRegistration.name, role: pendingRegistration.role, className: pendingRegistration.className }) };
+        async function autoRegister() {
+            if (!pendingRegistration) {
+                await showError('Error', 'Please fill name and class first');
+                registerStep = 1;
+                renderRegisterPage();
+                return;
+            }
+            if (!registerFaceDetected || !registerDescriptor) {
+                await showWarning('No Face', 'Position your face in the box');
+                return;
+            }
+            
+            const newUser = {
+                id: Date.now().toString(),
+                ...pendingRegistration,
+                descriptor: registerDescriptor,
+                faceImage: capturedFaceImage,
+                registeredAt: new Date().toISOString()
+            };
             registeredUsers.push(newUser);
-            saveLocal(); syncToFirebase(); buildFaceMatcher();
-            await showSuccess('✅ Registration Successful!', `${newUser.name} (${newUser.role === 'teacher' ? 'Teacher' : 'Student'})\nClass: ${newUser.className}\n✅ Face saved to AI database!`);
-            speakGreeting(newUser.name, newUser.role, "Registration successful");
-            pendingRegistration = null; registerStep = 1;
-            if (!availableClasses.includes(newUser.className)) { availableClasses.push(newUser.className); availableClasses.sort(); }
+            saveLocalData();
+            buildMatcher();
+            await showSuccess('✅ Registration Successful!', `${newUser.name} - Class ${newUser.className}\nFace saved!`);
+            pendingRegistration = null;
+            registerStep = 1;
+            if (!availableClasses.includes(newUser.className)) {
+                availableClasses.push(newUser.className);
+                availableClasses.sort();
+            }
             renderRegisterPage();
         }
-        
-        async function showWarning(title, msg) { await Swal.fire({ title, text: msg, icon: 'warning', confirmButtonColor: '#f59e0b', borderRadius: '24px' }); }
         
         async function saveNameAndClass() {
             const name = document.getElementById('regName').value.trim();
             const role = document.getElementById('regRole').value;
             let className = document.getElementById('regClass').value;
-            if (!name) { await showError('Error', 'Please enter name'); return false; }
-            if (!className) { await showError('Error', 'Please select class'); return false; }
-            if (registeredUsers.some(u => u.name.toLowerCase() === name.toLowerCase())) { await showError('Name Exists', `"${name}" already registered`); return false; }
+            if (!name) { await showError('Error', 'Enter name'); return false; }
+            if (!className) { await showError('Error', 'Select class'); return false; }
+            if (registeredUsers.some(u => u.name.toLowerCase() === name.toLowerCase())) {
+                await showError('Name Exists', `"${name}" already registered`);
+                return false;
+            }
             pendingRegistration = { name, role, className };
             registerStep = 2;
             renderRegisterStep2();
             return true;
         }
         
-        function backToStep1() { registerStep = 1; pendingRegistration = null; renderRegisterPage(); }
+        function backToStep1() {
+            registerStep = 1;
+            pendingRegistration = null;
+            renderRegisterPage();
+        }
         
+        // Edit/Delete User
         async function editUser(user) {
-            const r = await Swal.fire({ title: 'Edit User', html: `<input id="n" class="swal2-input" value="${escapeHtml(user.name)}"><select id="r"><option value="student" ${user.role === 'student' ? 'selected' : ''}>Student</option><option value="teacher" ${user.role === 'teacher' ? 'selected' : ''}>Teacher</option></select><input id="c" class="swal2-input" value="${escapeHtml(user.className)}">`, preConfirm: () => ({ name: document.getElementById('n').value, role: document.getElementById('r').value, className: document.getElementById('c').value }) });
-            if (r.value) { user.name = r.value.name; user.role = r.value.role; user.className = r.value.className; saveLocal(); syncToFirebase(); buildFaceMatcher(); updateUI(); await showSuccess('Updated', 'User info updated'); }
+            const r = await Swal.fire({
+                title: 'Edit User',
+                html: `<input id="n" class="swal2-input" value="${escapeHtml(user.name)}"><select id="r"><option value="student" ${user.role === 'student' ? 'selected' : ''}>Student</option><option value="teacher" ${user.role === 'teacher' ? 'selected' : ''}>Teacher</option></select><input id="c" class="swal2-input" value="${escapeHtml(user.className)}">`,
+                preConfirm: () => ({ name: document.getElementById('n').value, role: document.getElementById('r').value, className: document.getElementById('c').value })
+            });
+            if (r.value) {
+                user.name = r.value.name;
+                user.role = r.value.role;
+                user.className = r.value.className;
+                saveLocalData();
+                buildMatcher();
+                updateUI();
+                await showSuccess('Updated', 'User info updated');
+            }
         }
         
         async function deleteUser(user) {
-            const c = await Swal.fire({ title: 'Delete User?', text: `Delete ${user.name}?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Yes' });
-            if (c.isConfirmed) { registeredUsers = registeredUsers.filter(u => u.id !== user.id); saveLocal(); syncToFirebase(); buildFaceMatcher(); updateUI(); await showSuccess('Deleted', 'User removed'); }
+            const c = await Swal.fire({ title: 'Delete User?', text: `Delete ${user.name}?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#FF3B30', confirmButtonText: 'Yes' });
+            if (c.isConfirmed) {
+                registeredUsers = registeredUsers.filter(u => u.id !== user.id);
+                saveLocalData();
+                buildMatcher();
+                updateUI();
+                await showSuccess('Deleted', 'User removed');
+            }
+        }
+        
+        // Export CSV
+        function exportToCSV() {
+            let csv = "Name,Class,Status,Session,Date,Time\n";
+            const filtered = getFilteredAttendance();
+            for (const r of filtered) csv += `"${r.name}","${r.className}","${r.status}","${r.sessionName}","${r.date}","${r.time}"\n`;
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `attendance_${getTodayDate()}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showSuccess('Export Complete', 'CSV downloaded');
         }
         
         function getFilteredAttendance() {
@@ -790,6 +547,7 @@
         function renderPagination(totalItems) { const totalPages = Math.ceil(totalItems / itemsPerPage); let html = '<div class="pagination">'; for (let i = 1; i <= Math.min(totalPages, 6); i++) html += `<button class="page-btn ${i === currentPageNum ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`; html += '</div>'; return html; }
         window.goToPage = (page) => { currentPageNum = page; renderRecordsPage(); };
         
+        // Render Functions
         function renderDashboard() {
             const today = getTodayDate();
             const todayAttendance = attendanceRecords.filter(r => r.date === today).length;
@@ -799,252 +557,265 @@
             const late = attendanceRecords.filter(r => r.date === today && r.status === 'Lewat').length;
             const strangers = strangerAlerts.filter(a => a.date === today).length;
             
-            const rows = attendanceRecords.filter(r => selectedClass === "Semua Kelas" || r.className === selectedClass).slice(-8).reverse().map(r => `
-                <tr>
-                    <td><strong>${escapeHtml(r.name)}</strong></td>
-                    <td>${escapeHtml(r.className)}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td><td>${r.confidence || 100}%</td><td><span class="badge badge-emotion-${r.emotion || 'neutral'}">${r.emotion || 'neutral'}</span></td>
-                </tr>
-            `).join('');
+            const rows = attendanceRecords.slice(-8).reverse().map(r => `<tr><td><strong>${escapeHtml(r.name)}</strong></td><td>${escapeHtml(r.className)}</span></td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.time}</td></tr>`).join('');
             
             const html = `
-                <div class="notification-banner">
-                    <span>🔔 Push Notifications</span>
-                    <button class="enable-notif-btn" id="enableNotifBtn">Enable Alerts</button>
-                </div>
                 <div class="class-selector"><select id="classFilter"><option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 All Classes</option>${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Class ${c}</option>`).join('')}</select></div>
                 <div class="stats-grid">
-                    <div class="stat-card"><div><h3>Total Users</h3><div class="stat-number">${registeredUsers.length}</div></div><div class="stat-icon"><i data-lucide="users"></i></div></div>
-                    <div class="stat-card"><div><h3>Today's Present</h3><div class="stat-number">${todayAttendance}</div></div><div class="stat-icon"><i data-lucide="check-circle"></i></div></div>
+                    <div class="stat-card"><div><h3>Users</h3><div class="stat-number">${registeredUsers.length}</div></div><div class="stat-icon"><i data-lucide="users"></i></div></div>
+                    <div class="stat-card"><div><h3>Present</h3><div class="stat-number">${todayAttendance}</div></div><div class="stat-icon"><i data-lucide="check-circle"></i></div></div>
                     <div class="stat-card"><div><h3>Students</h3><div class="stat-number">${totalStudents}</div></div><div class="stat-icon"><i data-lucide="graduation-cap"></i></div></div>
-                    <div class="stat-card"><div><h3>Teachers</h3><div class="stat-number">${totalTeachers}</div></div><div class="stat-icon"><i data-lucide="chalkboard"></i></div></div>
+                    <div class="stat-card"><div><h3>Teachers</h3><div class="stat-number">${totalTeachers}</div></div><div class="stat-icon"><i data-lucide="users"></i></div></div>
                     <div class="stat-card"><div><h3>Present</h3><div class="stat-number">${present}</div></div><div class="stat-icon"><i data-lucide="smile"></i></div></div>
                     <div class="stat-card"><div><h3>Late</h3><div class="stat-number">${late}</div></div><div class="stat-icon"><i data-lucide="clock"></i></div></div>
-                    <div class="stat-card" onclick="navigateTo('records')"><div><h3>Stranger Alerts</h3><div class="stat-number">${strangers}</div></div><div class="stat-icon"><i data-lucide="alert-triangle"></i></div></div>
+                    <div class="stat-card" onclick="navigateTo('records')"><div><h3>Strangers</h3><div class="stat-number">${strangers}</div></div><div class="stat-icon"><i data-lucide="alert-triangle"></i></div></div>
                 </div>
-                <div class="chart-card"><h3><i data-lucide="pie-chart"></i> Today's Attendance</h3><canvas id="attChart"></canvas></div>
-                <div class="data-table"><h3>📋 Recent Attendance (with Emotion)</h3><div class="table-container"><table><thead><tr><th>Name</th><th>Class</th><th>Status</th><th>Time</th><th>Confidence</th><th>Emotion</th></thead><tbody>${rows || '<tr><td colspan="6">No records</td>'}</tbody>}</div></div>
+                <div class="chart-card"><h3>📊 Today's Attendance</h3><canvas id="attChart"></canvas></div>
+                <div class="data-table"><h3>📋 Recent Attendance</h3><div class="table-container"><table><thead><tr><th>Name</th><th>Class</th><th>Status</th><th>Time</th></tr></thead><tbody>${rows || '<tr><td colspan="4">No records</td>'}</tbody></table></div></div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
+            
             const ctx = document.getElementById('attChart')?.getContext('2d');
             if (ctx && attendanceChart) attendanceChart.destroy();
-            if (ctx) attendanceChart = new Chart(ctx, { type: 'doughnut', data: { labels: ['Present', 'Late'], datasets: [{ data: [present, late], backgroundColor: ['#10b981', '#f59e0b'] }] } });
-            document.getElementById('classFilter').onchange = (e) => { selectedClass = e.target.value; saveLocal(); renderDashboard(); };
-            document.getElementById('enableNotifBtn').onclick = enablePushNotification;
+            if (ctx) attendanceChart = new Chart(ctx, { type: 'doughnut', data: { labels: ['Present', 'Late'], datasets: [{ data: [present, late], backgroundColor: ['#34C759', '#FF9500'] }] } });
+            
+            const classFilter = document.getElementById('classFilter');
+            if (classFilter) classFilter.onchange = (e) => { selectedClass = e.target.value; saveLocalData(); renderDashboard(); };
         }
         
         function renderSecurityPage() {
             const html = `
                 <div class="camera-section">
-                    <div class="camera-selector"><select id="cameraSelect"><option value="user">📱 Front Camera</option><option value="environment">📷 Back Camera (with Flash)</option></select></div>
+                    <div class="camera-selector"><select id="cameraSelect"><option value="user">📱 Front</option><option value="environment">📷 Back</option></select></div>
                     <div class="camera-container">
                         <video id="securityVideo" autoplay playsinline></video>
                         <canvas id="securityCanvas" class="face-canvas"></canvas>
-                        <div class="fps-counter" id="fpsCounter">0fps</div>
                         <div class="detection-indicator" id="detectCount">👤 Initializing...</div>
-                        <div class="light-indicator" id="lightIndicator">☀️ Good</div>
-                        <div class="emotion-indicator" id="emotionIndicator">😐 Neutral</div>
-                        <button class="torch-btn" id="torchBtn">🔦 OFF</button>
                     </div>
-                    <div class="camera-status" id="securityStatus">⚡ Starting Fast Detection (10x/sec)...</div>
+                    <div class="camera-status" id="securityStatus">🎯 Starting camera...</div>
                     <div class="camera-status" id="recognizedNames">✅ Waiting for face...</div>
-                </div>
-                <div class="data-table">
-                    <h3>✨ All Features Active</h3>
-                    <p>✓ Liveness Detection (blink to verify) | ✓ Emotion Detection | ✓ Mask Detection<br>
-                    ✓ Auto Flash | ✓ Push Notifications | ✓ Voice Greeting | ✓ Fast 10x/sec detection</p>
                 </div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
-            document.getElementById('cameraSelect').onchange = (e) => { currentCameraId = e.target.value; startSecurityCamera(); };
-            document.getElementById('torchBtn').onclick = () => toggleTorch();
+            const cameraSelect = document.getElementById('cameraSelect');
+            if (cameraSelect) cameraSelect.onchange = (e) => { currentCameraId = e.target.value; startSecurityCamera(); };
             startSecurityCamera();
-        }
-        
-        function renderQRPage() {
-            document.getElementById('mainContent').innerHTML = `
-                <div class="camera-section"><h3><i data-lucide="qr-code"></i> QR Code Scan (Backup)</h3><div class="qr-container" id="qr-reader"></div><div class="camera-status">● Starting scanner...</div></div>
-                <div class="data-table"><h3>📱 QR Code Alternative</h3><p>Use QR code if face detection has issues</p></div>
-            `;
-            lucide.createIcons();
-            setTimeout(() => startQRScanner(), 100);
         }
         
         function renderRegisterPage() {
             const html = `
-                <div class="step-indicator"><div class="step active"><div class="step-number">1</div><div class="step-label">Info</div></div><div class="step"><div class="step-number">2</div><div class="step-label">Auto Capture</div></div></div>
-                <div class="data-table"><div class="register-form"><input type="text" id="regName" placeholder="Full Name *"><select id="regRole"><option value="student">🎓 Student</option><option value="teacher">👩‍🏫 Teacher</option></select><select id="regClass"><option value="">Select Class *</option>${availableClasses.map(c => `<option value="${c}">Class ${c}</option>`).join('')}<option value="Lain-lain">Other Class</option></select><input type="text" id="regClassOther" placeholder="Other class" style="display:none;"><button class="btn btn-primary" id="continueBtn">Continue →</button></div></div>
+                <div class="step-indicator"><div class="step active"><div class="step-number">1</div><div class="step-label">Info</div></div><div class="step"><div class="step-number">2</div><div class="step-label">Capture</div></div></div>
+                <div class="data-table">
+                    <div class="register-form">
+                        <input type="text" id="regName" placeholder="Full Name *">
+                        <select id="regRole"><option value="student">🎓 Student</option><option value="teacher">👩‍🏫 Teacher</option></select>
+                        <select id="regClass"><option value="">Select Class *</option>${availableClasses.map(c => `<option value="${c}">Class ${c}</option>`).join('')}<option value="Lain-lain">Other</option></select>
+                        <input type="text" id="regClassOther" placeholder="Other class" style="display:none;">
+                        <button class="btn btn-primary" id="continueBtn">Continue →</button>
+                    </div>
+                </div>
                 <div class="data-table"><h3>👥 Registered Users</h3><div id="usersList"></div></div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
-            document.getElementById('regClass').onchange = () => { document.getElementById('regClassOther').style.display = document.getElementById('regClass').value === 'Lain-lain' ? 'block' : 'none'; };
-            document.getElementById('continueBtn').onclick = async () => { let className = document.getElementById('regClass').value; if (className === 'Lain-lain') className = document.getElementById('regClassOther').value.trim(); if (!className) { await showError('Error', 'Please select class'); return; } await saveNameAndClass(); };
+            
+            const classSelect = document.getElementById('regClass');
+            const classOther = document.getElementById('regClassOther');
+            if (classSelect) classSelect.onchange = () => { if (classOther) classOther.style.display = classSelect.value === 'Lain-lain' ? 'block' : 'none'; };
+            
+            const continueBtn = document.getElementById('continueBtn');
+            if (continueBtn) continueBtn.onclick = async () => {
+                let className = document.getElementById('regClass').value;
+                if (className === 'Lain-lain') className = document.getElementById('regClassOther').value.trim();
+                if (!className) { await showError('Error', 'Please select class'); return; }
+                await saveNameAndClass();
+            };
             renderUsersTable();
         }
         
         function renderUsersTable() {
             const container = document.getElementById('usersList');
             if (!container) return;
-            container.innerHTML = `<div class="table-container"><table><thead><tr><th>Name</th><th>Role</th><th>Class</th><th></th></thead><tbody>${registeredUsers.map(u => `
-                <tr>
-                    <td><strong>${escapeHtml(u.name)}</strong></td>
-                    <td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Teacher' : 'Student'}</span></td>
-                    <td>${escapeHtml(u.className)}</td>
-                    <td class="action-buttons">
-                        <button class="edit-btn" onclick="editUserById('${u.id}')"><i data-lucide="edit-2"></i></button>
-                        <button class="delete-btn" onclick="deleteUserById('${u.id}')"><i data-lucide="trash-2"></i></button>
-                        <button class="edit-btn" onclick="startTrainingModeById('${u.id}')" title="Train AI with more angles">🎓 Train</button>
-                    </td>
-                </tr>
-            `).join('') || '<td><td colspan="4">No users registered</td>'}</tbody></div>`;
+            container.innerHTML = `
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Photo</th><th>Name</th><th>Role</th><th>Class</th><th>Action</th></tr></thead>
+                        <tbody>
+                            ${registeredUsers.map(u => `
+                                <tr>
+                                    <td>${u.faceImage ? `<img src="${u.faceImage}" class="face-preview" onclick="viewFaceImage('${u.faceImage}')">` : '<div class="face-preview" style="background:#ddd;">📷</div>'}</td>
+                                    <td><strong>${escapeHtml(u.name)}</strong></td>
+                                    <td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Teacher' : 'Student'}</span></td>
+                                    <td>${escapeHtml(u.className)}</td>
+                                    <td class="action-buttons">
+                                        <button class="edit-btn" onclick="editUserById('${u.id}')"><i data-lucide="edit-2"></i></button>
+                                        <button class="delete-btn" onclick="deleteUserById('${u.id}')"><i data-lucide="trash-2"></i></button>
+                                    </td>
+                                </tr>
+                            `).join('') || '<tr><td colspan="5">No users registered</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            `;
             lucide.createIcons();
         }
         
         window.editUserById = (id) => { const u = registeredUsers.find(x => x.id === id); if (u) editUser(u); };
         window.deleteUserById = (id) => { const u = registeredUsers.find(x => x.id === id); if (u) deleteUser(u); };
-        window.startTrainingModeById = (id) => { const u = registeredUsers.find(x => x.id === id); if (u) startTrainingMode(u); };
+        window.viewFaceImage = (img) => { Swal.fire({ imageUrl: img, imageWidth: 300, confirmButtonColor: '#007AFF' }); };
         
         function renderRegisterStep2() {
             const html = `
-                <div class="step-indicator"><div class="step completed"><div class="step-number">✓</div><div class="step-label">Info</div></div><div class="step active"><div class="step-number">2</div><div class="step-label">Auto 3-2-1</div></div></div>
-                <div class="info-box"><i data-lucide="camera"></i><div><strong>Auto Capture in 3...2...1...</strong><br>Position your face in the green box, system will auto capture after 3 seconds!</div></div>
+                <div class="step-indicator"><div class="step completed"><div class="step-number">✓</div><div class="step-label">Info</div></div><div class="step active"><div class="step-number">2</div><div class="step-label">Capture</div></div></div>
+                <div class="info-box"><i data-lucide="camera"></i><div><strong>Auto Capture in 3 seconds</strong><br>Position your face in the green box</div></div>
                 <div class="camera-container"><video id="registerVideo" autoplay playsinline></video><canvas id="registerCanvas" class="face-canvas"></canvas></div>
-                <div class="camera-status" id="regCameraStatus">● Position your face, auto capture in 3 seconds</div>
-                <div class="data-table"><div style="background:rgba(16,185,129,0.1);padding:16px;border-radius:20px;margin-bottom:16px;"><strong>📝 ${escapeHtml(pendingRegistration.name)}</strong><br>${pendingRegistration.role === 'teacher' ? 'Teacher' : 'Student'} | Class ${pendingRegistration.className}</div><button class="btn btn-secondary" id="backBtn" style="margin-top:16px;">← Back</button></div>
+                <div class="camera-status" id="regCameraStatus">● Position your face</div>
+                <div class="data-table">
+                    <div style="background:#E8F5E9;padding:16px;border-radius:20px;margin-bottom:16px;">
+                        <strong>📝 ${escapeHtml(pendingRegistration.name)}</strong><br>${pendingRegistration.role === 'teacher' ? 'Teacher' : 'Student'} | Class ${pendingRegistration.className}
+                    </div>
+                    <button class="btn btn-secondary" id="backBtn">← Back</button>
+                </div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
             startRegisterCamera();
-            document.getElementById('backBtn').onclick = backToStep1;
+            const backBtn = document.getElementById('backBtn');
+            if (backBtn) backBtn.onclick = backToStep1;
         }
         
         function renderRecordsPage() {
             let filtered = getFilteredAttendance();
             const paginated = getPaginatedData(filtered);
             const todayStrangers = strangerAlerts.filter(a => a.date === getTodayDate() && (selectedClass === "Semua Kelas" || a.className === selectedClass));
+            
             const html = `
                 <div class="class-selector"><select id="recordClassFilter"><option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 All Classes</option>${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Class ${c}</option>`).join('')}</select></div>
-                <div class="search-bar"><input type="text" id="searchInput" placeholder="🔍 Search by name..." value="${escapeHtml(searchQuery)}"><button class="btn-small btn-primary" id="searchBtn">Search</button></div>
+                <div class="search-bar"><input type="text" id="searchInput" placeholder="🔍 Search..." value="${escapeHtml(searchQuery)}"><button class="btn-small btn-primary" id="searchBtn">Search</button></div>
                 <div class="date-filter"><input type="date" id="startDateInput" value="${startDate}"><input type="date" id="endDateInput" value="${endDate}"><button class="btn-small btn-primary" id="filterBtn">Filter</button><button class="btn-small btn-secondary" id="resetBtn">Reset</button></div>
-                <div class="data-table"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;"><h3>⚠️ Stranger Alerts (${todayStrangers.length})</h3><div><button class="btn-small btn-primary" id="pdfBtn">📄 PDF</button><button class="btn-small btn-success" id="excelBtn">📊 Excel</button><button class="btn-small btn-purple" id="googleSheetsBtn">📎 Google Sheets</button></div></div><div id="strangerList"></div></div>
-                <div class="data-table"><h3>📋 Attendance Records (${filtered.length})</h3><div class="table-container"><table><thead><tr><th>Name</th><th>Class</th><th>Session</th><th>Status</th><th>Date</th><th>Time</th><th>Confidence</th><th>Emotion</th><tr></thead><tbody>${paginated.map(r => `
-                    <tr>
-                        <td><strong>${escapeHtml(r.name)}</strong></td>
-                        <td>${escapeHtml(r.className)}</td>
-                        <td>${r.sessionName}</td>
-                        <td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td>
-                        <td>${r.date}</td>
-                        <td>${r.time}</td>
-                        <td>${r.confidence || 100}%</td>
-                        <td><span class="badge badge-emotion-${r.emotion || 'neutral'}">${r.emotion || 'neutral'}</span></td>
-                    </tr>
-                `).join('') || '<tr><td colspan="8">No records</td>'}</tbody>}</div>${renderPagination(filtered.length)}</div>
+                <div class="data-table">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:16px;"><h3>⚠️ Stranger Alerts (${todayStrangers.length})</h3><button class="btn-small btn-primary" id="exportBtn">📊 Export CSV</button></div>
+                    <div id="strangerList"></div>
+                </div>
+                <div class="data-table">
+                    <h3>📋 Attendance Records (${filtered.length})</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Name</th><th>Class</th><th>Session</th><th>Status</th><th>Date</th><th>Time</th></tr></thead>
+                            <tbody>${paginated.map(r => `<tr><td><strong>${escapeHtml(r.name)}</strong></td><td>${escapeHtml(r.className)}</td><td>${r.sessionName}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.date}</td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="6">No records</td></tr>'}</tbody>
+                        </table>
+                    </div>
+                    ${renderPagination(filtered.length)}
+                </div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
-            document.getElementById('strangerList').innerHTML = todayStrangers.length ? todayStrangers.map(a => `<div class="danger-banner"><div>${a.imageData ? `<img src="${a.imageData}" class="stranger-image" onclick="viewStranger('${a.imageData}')">` : '📷'}</div><div><strong>⚠️ Stranger Detected!</strong><br>Class: ${a.className} | Time: ${a.time}</div><button class="btn-small btn-primary" onclick="downloadImage('${a.imageData}',${a.id})">💾 Save Image</button></div>`).join('') : '<p>✅ No stranger alerts today</p>';
-            document.getElementById('recordClassFilter').onchange = (e) => { selectedClass = e.target.value; saveLocal(); currentPageNum = 1; renderRecordsPage(); };
-            document.getElementById('searchBtn').onclick = () => { searchQuery = document.getElementById('searchInput').value; currentPageNum = 1; renderRecordsPage(); };
-            document.getElementById('filterBtn').onclick = () => { startDate = document.getElementById('startDateInput').value; endDate = document.getElementById('endDateInput').value; currentPageNum = 1; renderRecordsPage(); };
-            document.getElementById('resetBtn').onclick = () => { searchQuery = ""; startDate = ""; endDate = ""; currentPageNum = 1; renderRecordsPage(); };
-            document.getElementById('pdfBtn').onclick = () => exportToPDF();
-            document.getElementById('excelBtn').onclick = exportToGoogleSheets;
-            document.getElementById('googleSheetsBtn').onclick = exportToGoogleSheets;
+            
+            const strangerContainer = document.getElementById('strangerList');
+            if (strangerContainer) {
+                strangerContainer.innerHTML = todayStrangers.length ? todayStrangers.map(a => `
+                    <div class="danger-banner">
+                        <div>${a.imageData ? `<img src="${a.imageData}" class="stranger-image" onclick="viewStrangerImage('${a.imageData}')">` : '📷'}</div>
+                        <div><strong>⚠️ Stranger!</strong><br>Class: ${a.className} | Time: ${a.time}</div>
+                        <button class="btn-small btn-primary" onclick="downloadImage('${a.imageData}',${a.id})">💾 Save</button>
+                    </div>
+                `).join('') : '<p>✅ No stranger alerts</p>';
+            }
+            
+            const recordFilter = document.getElementById('recordClassFilter');
+            if (recordFilter) recordFilter.onchange = (e) => { selectedClass = e.target.value; saveLocalData(); currentPageNum = 1; renderRecordsPage(); };
+            const searchBtn = document.getElementById('searchBtn');
+            if (searchBtn) searchBtn.onclick = () => { searchQuery = document.getElementById('searchInput').value; currentPageNum = 1; renderRecordsPage(); };
+            const filterBtn = document.getElementById('filterBtn');
+            if (filterBtn) filterBtn.onclick = () => { startDate = document.getElementById('startDateInput').value; endDate = document.getElementById('endDateInput').value; currentPageNum = 1; renderRecordsPage(); };
+            const resetBtn = document.getElementById('resetBtn');
+            if (resetBtn) resetBtn.onclick = () => { searchQuery = ""; startDate = ""; endDate = ""; currentPageNum = 1; renderRecordsPage(); };
+            const exportBtn = document.getElementById('exportBtn');
+            if (exportBtn) exportBtn.onclick = exportToCSV;
         }
         
-        async function exportToPDF() { const { jsPDF } = window.jspdf; const doc = new jsPDF(); doc.setFontSize(18); doc.text('Attendance Report', 20, 20); doc.setFontSize(12); doc.text(`Date: ${getTodayDate()}`, 20, 35); doc.text(`Total Present: ${getFilteredAttendance().length}`, 20, 45); doc.save(`attendance_${getTodayDate()}.pdf`); await showSuccess('Export Complete', 'PDF file downloaded'); }
-        
-        function renderAnalyticsPage() {
-            const weeklyData = getWeeklyData();
-            const monthlyData = getMonthlyData();
-            const topStudents = getTopStudents();
-            
+        function renderUsersPage() {
             const html = `
-                <div class="data-table"><h3>📊 Weekly Trend</h3><canvas id="weeklyChart"></canvas></div>
-                <div class="data-table"><h3>📈 Monthly Trend</h3><canvas id="monthlyChart"></canvas></div>
-                <div class="data-table"><h3>🏆 Top Students (Most Present)</h3><div class="table-container"><table><thead><tr><th>Rank</th><th>Name</th><th>Class</th><th>Attendance</th></thead><tbody>${topStudents.map((s, i) => `
-                    <tr><td>${i+1}</td><td><strong>${escapeHtml(s.name)}</strong></td><td>${escapeHtml(s.className)}</td><td>${s.count} days</td>
-                `).join('') || '<tr><td colspan="4">No data</td>'}</tbody></div></div>
-                <div class="data-table"><h3>📧 Weekly Report</h3><button class="btn btn-primary" id="sendReportBtn">📧 Generate Weekly Report</button></div>
+                <div class="data-table">
+                    <h3><i data-lucide="users"></i> All Registered Users</h3>
+                    <div class="table-container" id="usersFullList"></div>
+                </div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
             
-            const weeklyCtx = document.getElementById('weeklyChart')?.getContext('2d');
-            if (weeklyCtx) new Chart(weeklyCtx, { type: 'line', data: { labels: weeklyData.labels, datasets: [{ label: 'Attendance', data: weeklyData.values, borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', fill: true, tension: 0.4 }] } });
-            
-            const monthlyCtx = document.getElementById('monthlyChart')?.getContext('2d');
-            if (monthlyCtx) new Chart(monthlyCtx, { type: 'bar', data: { labels: monthlyData.labels, datasets: [{ label: 'Attendance', data: monthlyData.values, backgroundColor: '#10b981' }] } });
-            
-            document.getElementById('sendReportBtn').onclick = sendWeeklyReport;
+            const container = document.getElementById('usersFullList');
+            if (container) {
+                container.innerHTML = `
+                    <table>
+                        <thead><tr><th>Photo</th><th>Name</th><th>Role</th><th>Class</th><th>Registered Date</th><th>Action</th></tr></thead>
+                        <tbody>
+                            ${registeredUsers.map(u => `
+                                <tr>
+                                    <td>${u.faceImage ? `<img src="${u.faceImage}" class="face-preview" onclick="viewFaceImage('${u.faceImage}')">` : '<div class="face-preview" style="background:#ddd;">📷</div>'}</td>
+                                    <td><strong>${escapeHtml(u.name)}</strong></td>
+                                    <td><span class="badge ${u.role === 'teacher' ? 'badge-teacher' : 'badge-student'}">${u.role === 'teacher' ? 'Teacher' : 'Student'}</span></td>
+                                    <td>${escapeHtml(u.className)}</td>
+                                    <td>${new Date(u.registeredAt).toLocaleDateString() || '-'}</td>
+                                    <td class="action-buttons">
+                                        <button class="edit-btn" onclick="editUserById('${u.id}')"><i data-lucide="edit-2"></i></button>
+                                        <button class="delete-btn" onclick="deleteUserById('${u.id}')"><i data-lucide="trash-2"></i></button>
+                                    </td>
+                                </tr>
+                            `).join('') || '<tr><td colspan="6">No users registered</td></tr>'}
+                        </tbody>
+                    </table>
+                `;
+                lucide.createIcons();
+            }
         }
         
-        function getWeeklyData() {
-            const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-            const values = labels.map(() => Math.floor(Math.random() * 50) + 20);
-            return { labels, values };
-        }
-        
-        function getMonthlyData() {
-            const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
-            const values = labels.map(() => Math.floor(Math.random() * 200) + 100);
-            return { labels, values };
-        }
-        
-        function getTopStudents() {
-            const studentAttendance = {};
-            attendanceRecords.filter(r => r.role === 'student').forEach(r => {
-                if (!studentAttendance[r.name]) studentAttendance[r.name] = { name: r.name, className: r.className, count: 0 };
-                studentAttendance[r.name].count++;
-            });
-            return Object.values(studentAttendance).sort((a, b) => b.count - a.count).slice(0, 5);
-        }
-        
-        window.viewStranger = (img) => { Swal.fire({ imageUrl: img, imageWidth: 300, confirmButtonColor: '#6366f1', borderRadius: '24px' }); };
+        window.viewStrangerImage = (img) => { Swal.fire({ imageUrl: img, imageWidth: 300, confirmButtonColor: '#007AFF' }); };
         window.downloadImage = (data, id) => { const a = document.createElement('a'); a.href = data; a.download = `stranger_${id}.jpg`; a.click(); };
         
         function navigateTo(page) {
             currentPage = page;
             document.querySelectorAll('.nav-item').forEach(i => i.classList.toggle('active', i.dataset.page === page));
-            stopSecurityCamera(); stopQRScanner(); stopRegisterCamera();
+            stopSecurityCamera();
+            stopRegisterCamera();
             if (page === 'dashboard') renderDashboard();
             else if (page === 'security') renderSecurityPage();
-            else if (page === 'qrcode') renderQRPage();
             else if (page === 'register') renderRegisterPage();
             else if (page === 'records') renderRecordsPage();
-            else if (page === 'analytics') renderAnalyticsPage();
+            else if (page === 'users') renderUsersPage();
         }
         
+        // Login
         function login() {
             const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
             const user = validUsers.find(u => u.username === username && u.password === password);
             if (user) {
-                currentUser = { username: user.username, role: user.role, name: user.name };
+                currentUser = user;
                 localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('mainHeader').style.display = 'flex';
                 document.getElementById('mainContent').style.display = 'block';
                 document.getElementById('bottomNav').style.display = 'flex';
-                document.getElementById('userName').innerText = currentUser.name;
-                loadLocal(); loadFromFirebase().then(() => { buildFaceMatcher(); renderDashboard(); lucide.createIcons(); loadFaceModels(); initVoiceCommand(); });
+                loadLocalData();
+                buildMatcher();
+                renderDashboard();
+                lucide.createIcons();
+                loadFaceModels();
             } else { showError('Login Failed', 'Invalid username or password'); }
         }
         
         function logout() { localStorage.removeItem('loggedInUser'); location.reload(); }
         
-        let darkMode = localStorage.getItem('darkMode') === 'true';
-        if (darkMode) document.body.classList.add('dark');
-        document.getElementById('darkModeToggle').onclick = () => { document.body.classList.toggle('dark'); localStorage.setItem('darkMode', document.body.classList.contains('dark')); lucide.createIcons(); };
-        
+        // Initialize
         document.getElementById('loginBtn').onclick = login;
-        document.getElementById('logoutBtn').onclick = logout;
         document.getElementById('loginPassword').addEventListener('keypress', (e) => { if (e.key === 'Enter') login(); });
         document.querySelectorAll('.nav-item').forEach(i => i.addEventListener('click', () => navigateTo(i.dataset.page)));
         window.navigateTo = navigateTo;
-        setInterval(() => { if (document.getElementById('currentTime')) document.getElementById('currentTime').innerText = new Date().toLocaleTimeString('en-GB'); }, 1000);
+        
+        setInterval(() => { const timeEl = document.getElementById('currentTime'); if (timeEl) timeEl.innerText = new Date().toLocaleTimeString('en-GB'); }, 1000);
         
         const savedUser = localStorage.getItem('loggedInUser');
         if (savedUser) {
@@ -1053,13 +824,12 @@
             document.getElementById('mainHeader').style.display = 'flex';
             document.getElementById('mainContent').style.display = 'block';
             document.getElementById('bottomNav').style.display = 'flex';
-            document.getElementById('userName').innerText = currentUser.name;
-            loadLocal(); loadFromFirebase().then(() => { buildFaceMatcher(); renderDashboard(); lucide.createIcons(); loadFaceModels(); initVoiceCommand(); });
+            loadLocalData();
+            buildMatcher();
+            renderDashboard();
+            lucide.createIcons();
+            loadFaceModels();
         }
-        
-        setTimeout(() => {
-            if (!currentUser) showInfo('🚀 SmartClass Pro Ultimate', '✨ ALL FEATURES ACTIVE:\n\n✓ Liveness Detection (Blink to verify)\n✓ Multi-Angle Face Registration\n✓ Push Notifications\n✓ Export to Google Sheets\n✓ AI Training Mode\n✓ Weekly Email Reports\n✓ Emotion Detection\n✓ Voice Commands\n✓ Mask Detection\n✓ Whitelist/Blacklist\n✓ PWA Offline Mode\n\nLogin: admin / admin123');
-        }, 1000);
     </script>
 </body>
 </html>
