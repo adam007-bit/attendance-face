@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>SmartClass Pro - Advanced Analytics Dashboard</title>
+    <title>SmartClass Pro - Firebase Cloud + Voice Attendance</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.min.js"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
@@ -43,14 +47,12 @@
         
         .main-content { padding: 20px 16px 100px; max-width: 600px; margin: 0 auto; }
         
-        /* Hero Stats */
         .hero-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
         .hero-card { background: var(--card-bg); border-radius: 20px; padding: 16px 12px; text-align: center; box-shadow: var(--shadow); border: 1px solid var(--border); }
         .hero-card .icon { width: 40px; height: 40px; margin: 0 auto 8px; background: rgba(99,102,241,0.1); border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
         .hero-card .value { font-size: 24px; font-weight: 700; }
         .hero-card .label { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
         
-        /* Stats Grid */
         .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 24px; }
         .stat-card { background: var(--card-bg); border-radius: 24px; padding: 18px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); border: 1px solid var(--border); transition: transform 0.2s; cursor: pointer; }
         .stat-card:active { transform: scale(0.98); }
@@ -58,12 +60,10 @@
         .stat-number { font-size: 1.8rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--purple)); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .stat-icon { width: 48px; height: 48px; background: rgba(99,102,241,0.1); border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
         
-        /* Chart Cards */
         .chart-card { background: var(--card-bg); border-radius: 24px; padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); }
         .chart-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
         canvas { max-height: 200px; width: 100% !important; }
         
-        /* Data Table */
         .data-table { background: var(--card-bg); border-radius: 24px; padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); }
         .data-table h3 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
         .table-container { overflow-x: auto; }
@@ -78,9 +78,6 @@
         .class-selector select { width: 100%; padding: 12px 16px; border-radius: 60px; border: 1px solid var(--border); background: var(--card-bg); font-size: 0.85rem; font-weight: 500; }
         
         .info-box { background: rgba(99,102,241,0.08); border-radius: 16px; padding: 14px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-size: 0.8rem; }
-        
-        .trend-up { color: var(--success); }
-        .trend-down { color: var(--danger); }
         
         .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(20px); z-index: 10000; display: flex; align-items: center; justify-content: center; }
         .login-card { background: var(--card-bg); backdrop-filter: blur(20px); border-radius: 56px; padding: 40px; width: 90%; max-width: 380px; text-align: center; border: 1px solid var(--border); }
@@ -121,6 +118,14 @@
         .step.active .step-number { background: linear-gradient(135deg, var(--primary), var(--purple)); color: white; }
         .step.completed .step-number { background: var(--success); color: white; }
         .register-form input, .register-form select { width: 100%; padding: 14px; border-radius: 60px; border: 1px solid var(--border); margin-bottom: 12px; font-size: 0.9rem; background: var(--card-bg); }
+        
+        /* Voice Animation */
+        @keyframes voiceWave {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+        .voice-active { animation: voiceWave 0.5s ease-in-out; }
+        .voice-indicator { position: fixed; bottom: 100px; right: 20px; background: linear-gradient(135deg, var(--primary), var(--purple)); color: white; padding: 10px 20px; border-radius: 40px; display: flex; align-items: center; gap: 10px; z-index: 200; box-shadow: var(--shadow-lg); font-size: 12px; font-weight: 500; }
     </style>
 </head>
 <body>
@@ -128,7 +133,7 @@
         <div class="login-card">
             <div class="logo" style="margin: 0 auto 20px; width: 70px; height: 70px;"><i data-lucide="brain" style="width: 36px; height: 36px;"></i></div>
             <h2>SmartClass Pro</h2>
-            <p style="margin-bottom: 24px;">Advanced Analytics Dashboard</p>
+            <p style="margin-bottom: 24px;">Firebase Cloud + Voice Attendance</p>
             <input type="text" id="loginUsername" placeholder="Username">
             <input type="password" id="loginPassword" placeholder="Password">
             <button class="btn btn-primary" id="loginBtn">Login</button>
@@ -139,7 +144,7 @@
     <div class="header" id="mainHeader" style="display: none;">
         <div class="header-left">
             <div class="logo"><i data-lucide="brain"></i></div>
-            <div><h1>SmartClass Pro</h1><p>Advanced Analytics • AI Face Recognition</p></div>
+            <div><h1>SmartClass Pro</h1><p>Firebase Cloud • Voice AI</p></div>
         </div>
         <div class="live-clock"><span id="currentTime">--:--:--</span></div>
     </div>
@@ -154,6 +159,11 @@
         <div class="nav-item" data-page="users"><i data-lucide="users"></i><span>Users</span></div>
     </div>
 
+    <div id="voiceIndicator" class="voice-indicator" style="display: none;">
+        <i data-lucide="volume-2"></i>
+        <span id="voiceText">Speaking...</span>
+    </div>
+
     <div id="bulkDeleteBar" class="bulk-delete-bar" style="display: none;">
         <span id="selectedCount">0 selected</span>
         <button class="btn-small" id="confirmBulkDelete" style="background: white; color: var(--danger);">Delete Selected</button>
@@ -161,7 +171,92 @@
     </div>
 
     <script>
-        // ==================== DATA STORAGE ====================
+        // ==================== FIREBASE CONFIGURATION ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZYM0Fe06bb_Q67U6Pn42RSoZB-mjo3io",
+            authDomain: "secuirityschool.firebaseapp.com",
+            projectId: "secuirityschool",
+            storageBucket: "secuirityschool.firebasestorage.app",
+            messagingSenderId: "321431921421",
+            appId: "1:321431921421:web:265abf74d07deb917bc644"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        // ==================== VOICE ANNOUNCEMENT ====================
+        let isSpeaking = false;
+        let speechQueue = [];
+        
+        function speakText(text) {
+            if (!text) return;
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ms-MY';
+            utterance.rate = 0.9;
+            utterance.pitch = 1.1;
+            utterance.volume = 1;
+            
+            // Show voice indicator
+            const indicator = document.getElementById('voiceIndicator');
+            const voiceTextSpan = document.getElementById('voiceText');
+            if (indicator && voiceTextSpan) {
+                voiceTextSpan.innerText = text.length > 30 ? text.substring(0, 30) + '...' : text;
+                indicator.style.display = 'flex';
+                indicator.classList.add('voice-active');
+                setTimeout(() => {
+                    indicator.classList.remove('voice-active');
+                }, 500);
+                setTimeout(() => {
+                    if (indicator && !isSpeaking) indicator.style.display = 'none';
+                }, 2000);
+            }
+            
+            utterance.onend = () => {
+                isSpeaking = false;
+                if (speechQueue.length > 0) {
+                    const next = speechQueue.shift();
+                    speakText(next);
+                } else {
+                    setTimeout(() => {
+                        const ind = document.getElementById('voiceIndicator');
+                        if (ind) ind.style.display = 'none';
+                    }, 1000);
+                }
+            };
+            
+            utterance.onerror = () => {
+                isSpeaking = false;
+            };
+            
+            if (isSpeaking) {
+                speechQueue.push(text);
+            } else {
+                isSpeaking = true;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+        
+        function speakAttendance(name, status) {
+            const statusText = status === 'Hadir' ? 'present' : 'late';
+            speakText(`${name} is ${statusText}`);
+        }
+        
+        function speakStrangerAlert() {
+            speakText(`Warning! Stranger detected in classroom. Please check immediately.`);
+        }
+        
+        function speakRegistrationSuccess(name) {
+            speakText(`${name} registration successful. Your face has been saved to cloud.`);
+        }
+        
+        function speakWelcome(name) {
+            speakText(`Welcome ${name} to SmartClass Pro. System ready.`);
+        }
+        
+        // ==================== DATA STORAGE (Firebase Sync) ====================
         let currentUser = null;
         const validUsers = [{ username: "admin", password: "admin123", role: "admin", name: "Admin" }];
         
@@ -176,6 +271,7 @@
         let pendingRegistration = null;
         let currentPageNum = 1, itemsPerPage = 10, searchQuery = "", startDate = "", endDate = "";
         let selectedUsers = new Set();
+        let isSyncing = false;
         
         // Camera
         let securityStream = null, registerStream = null, securityInterval = null, isSecurityActive = false, currentCameraId = 'user';
@@ -188,7 +284,96 @@
         const DETECTION_INTERVAL = 200;
         const INPUT_SIZE = 320;
         
-        // Helper Functions
+        // ==================== FIREBASE SYNC FUNCTIONS ====================
+        async function syncToFirebase() {
+            if (isSyncing) return;
+            isSyncing = true;
+            try {
+                // Sync Users
+                for (const user of registeredUsers) {
+                    const userData = { ...user };
+                    delete userData.descriptor; // Don't store descriptor in Firestore (too big)
+                    await db.collection('users').doc(user.id).set(userData, { merge: true });
+                }
+                
+                // Sync Attendance
+                for (const att of attendanceRecords) {
+                    await db.collection('attendance').doc(`${att.id}_${att.date}_${att.session}`).set(att, { merge: true });
+                }
+                
+                // Sync Stranger Alerts
+                for (const alert of strangerAlerts) {
+                    await db.collection('strangers').doc(alert.id.toString()).set(alert, { merge: true });
+                }
+                
+                console.log('Synced to Firebase successfully');
+            } catch (error) {
+                console.error('Firebase sync error:', error);
+            } finally {
+                isSyncing = false;
+            }
+        }
+        
+        async function loadFromFirebase() {
+            try {
+                // Load Users
+                const usersSnapshot = await db.collection('users').get();
+                const firebaseUsers = [];
+                usersSnapshot.forEach(doc => {
+                    firebaseUsers.push(doc.data());
+                });
+                
+                // Merge with local (keep local descriptors)
+                for (const fbUser of firebaseUsers) {
+                    const existingLocal = registeredUsers.find(u => u.id === fbUser.id);
+                    if (existingLocal) {
+                        // Keep local descriptor
+                        fbUser.descriptor = existingLocal.descriptor;
+                        Object.assign(existingLocal, fbUser);
+                    } else {
+                        registeredUsers.push(fbUser);
+                    }
+                }
+                
+                // Load Attendance
+                const attendanceSnapshot = await db.collection('attendance').get();
+                attendanceSnapshot.forEach(doc => {
+                    const att = doc.data();
+                    const existing = attendanceRecords.find(a => a.id === att.id && a.date === att.date && a.session === att.session);
+                    if (!existing) {
+                        attendanceRecords.push(att);
+                    }
+                });
+                
+                // Load Stranger Alerts
+                const strangersSnapshot = await db.collection('strangers').get();
+                strangersSnapshot.forEach(doc => {
+                    const alert = doc.data();
+                    const existing = strangerAlerts.find(s => s.id === alert.id);
+                    if (!existing) {
+                        strangerAlerts.push(alert);
+                    }
+                });
+                
+                // Load saved descriptors from localStorage
+                const savedDescriptors = localStorage.getItem('smart_descriptors');
+                if (savedDescriptors) {
+                    const desc = JSON.parse(savedDescriptors);
+                    registeredUsers.forEach(u => {
+                        if (desc[u.id]) u.descriptor = desc[u.id];
+                    });
+                }
+                
+                saveLocalData();
+                console.log('Loaded from Firebase successfully');
+            } catch (error) {
+                console.error('Firebase load error:', error);
+                // Fallback to local storage
+                loadLocalData();
+            }
+        }
+        
+        // ==================== LOCAL STORAGE (Backup) ====================
         function loadLocalData() {
             const savedUsers = localStorage.getItem('smart_users');
             if (savedUsers) registeredUsers = JSON.parse(savedUsers);
@@ -206,13 +391,16 @@
         }
         
         function saveLocalData() {
-            localStorage.setItem('smart_users', JSON.stringify(registeredUsers.map(u => ({ id: u.id, name: u.name, role: u.role, className: u.className, faceImage: u.faceImage }))));
+            localStorage.setItem('smart_users', JSON.stringify(registeredUsers.map(u => ({ id: u.id, name: u.name, role: u.role, className: u.className, faceImage: u.faceImage, registeredAt: u.registeredAt }))));
             localStorage.setItem('smart_attendance', JSON.stringify(attendanceRecords));
             localStorage.setItem('smart_strangers', JSON.stringify(strangerAlerts));
             const desc = {};
             registeredUsers.forEach(u => { if (u.descriptor) desc[u.id] = u.descriptor; });
             localStorage.setItem('smart_descriptors', JSON.stringify(desc));
             localStorage.setItem('smart_class', selectedClass);
+            
+            // Also sync to Firebase
+            syncToFirebase();
         }
         
         function getTodayDate() { return new Date().toLocaleDateString('en-CA'); }
@@ -256,7 +444,7 @@
                 if (securityInterval) clearInterval(securityInterval);
                 securityInterval = setInterval(detectFaces, DETECTION_INTERVAL);
                 const statusEl = document.getElementById('securityStatus');
-                if (statusEl) { statusEl.innerHTML = '✅ Camera Active'; statusEl.className = 'camera-status status-active'; }
+                if (statusEl) { statusEl.innerHTML = '✅ Camera Active - Firebase Cloud Ready'; statusEl.className = 'camera-status status-active'; }
             } catch(e) { console.error(e); showError('Camera Error', 'Please allow camera access'); }
         }
         
@@ -294,11 +482,17 @@
                     stranger = true;
                 }
             }
+            
             const detectEl = document.getElementById('detectCount');
             if (detectEl) detectEl.innerHTML = detections.length ? `👤 ${detections.length} face(s)` : '👤 No face';
             const recognizedEl = document.getElementById('recognizedNames');
             if (recognizedEl) recognizedEl.innerHTML = recognized.length ? `✅ Recognized: ${recognized.join(', ')}` : '✅ Waiting...';
-            if (stranger && Date.now() - lastStrangerAlertTime > 8000) { lastStrangerAlertTime = Date.now(); const img = await captureImageFromVideo(video); await reportStranger(img); }
+            
+            if (stranger && Date.now() - lastStrangerAlertTime > 8000) {
+                lastStrangerAlertTime = Date.now();
+                const img = await captureImageFromVideo(video);
+                await reportStranger(img);
+            }
         }
         
         async function autoMarkAttendance(user) {
@@ -316,6 +510,11 @@
                 attendanceRecords.push({ id: user.id, name: user.name, role: user.role, className: user.className, status, session, sessionName: session === 'pagi' ? 'Morning' : 'Afternoon', time: getCurrentTime(), date: today, timestamp: Date.now(), method: 'Face Auto' });
                 saveLocalData();
                 playBeep();
+                
+                // ========== VOICE ANNOUNCEMENT ==========
+                speakAttendance(user.name, status);
+                
+                Swal.fire({ title: '✅ Attendance Recorded!', html: `<strong>${escapeHtml(user.name)}</strong><br>${status}<br>Time: ${getCurrentTime()}`, icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 2500 });
                 updateUI();
             }
         }
@@ -325,6 +524,14 @@
             strangerAlerts.push(alert);
             saveLocalData();
             playAlertBeep();
+            
+            // ========== VOICE STRANGER ALERT ==========
+            speakStrangerAlert();
+            
+            const statusEl = document.getElementById('securityStatus');
+            if (statusEl) { statusEl.innerHTML = '⚠️ STRANGER DETECTED! ⚠️'; statusEl.className = 'camera-status status-active'; }
+            setTimeout(() => { if (statusEl && isSecurityActive) { statusEl.innerHTML = '✅ Camera Active - Firebase Cloud Ready'; statusEl.className = 'camera-status status-active'; } }, 3000);
+            
             await Swal.fire({ title: '⚠️ SECURITY ALERT!', html: `<img src="${img}" style="width:150px;border-radius:16px;margin:10px 0;"><br><strong>Stranger detected!</strong><br>Class: ${alert.className}<br>Time: ${alert.time}`, icon: 'warning', confirmButtonColor: '#ef4444' });
             updateUI();
         }
@@ -387,7 +594,11 @@
             registeredUsers.push(newUser);
             saveLocalData();
             buildMatcher();
-            await showSuccess('✅ Registration Successful!', `${newUser.name} - Class ${newUser.className}\nFace saved!`);
+            
+            // ========== VOICE REGISTRATION SUCCESS ==========
+            speakRegistrationSuccess(newUser.name);
+            
+            await showSuccess('✅ Registration Successful!', `${newUser.name} - Class ${newUser.className}\nFace saved to cloud!`);
             pendingRegistration = null;
             registerStep = 1;
             if (!availableClasses.includes(newUser.className)) { availableClasses.push(newUser.className); availableClasses.sort(); }
@@ -417,7 +628,14 @@
         
         async function deleteSingleUser(user) {
             const c = await Swal.fire({ title: 'Delete User?', text: `Delete ${user.name}?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Yes' });
-            if (c.isConfirmed) { registeredUsers = registeredUsers.filter(u => u.id !== user.id); selectedUsers.delete(user.id); saveLocalData(); buildMatcher(); updateUI(); await showSuccess('Deleted', 'User removed'); }
+            if (c.isConfirmed) { 
+                registeredUsers = registeredUsers.filter(u => u.id !== user.id); 
+                selectedUsers.delete(user.id); 
+                saveLocalData(); 
+                buildMatcher(); 
+                updateUI(); 
+                await showSuccess('Deleted', 'User removed from cloud');
+            }
         }
         
         function getUserById(id) { return registeredUsers.find(u => u.id === id); }
@@ -425,7 +643,7 @@
         function toggleSelectUser(userId) { if (selectedUsers.has(userId)) selectedUsers.delete(userId); else selectedUsers.add(userId); updateBulkDeleteBar(); renderUsersPage(); }
         function selectAllUsers() { if (selectedUsers.size === registeredUsers.length) selectedUsers.clear(); else registeredUsers.forEach(u => selectedUsers.add(u.id)); updateBulkDeleteBar(); renderUsersPage(); }
         function updateBulkDeleteBar() { const bar = document.getElementById('bulkDeleteBar'), countSpan = document.getElementById('selectedCount'); if (bar && countSpan) { if (selectedUsers.size > 0) { bar.style.display = 'flex'; countSpan.innerText = `${selectedUsers.size} selected`; } else { bar.style.display = 'none'; } } }
-        async function deleteSelectedUsers() { if (selectedUsers.size === 0) return; const result = await Swal.fire({ title: 'Delete Users?', text: `Delete ${selectedUsers.size} user(s)?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Yes' }); if (result.isConfirmed) { registeredUsers = registeredUsers.filter(u => !selectedUsers.has(u.id)); selectedUsers.clear(); saveLocalData(); buildMatcher(); updateBulkDeleteBar(); renderUsersPage(); await showSuccess('Deleted!', `${selectedUsers.size} user(s) have been deleted.`); } }
+        async function deleteSelectedUsers() { if (selectedUsers.size === 0) return; const result = await Swal.fire({ title: 'Delete Users?', text: `Delete ${selectedUsers.size} user(s)?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Yes' }); if (result.isConfirmed) { registeredUsers = registeredUsers.filter(u => !selectedUsers.has(u.id)); selectedUsers.clear(); saveLocalData(); buildMatcher(); updateBulkDeleteBar(); renderUsersPage(); await showSuccess('Deleted!', `${selectedUsers.size} user(s) deleted from cloud`); } }
         function cancelBulkDelete() { selectedUsers.clear(); updateBulkDeleteBar(); renderUsersPage(); }
         
         // Export CSV
@@ -465,9 +683,7 @@
         
         function getMonthlyData() {
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const values = months.map((_, i) => {
-                return attendanceRecords.filter(r => new Date(r.date).getMonth() === i).length;
-            });
+            const values = months.map((_, i) => attendanceRecords.filter(r => new Date(r.date).getMonth() === i).length);
             return { labels: months, values };
         }
         
@@ -488,16 +704,14 @@
             const strangers = strangerAlerts.filter(a => a.date === today).length;
             const attendanceRate = registeredUsers.length > 0 ? Math.round((todayAttendance / registeredUsers.length) * 100) : 0;
             
-            // Weekly and Monthly data
             const weeklyData = getWeeklyData();
             const monthlyData = getMonthlyData();
             const classData = getClassData();
             
-            // Recent attendance rows
             const recentRows = attendanceRecords.filter(r => selectedClass === "Semua Kelas" || r.className === selectedClass).slice(-8).reverse().map(r => `
                 <tr>
                     <td><strong>${escapeHtml(r.name)}</strong></td>
-                    <td>${escapeHtml(r.className)}</span></td>
+                    <td>${escapeHtml(r.className)}</span></span></td>
                     <td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td>
                     <td>${r.time}</td>
                     <td>${r.date}</td>
@@ -505,15 +719,13 @@
             `).join('');
             
             const html = `
-                <!-- Hero Stats -->
                 <div class="hero-stats">
-                    <div class="hero-card"><div class="icon"><i data-lucide="users"></i></div><div class="value">${registeredUsers.length}</div><div class="label">Total Users</div></div>
+                    <div class="hero-card"><div class="icon"><i data-lucide="cloud"></i></div><div class="value">${registeredUsers.length}</div><div class="label">Total Users</div></div>
                     <div class="hero-card"><div class="icon"><i data-lucide="check-circle"></i></div><div class="value">${todayAttendance}</div><div class="label">Today Present</div></div>
                     <div class="hero-card"><div class="icon"><i data-lucide="percent"></i></div><div class="value">${attendanceRate}%</div><div class="label">Attendance Rate</div></div>
                     <div class="hero-card"><div class="icon"><i data-lucide="alert-triangle"></i></div><div class="value">${strangers}</div><div class="label">Strangers</div></div>
                 </div>
                 
-                <!-- Class Selector -->
                 <div class="class-selector">
                     <select id="classFilter">
                         <option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 All Classes</option>
@@ -521,43 +733,30 @@
                     </select>
                 </div>
                 
-                <!-- Stats Grid -->
                 <div class="stats-grid">
                     <div class="stat-card"><div><h4>Students</h4><div class="stat-number">${totalStudents}</div></div><div class="stat-icon"><i data-lucide="graduation-cap"></i></div></div>
-                    <div class="stat-card"><div><h4>Teachers</h4><div class="stat-number">${totalTeachers}</div></div><div class="stat-icon"><i data-lucide="chalkboard"></i></div></div>
-                    <div class="stat-card"><div><h4>Present Today</h4><div class="stat-number">${present}</div></div><div class="stat-icon"><i data-lucide="smile"></i></div></div>
-                    <div class="stat-card"><div><h4>Late Today</h4><div class="stat-number">${late}</div></div><div class="stat-icon"><i data-lucide="clock"></i></div></div>
+                    <div class="stat-card"><div><h4>Teachers</h4><div class="stat-number">${totalTeachers}</div></div><div class="stat-icon"><i data-lucide="users"></i></div></div>
+                    <div class="stat-card"><div><h4>Present</h4><div class="stat-number">${present}</div></div><div class="stat-icon"><i data-lucide="smile"></i></div></div>
+                    <div class="stat-card"><div><h4>Late</h4><div class="stat-number">${late}</div></div><div class="stat-icon"><i data-lucide="clock"></i></div></div>
                 </div>
                 
-                <!-- Charts Row -->
-                <div class="chart-card">
-                    <h3><i data-lucide="trending-up"></i> Weekly Attendance Trend</h3>
-                    <canvas id="weeklyChart"></canvas>
-                </div>
-                <div class="chart-card">
-                    <h3><i data-lucide="bar-chart-3"></i> Monthly Attendance Overview</h3>
-                    <canvas id="monthlyChart"></canvas>
-                </div>
-                <div class="chart-card">
-                    <h3><i data-lucide="pie-chart"></i> Attendance by Class</h3>
-                    <canvas id="classChart"></canvas>
-                </div>
+                <div class="chart-card"><h3><i data-lucide="trending-up"></i> Weekly Trend</h3><canvas id="weeklyChart"></canvas></div>
+                <div class="chart-card"><h3><i data-lucide="bar-chart-3"></i> Monthly Overview</h3><canvas id="monthlyChart"></canvas></div>
+                <div class="chart-card"><h3><i data-lucide="pie-chart"></i> By Class</h3><canvas id="classChart"></canvas></div>
                 
-                <!-- Recent Attendance Table -->
                 <div class="data-table">
-                    <h3><i data-lucide="clock"></i> Recent Attendance Records</h3>
+                    <h3><i data-lucide="clock"></i> Recent Records</h3>
                     <div class="table-container">
                         <table>
                             <thead><tr><th>Name</th><th>Class</th><th>Status</th><th>Time</th><th>Date</th></tr></thead>
-                            <tbody>${recentRows || '<tr><td colspan="5">No records yet</td></tr>'}</tbody>
+                            <tbody>${recentRows || '<td><td colspan="5">No records yet</td></tr>'}</tbody>
                         </table>
                     </div>
                 </div>
                 
-                <!-- Info Box -->
                 <div class="info-box">
-                    <i data-lucide="info"></i>
-                    <div><strong>Smart Analytics</strong> - Real-time attendance tracking with AI face recognition. Switch to Camera tab to start detecting faces automatically.</div>
+                    <i data-lucide="cloud"></i>
+                    <div><strong>☁️ Firebase Cloud Sync</strong> - All data is automatically backed up to cloud. Access from any device!<br><strong>🔊 Voice Announcement</strong> - System speaks when attendance is recorded.</div>
                 </div>
             `;
             
@@ -568,31 +767,19 @@
             const weeklyCtx = document.getElementById('weeklyChart')?.getContext('2d');
             if (weeklyCtx) {
                 if (weeklyChart) weeklyChart.destroy();
-                weeklyChart = new Chart(weeklyCtx, {
-                    type: 'line',
-                    data: { labels: weeklyData.labels, datasets: [{ label: 'Attendance', data: weeklyData.values, borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', fill: true, tension: 0.4, pointBackgroundColor: '#6366f1', pointBorderColor: '#fff', pointRadius: 6, pointHoverRadius: 8 }] },
-                    options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'top' } } }
-                });
+                weeklyChart = new Chart(weeklyCtx, { type: 'line', data: { labels: weeklyData.labels, datasets: [{ label: 'Attendance', data: weeklyData.values, borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', fill: true, tension: 0.4, pointBackgroundColor: '#6366f1', pointRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: true } });
             }
             
             const monthlyCtx = document.getElementById('monthlyChart')?.getContext('2d');
             if (monthlyCtx) {
                 if (attendanceChart) attendanceChart.destroy();
-                attendanceChart = new Chart(monthlyCtx, {
-                    type: 'bar',
-                    data: { labels: monthlyData.labels, datasets: [{ label: 'Attendance', data: monthlyData.values, backgroundColor: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: 8, barPercentage: 0.6 }] },
-                    options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'top' } } }
-                });
+                attendanceChart = new Chart(monthlyCtx, { type: 'bar', data: { labels: monthlyData.labels, datasets: [{ label: 'Attendance', data: monthlyData.values, backgroundColor: '#6366f1', borderRadius: 8 }] }, options: { responsive: true } });
             }
             
             const classCtx = document.getElementById('classChart')?.getContext('2d');
             if (classCtx) {
                 if (classChart) classChart.destroy();
-                classChart = new Chart(classCtx, {
-                    type: 'doughnut',
-                    data: { labels: classData.labels.slice(0, 6), datasets: [{ data: classData.values.slice(0, 6), backgroundColor: ['#6366f1', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#ec4899'] }] },
-                    options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } }
-                });
+                classChart = new Chart(classCtx, { type: 'doughnut', data: { labels: classData.labels.slice(0, 6), datasets: [{ data: classData.values.slice(0, 6), backgroundColor: ['#6366f1', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#ec4899'] }] }, options: { responsive: true } });
             }
             
             const classFilter = document.getElementById('classFilter');
@@ -611,7 +798,7 @@
                     <div class="camera-status" id="securityStatus">🎯 Starting camera...</div>
                     <div class="camera-status" id="recognizedNames">✅ Waiting for face...</div>
                 </div>
-                <div class="info-box"><i data-lucide="camera"></i><div>Face detection active - Green box = Recognized, Red box = Stranger alert</div></div>
+                <div class="info-box"><i data-lucide="camera"></i><div><strong>🔊 Voice Alert System</strong><br>✓ Green box = Recognized → Voice says name & status<br>✓ Red box = Stranger → Voice announces alert<br>✓ Data saved to Firebase Cloud</div></div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
@@ -664,7 +851,7 @@
                                 <td>${escapeHtml(u.className)}</td>
                                 <td class="action-buttons"><button class="edit-btn" onclick="editUserById('${u.id}')"><i data-lucide="edit-2"></i></button><button class="delete-btn" onclick="deleteUserById('${u.id}')"><i data-lucide="trash-2"></i></button></td>
                             </tr>
-                        `).join('') || '<tr><td colspan="5">No users registered</td></tr>'}</tbody>
+                        `).join('') || '<td><td colspan="5">No users registered</td></td>'}</tbody>
                     </table>
                 </div>
             `;
@@ -683,7 +870,7 @@
             const container = document.getElementById('usersFullList');
             if (container) {
                 container.innerHTML = `
-                    <table>
+                    <td>
                         <thead><tr><th style="width:40px;"></th><th>Photo</th><th>Name</th><th>Role</th><th>Class</th><th>Registered Date</th><th>Action</th></tr></thead>
                         <tbody>${registeredUsers.map(u => `
                             <tr>
@@ -736,7 +923,7 @@
                 <div class="search-bar"><input type="text" id="searchInput" placeholder="🔍 Search..." value="${escapeHtml(searchQuery)}"><button class="btn-small btn-primary" id="searchBtn">Search</button></div>
                 <div class="date-filter"><input type="date" id="startDateInput" value="${startDate}"><input type="date" id="endDateInput" value="${endDate}"><button class="btn-small btn-primary" id="filterBtn">Filter</button><button class="btn-small btn-secondary" id="resetBtn">Reset</button></div>
                 <div class="data-table"><div style="display:flex;justify-content:space-between;margin-bottom:16px;"><h3>⚠️ Stranger Alerts (${todayStrangers.length})</h3><button class="btn-small btn-primary" id="exportBtn">📊 Export CSV</button></div><div id="strangerList"></div></div>
-                <div class="data-table"><h3>📋 Attendance Records (${filtered.length})</h3><div class="table-container"><table><thead><tr><th>Name</th><th>Class</th><th>Session</th><th>Status</th><th>Date</th><th>Time</th></tr></thead><tbody>${paginated.map(r => `<tr><td><strong>${escapeHtml(r.name)}</strong></td><td>${escapeHtml(r.className)}</td><td>${r.sessionName}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.date}</td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="6">No records</td></tr>'}</tbody></table></div>${renderPagination(filtered.length)}</div>
+                <div class="data-table"><h3>📋 Attendance Records (${filtered.length})</h3><div class="table-container"><tr><thead><tr><th>Name</th><th>Class</th><th>Session</th><th>Status</th><th>Date</th><th>Time</th></tr></thead><tbody>${paginated.map(r => `<tr>}<strong>${escapeHtml(r.name)}</strong></td>}<td>${escapeHtml(r.className)}</td><td>${r.sessionName}</td><td><span class="badge ${r.status === 'Hadir' ? 'badge-hadir' : 'badge-lewat'}">${r.status}</span></td><td>${r.date}</td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="6">No records</td></tr>'}</tbody>}</div>${renderPagination(filtered.length)}</div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
@@ -775,7 +962,13 @@
                 document.getElementById('mainHeader').style.display = 'flex';
                 document.getElementById('mainContent').style.display = 'block';
                 document.getElementById('bottomNav').style.display = 'flex';
-                loadLocalData(); buildMatcher(); renderDashboard(); lucide.createIcons(); loadFaceModels();
+                loadFromFirebase().then(() => {
+                    buildMatcher();
+                    renderDashboard();
+                    lucide.createIcons();
+                    loadFaceModels();
+                    speakWelcome(currentUser.name);
+                });
             } else { showError('Login Failed', 'Invalid username or password'); }
         }
         
@@ -795,7 +988,13 @@
             document.getElementById('mainHeader').style.display = 'flex';
             document.getElementById('mainContent').style.display = 'block';
             document.getElementById('bottomNav').style.display = 'flex';
-            loadLocalData(); buildMatcher(); renderDashboard(); lucide.createIcons(); loadFaceModels();
+            loadFromFirebase().then(() => {
+                buildMatcher();
+                renderDashboard();
+                lucide.createIcons();
+                loadFaceModels();
+                speakWelcome(currentUser.name);
+            });
         }
     </script>
 </body>
