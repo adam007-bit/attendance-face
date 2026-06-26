@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-    <title>SmartClass Pro – AI Face Recognition</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SmartClass Pro – Face & Emotion Recognition</title>
 
     <!-- Libraries -->
     <script src="https://unpkg.com/lucide@latest">
@@ -601,6 +601,33 @@
             cursor: pointer;
         }
 
+        /* ----- EMOTION DISPLAY ----- */
+        .emotion-display {
+            text-align: center;
+            margin: 12px 0 6px 0;
+            font-size: 1.4rem;
+            font-weight: 700;
+            padding: 10px;
+            background: rgba(99, 102, 241, 0.06);
+            border-radius: 60px;
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            color: var(--text-primary);
+            transition: 0.2s;
+        }
+        .emotion-display .emotion-emoji {
+            font-size: 2rem;
+            vertical-align: middle;
+        }
+        .emotion-display .emotion-label {
+            font-weight: 600;
+            margin-left: 6px;
+        }
+        .emotion-display .emotion-score {
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-left: 6px;
+        }
+
         /* ----- REGISTER ----- */
         .register-form input,
         .register-form select {
@@ -847,7 +874,7 @@
             pointer-events: none;
         }
 
-        /* ----- RESPONSIVE TWEAKS ----- */
+        /* ----- RESPONSIVE ----- */
         @media (max-width: 480px) {
             .hero-stats {
                 grid-template-columns: repeat(2, 1fr);
@@ -896,7 +923,7 @@
         <div class="login-card">
             <div class="logo-big"><i data-lucide="brain" style="width:36px;height:36px;"></i></div>
             <h2>SmartClass Pro</h2>
-            <p class="sub">AI Face Recognition · Cloud Sync</p>
+            <p class="sub">AI Face & Emotion Recognition · Cloud Sync</p>
             <form id="loginForm" autocomplete="off">
                 <input type="text" id="loginUsername" placeholder="Username" autocomplete="off" />
                 <input type="password" id="loginPassword" placeholder="Password" />
@@ -912,7 +939,7 @@
             <div class="logo"><i data-lucide="brain" style="width:22px;height:22px;"></i></div>
             <div>
                 <h1>SmartClass Pro</h1>
-                <span>AI Face Recognition · Cloud Sync</span>
+                <span>Face & Emotion AI · Cloud Sync</span>
             </div>
         </div>
         <div class="live-clock">
@@ -1027,6 +1054,17 @@
         let audioCtx = null;
         const DETECTION_INTERVAL = 250;
         const INPUT_SIZE = 320;
+
+        // ----- EMOTION MAP -----
+        const emotionEmojiMap = {
+            happy: '😊',
+            sad: '😢',
+            angry: '😠',
+            surprised: '😲',
+            fearful: '😨',
+            disgusted: '🤢',
+            neutral: '😐'
+        };
 
         // ================================================================
         //  3.  HELPERS
@@ -1195,14 +1233,15 @@
         }
 
         // ================================================================
-        //  5.  FACE RECOGNITION MODELS & MATCHER
+        //  5.  FACE RECOGNITION MODELS & MATCHER (with Expression)
         // ================================================================
         async function loadFaceModels() {
             const url = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
             await Promise.all([
                 faceapi.nets.ssdMobilenetv1.loadFromUri(url),
                 faceapi.nets.faceLandmark68Net.loadFromUri(url),
-                faceapi.nets.faceRecognitionNet.loadFromUri(url)
+                faceapi.nets.faceRecognitionNet.loadFromUri(url),
+                faceapi.nets.faceExpressionNet.loadFromUri(url)  // <--- TAMBAH INI
             ]);
             modelsLoaded = true;
             buildMatcher();
@@ -1216,14 +1255,15 @@
                 }
             }
             if (labeled.length) {
-                faceMatcher = new faceapi.FaceMatcher(labeled, 0.55);
+                // Threshold dinaikkan ke 0.6 untuk lebih toleran
+                faceMatcher = new faceapi.FaceMatcher(labeled, 0.6);
             } else {
                 faceMatcher = null;
             }
         }
 
         // ================================================================
-        //  6.  CAMERA — SECURITY
+        //  6.  CAMERA — SECURITY (with Emotion)
         // ================================================================
         async function startSecurityCamera() {
             if (securityStream) stopSecurityCamera();
@@ -1266,21 +1306,49 @@
             if (!video || !video.videoWidth || !canvas) return;
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
+
+            // Detection with expressions
             const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 }))
-                .withFaceLandmarks().withFaceDescriptors();
+                .withFaceLandmarks()
+                .withFaceDescriptors()
+                .withFaceExpressions();  // <--- TAMBAH INI
+
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
             let recognized = [],
                 stranger = false;
+            let dominantEmotion = 'neutral';
+            let dominantScore = 0;
+
             for (const d of detections) {
+                // Extract emotion
+                const expressions = d.expressions;
+                let localDominant = 'neutral';
+                let localScore = 0;
+                for (const [emotion, score] of Object.entries(expressions)) {
+                    if (score > localScore) {
+                        localScore = score;
+                        localDominant = emotion;
+                    }
+                }
+                // If this face has higher score, update global dominant (for display)
+                if (localScore > dominantScore) {
+                    dominantScore = localScore;
+                    dominantEmotion = localDominant;
+                }
+
+                // Recognition
                 let best = null;
                 if (faceMatcher) {
                     const result = faceMatcher.findBestMatch(d.descriptor);
                     if (result.label !== 'unknown') best = registeredUsers.find(u => u.id === result.label);
                 }
+
                 const box = d.detection.box;
                 ctx.beginPath();
                 ctx.rect(box.x, box.y, box.width, box.height);
+
                 if (best) {
                     ctx.strokeStyle = '#10b981';
                     ctx.lineWidth = 3;
@@ -1288,6 +1356,11 @@
                     ctx.fillStyle = '#10b981';
                     ctx.font = 'bold 14px system-ui';
                     ctx.fillText(best.name, box.x, box.y - 5);
+                    // Tulis emosi di atas nama
+                    ctx.font = '12px system-ui';
+                    ctx.fillStyle = '#fbbf24';
+                    const emoji = emotionEmojiMap[localDominant] || '😐';
+                    ctx.fillText(`${emoji} ${localDominant} (${(localScore * 100).toFixed(1)}%)`, box.x, box.y - 22);
                     recognized.push(best.name);
                     await autoMarkAttendance(best);
                 } else {
@@ -1297,14 +1370,36 @@
                     ctx.fillStyle = '#ef4444';
                     ctx.font = 'bold 14px system-ui';
                     ctx.fillText('⚠️ STRANGER', box.x, box.y - 5);
+                    // Emosi stranger pun dipaparkan
+                    ctx.font = '12px system-ui';
+                    ctx.fillStyle = '#fbbf24';
+                    const emoji = emotionEmojiMap[localDominant] || '😐';
+                    ctx.fillText(`${emoji} ${localDominant} (${(localScore * 100).toFixed(1)}%)`, box.x, box.y - 22);
                     stranger = true;
                 }
             }
+
+            // Update detection counts
             const detectEl = document.getElementById('detectCount');
             if (detectEl) detectEl.innerHTML = detections.length ? `👤 ${detections.length} face(s)` : '👤 No face';
             const recogEl = document.getElementById('recognizedNames');
             if (recogEl) recogEl.innerHTML = recognized.length ? `✅ Recognized: ${recognized.join(', ')}` :
             '✅ Waiting...';
+
+            // Update emotion display (global)
+            const emotionDisplay = document.getElementById('emotionDisplay');
+            if (emotionDisplay && dominantScore > 0) {
+                const emoji = emotionEmojiMap[dominantEmotion] || '😐';
+                emotionDisplay.innerHTML = `
+                    <span class="emotion-emoji">${emoji}</span>
+                    <span class="emotion-label">${dominantEmotion.charAt(0).toUpperCase() + dominantEmotion.slice(1)}</span>
+                    <span class="emotion-score">(${(dominantScore * 100).toFixed(1)}%)</span>
+                `;
+            } else if (emotionDisplay) {
+                emotionDisplay.innerHTML = `<span class="emotion-label">😐 No face</span>`;
+            }
+
+            // Stranger alert
             if (stranger && Date.now() - lastStrangerAlertTime > 8000) {
                 lastStrangerAlertTime = Date.now();
                 const img = await captureImageFromVideo(video);
@@ -1344,7 +1439,10 @@
                     time: getCurrentTime(),
                     date: today,
                     timestamp: Date.now(),
-                    method: 'Face Auto'
+                    method: 'Face Auto',
+                    // Simpan emosi terkini (dari global)
+                    emotion: document.getElementById('emotionDisplay')?.innerText || 'neutral',
+                    emotionScore: 0 // optional
                 });
                 saveLocalData();
                 playBeep();
@@ -1377,7 +1475,7 @@
         }
 
         // ================================================================
-        //  7.  CAMERA — REGISTRATION
+        //  7.  CAMERA — REGISTRATION (unchanged)
         // ================================================================
         function startRegisterCamera() {
             if (registerStream) stopRegisterCamera();
@@ -1520,7 +1618,7 @@
             renderRegisterPage(); }
 
         // ================================================================
-        //  8.  USER MANAGEMENT (Edit / Delete / Bulk)
+        //  8.  USER MANAGEMENT (same as before)
         // ================================================================
         async function editUser(user) {
             const r = await Swal.fire({
@@ -1627,13 +1725,14 @@
             a.click(); };
 
         // ================================================================
-        //  9.  EXPORT CSV
+        //  9.  EXPORT CSV (unchanged)
         // ================================================================
         function exportToCSV() {
-            let csv = "Name,Class,Status,Session,Date,Time\n";
+            let csv = "Name,Class,Status,Session,Date,Time,Emotion\n";
             const filtered = getFilteredAttendance();
             for (const r of filtered) {
-                csv += `"${r.name}","${r.className}","${r.status}","${r.sessionName}","${r.date}","${r.time}"\n`;
+                csv +=
+                    `"${r.name}","${r.className}","${r.status}","${r.sessionName}","${r.date}","${r.time}","${r.emotion || '-'}"\n`;
             }
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
@@ -1646,7 +1745,7 @@
         }
 
         // ================================================================
-        //  10. FILTERS & PAGINATION
+        //  10. FILTERS & PAGINATION (unchanged)
         // ================================================================
         function getFilteredAttendance() {
             let filtered = [...attendanceRecords];
@@ -1675,7 +1774,7 @@
             renderRecordsPage(); };
 
         // ================================================================
-        //  11. ANALYTICS DATA
+        //  11. ANALYTICS DATA (unchanged)
         // ================================================================
         function getWeeklyData() {
             const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
@@ -1702,7 +1801,7 @@
         }
 
         // ================================================================
-        //  12. RENDER FUNCTIONS
+        //  12. RENDER FUNCTIONS (with emotion display in camera)
         // ================================================================
         function updateUI() {
             if (currentPage === 'dashboard') renderDashboard();
@@ -1712,7 +1811,7 @@
             else if (currentPage === 'users') renderUsersPage();
         }
 
-        // ---------- DASHBOARD ----------
+        // ---------- DASHBOARD (unchanged) ----------
         function renderDashboard() {
             const today = getTodayDate();
             const todayAttendance = attendanceRecords.filter(r => r.date === today).length;
@@ -1761,7 +1860,7 @@
                     <div class="table-header"><h3><i data-lucide="clock"></i> Recent Records</h3><span class="table-badge">Last 8 entries</span></div>
                     <div class="table-container"><table class="modern-table"><thead><tr><th>Name</th><th>Class</th><th>Status</th><th>Time</th><th>Date</th></tr></thead><tbody>${recentRows || '<tr><td colspan="5" style="text-align:center;padding:40px;">No records yet</td></tr>'}</tbody></table></div>
                 </div>
-                <div class="info-box"><i data-lucide="cloud"></i><div><strong>☁️ Firebase Cloud Sync</strong> — All data automatically backed up.<br><strong>🔊 Voice Announcement</strong> — System speaks when attendance is recorded.</div></div>
+                <div class="info-box"><i data-lucide="cloud"></i><div><strong>☁️ Firebase Cloud Sync</strong> — All data automatically backed up.<br><strong>🔊 Voice Announcement</strong> — System speaks when attendance is recorded.<br><strong>😊 Emotion Recognition</strong> — Live emotion detection (Happy, Sad, etc.)</div></div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
@@ -1790,7 +1889,7 @@
                 renderDashboard(); };
         }
 
-        // ---------- CAMERA ----------
+        // ---------- CAMERA (with emotion display) ----------
         function renderCameraPage() {
             const html = `
                 <div class="camera-section">
@@ -1798,9 +1897,11 @@
                     <div class="camera-container"><video id="securityVideo" autoplay playsinline></video><canvas id="securityCanvas" class="face-canvas"></canvas><div class="detection-indicator" id="detectCount">👤 Initializing...</div></div>
                     <div class="camera-status" id="securityStatus">🎯 Starting camera...</div>
                     <div class="camera-status" id="recognizedNames">✅ Waiting for face...</div>
+                    <!-- Emotion Display -->
+                    <div class="emotion-display" id="emotionDisplay">😐 No face</div>
                     <button class="btn-primary" id="toggleCamBtn" style="margin-top:10px;"><i data-lucide="power"></i> Toggle Camera</button>
                 </div>
-                <div class="info-box"><i data-lucide="camera"></i><div><strong>🔊 Voice Alert System</strong><br>✓ Green box = Recognized → Voice says name & status<br>✓ Red box = Stranger → Voice announces alert</div></div>
+                <div class="info-box"><i data-lucide="camera"></i><div><strong>🔊 Voice Alert System</strong><br>✓ Green box = Recognized → Voice says name & status<br>✓ Red box = Stranger → Voice announces alert<br>😊 Emotion shown on each face and below</div></div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
@@ -1814,7 +1915,7 @@
             startSecurityCamera();
         }
 
-        // ---------- REGISTER ----------
+        // ---------- REGISTER (unchanged) ----------
         function renderRegisterPage() {
             const html = `
                 <div class="step-indicator"><div class="step active"><div class="step-number">1</div><div class="step-label">Info</div></div><div class="step"><div class="step-number">2</div><div class="step-label">Capture</div></div></div>
@@ -1863,7 +1964,7 @@
             if (back) back.onclick = backToStep1;
         }
 
-        // ---------- RECORDS ----------
+        // ---------- RECORDS (unchanged) ----------
         function renderRecordsPage() {
             let filtered = getFilteredAttendance();
             const paginated = getPaginatedData(filtered);
@@ -1881,7 +1982,7 @@
                 </div>
                 <div class="data-table">
                     <div class="table-header"><h3><i data-lucide="clipboard-list"></i> Attendance Records</h3><span class="table-badge">${totalItems} records</span></div>
-                    <div class="table-container"><table class="modern-table"><thead><tr><th>Name</th><th>Class</th><th>Session</th><th>Status</th><th>Date</th><th>Time</th></tr></thead><tbody>${paginated.map(r => `<tr><td><div class="user-name">${escapeHtml(r.name)}</div></td><td><span class="status-badge">${escapeHtml(r.className)}</span></td><td>${r.sessionName}</td><td><span class="status-badge ${r.status === 'Hadir' ? 'status-hadir' : 'status-lewat'}">${r.status}</span></td><td>${r.date}</td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:40px;">No records found</td></tr>'}</tbody></table></div>
+                    <div class="table-container"><table class="modern-table"><thead><tr><th>Name</th><th>Class</th><th>Session</th><th>Status</th><th>Date</th><th>Time</th><th>Emotion</th></tr></thead><tbody>${paginated.map(r => `<tr><td><div class="user-name">${escapeHtml(r.name)}</div></td><td><span class="status-badge">${escapeHtml(r.className)}</span></td><td>${r.sessionName}</td><td><span class="status-badge ${r.status === 'Hadir' ? 'status-hadir' : 'status-lewat'}">${r.status}</span></td><td>${r.date}</td><td>${r.time}</td><td>${r.emotion || '-'}</td></tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:40px;">No records found</td></tr>'}</tbody></table></div>
                     ${renderPagination(totalItems)}
                 </div>
             `;
@@ -1912,7 +2013,7 @@
             if (eb) eb.onclick = exportToCSV;
         }
 
-        // ---------- USERS ----------
+        // ---------- USERS (unchanged) ----------
         function renderUsersPage() {
             const html = `
                 <div class="data-table">
@@ -1944,7 +2045,6 @@
             document.querySelectorAll('.nav-item').forEach(b => {
                 b.classList.toggle('active', b.dataset.page === page);
             });
-            // Stop cameras when leaving camera/register
             if (page !== 'camera') stopSecurityCamera();
             if (page !== 'register') stopRegisterCamera();
             updateUI();
@@ -1984,23 +2084,19 @@
         //  15. INIT
         // ================================================================
         document.addEventListener('DOMContentLoaded', () => {
-            // Clock
             setInterval(() => {
                 const el = document.getElementById('currentTime');
                 if (el) el.innerText = new Date().toLocaleTimeString('en-GB');
             }, 1000);
 
-            // Login
             document.getElementById('loginBtn').onclick = login;
             document.getElementById('loginPassword').addEventListener('keypress', (e) => { if (e.key === 'Enter') login(); });
 
-            // Nav
             document.querySelectorAll('.nav-item').forEach(b => {
                 b.addEventListener('click', () => navigateTo(b.dataset.page));
             });
             window.navigateTo = navigateTo;
 
-            // Check saved session
             const saved = localStorage.getItem('loggedInUser');
             if (saved) {
                 currentUser = JSON.parse(saved);
