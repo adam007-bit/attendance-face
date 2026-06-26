@@ -1,17 +1,32 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>SmartClass Pro - Beautiful Tables</title>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+    <title>SmartClass Pro – AI Face Recognition</title>
+
+    <!-- Libraries -->
+    <script src="https://unpkg.com/lucide@latest">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.min.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js">
+    </script>
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* ----- RESET & ROOT ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
         :root {
             --primary: #6366f1;
             --primary-light: #818cf8;
@@ -27,151 +42,933 @@
             --border: #e2e8f0;
             --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08);
+            --radius: 24px;
         }
-        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; background: var(--bg); color: var(--text-primary); }
-        
-        .header { background: var(--card-bg); padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 99; box-shadow: var(--shadow); }
-        .header-left { display: flex; align-items: center; gap: 12px; }
-        .logo { width: 44px; height: 44px; background: linear-gradient(135deg, var(--primary), var(--purple)); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; }
-        .header-left h1 { font-size: 1.4rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--purple)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .header-left p { font-size: 0.7rem; color: var(--text-secondary); }
-        .live-clock { background: var(--bg); padding: 8px 16px; border-radius: 40px; font-family: monospace; font-weight: 600; font-size: 0.85rem; color: var(--primary); }
-        
-        .bottom-nav { position: fixed; bottom: 20px; left: 20px; right: 20px; background: var(--card-bg); backdrop-filter: blur(20px); border-radius: 60px; display: flex; justify-content: space-around; padding: 8px 16px; z-index: 100; border: 1px solid var(--border); box-shadow: var(--shadow-lg); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 20px; border-radius: 50px; cursor: pointer; transition: all 0.2s; color: var(--text-secondary); font-size: 0.7rem; font-weight: 500; }
-        .nav-item i { width: 22px; height: 22px; }
-        .nav-item.active { background: linear-gradient(135deg, var(--primary), var(--purple)); color: white; box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
-        
-        .main-content { padding: 20px 16px 100px; max-width: 600px; margin: 0 auto; }
-        
-        .hero-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
-        .hero-card { background: var(--card-bg); border-radius: 20px; padding: 16px 12px; text-align: center; box-shadow: var(--shadow); border: 1px solid var(--border); transition: transform 0.2s; }
-        .hero-card:hover { transform: translateY(-2px); }
-        .hero-card .icon { width: 40px; height: 40px; margin: 0 auto 8px; background: rgba(99,102,241,0.1); border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
-        .hero-card .value { font-size: 24px; font-weight: 700; }
-        .hero-card .label { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
-        
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 24px; }
-        .stat-card { background: var(--card-bg); border-radius: 24px; padding: 18px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); border: 1px solid var(--border); transition: transform 0.2s; cursor: pointer; }
-        .stat-card:active { transform: scale(0.98); }
-        .stat-info h4 { font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 6px; }
-        .stat-number { font-size: 1.8rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--purple)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .stat-icon { width: 48px; height: 48px; background: rgba(99,102,241,0.1); border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
-        
-        .chart-card { background: var(--card-bg); border-radius: 24px; padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); }
-        .chart-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-        canvas { max-height: 200px; width: 100% !important; }
-        
-        .data-table { background: var(--card-bg); border-radius: 24px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; }
-        .table-header { padding: 18px 20px 12px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-        .table-header h3 { font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-        .table-header h3 i { color: var(--primary); width: 18px; height: 18px; }
-        .table-badge { background: rgba(99,102,241,0.1); color: var(--primary); padding: 4px 10px; border-radius: 30px; font-size: 0.7rem; font-weight: 500; }
-        .table-container { overflow-x: auto; padding: 0; }
-        .modern-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        .modern-table th { text-align: left; padding: 14px 16px; background: var(--bg); color: var(--text-secondary); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
-        .modern-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); color: var(--text-primary); vertical-align: middle; }
-        .modern-table tr:last-child td { border-bottom: none; }
-        .modern-table tr:hover td { background: rgba(99,102,241,0.03); }
-        
-        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 30px; font-size: 0.7rem; font-weight: 600; }
-        .status-hadir { background: rgba(16,185,129,0.12); color: #10b981; }
-        .status-lewat { background: rgba(245,158,11,0.12); color: #f59e0b; }
-        .status-teacher { background: rgba(99,102,241,0.12); color: #6366f1; }
-        .status-student { background: rgba(139,92,246,0.12); color: #8b5cf6; }
-        
-        .user-avatar-sm { width: 32px; height: 32px; border-radius: 32px; object-fit: cover; background: var(--bg); border: 2px solid var(--primary); }
-        .user-cell { display: flex; align-items: center; gap: 12px; }
-        .user-name { font-weight: 600; }
-        .user-role { font-size: 0.7rem; color: var(--text-secondary); }
-        
-        .action-btns { display: flex; gap: 6px; }
-        .action-btn { padding: 6px; border-radius: 30px; background: none; border: none; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; }
-        .action-btn:hover { background: var(--bg); }
-        .action-edit { color: var(--primary); }
-        .action-delete { color: var(--danger); }
-        
-        .alert-card { background: linear-gradient(135deg, #fff5f5 0%, #fff 100%); border-left: 4px solid var(--danger); padding: 14px 16px; margin-bottom: 12px; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; transition: transform 0.2s; }
-        .alert-card:hover { transform: translateX(4px); }
-        .alert-info { display: flex; align-items: center; gap: 12px; }
-        .alert-icon { width: 40px; height: 40px; background: rgba(239,68,68,0.1); border-radius: 40px; display: flex; align-items: center; justify-content: center; color: var(--danger); }
-        .alert-details { display: flex; flex-direction: column; }
-        .alert-time { font-size: 0.7rem; color: var(--text-secondary); }
-        
-        .class-selector { margin-bottom: 16px; }
-        .class-selector select { width: 100%; padding: 12px 16px; border-radius: 60px; border: 1px solid var(--border); background: var(--card-bg); font-size: 0.85rem; font-weight: 500; color: var(--text-primary); cursor: pointer; }
-        
-        .info-box { background: rgba(99,102,241,0.06); border-radius: 20px; padding: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-size: 0.8rem; border: 1px solid rgba(99,102,241,0.1); }
-        
-        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(20px); z-index: 10000; display: flex; align-items: center; justify-content: center; }
-        .login-card { background: var(--card-bg); border-radius: 56px; padding: 40px; width: 90%; max-width: 380px; text-align: center; border: 1px solid var(--border); }
-        .login-card input { width: 100%; padding: 16px 20px; margin: 12px 0; border-radius: 60px; border: 1px solid var(--border); background: var(--card-bg); font-size: 1rem; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--purple)); color: white; padding: 14px 20px; border-radius: 60px; font-weight: 600; border: none; cursor: pointer; width: 100%; transition: all 0.2s; }
-        .btn-primary:active { transform: scale(0.98); }
-        .btn-small { padding: 8px 16px; font-size: 0.75rem; width: auto; border-radius: 30px; background: var(--primary); color: white; border: none; cursor: pointer; }
-        
-        .search-bar { display: flex; gap: 8px; margin-bottom: 16px; }
-        .search-bar input { flex: 1; padding: 12px 16px; border-radius: 60px; border: 1px solid var(--border); background: var(--card-bg); font-size: 0.8rem; }
-        .date-filter { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-        .date-filter input { flex: 1; padding: 10px 16px; border-radius: 60px; border: 1px solid var(--border); background: var(--card-bg); }
-        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 20px; padding-bottom: 16px; }
-        .page-btn { padding: 6px 12px; border-radius: 30px; border: 1px solid var(--border); background: var(--card-bg); cursor: pointer; font-size: 0.75rem; transition: all 0.2s; }
-        .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        
-        .select-all { padding: 12px 16px; background: var(--bg); display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
-        .user-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
-        .bulk-delete-bar { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--danger); color: white; padding: 12px 24px; border-radius: 60px; display: flex; gap: 16px; z-index: 200; box-shadow: var(--shadow-lg); }
-        
-        .camera-section { background: var(--card-bg); border-radius: 24px; padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); }
-        .camera-container { position: relative; background: #000; border-radius: 20px; overflow: hidden; aspect-ratio: 4/3; }
-        #securityVideo, #registerVideo { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        .face-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; background: transparent; }
-        .detection-indicator { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 4px 10px; border-radius: 20px; font-size: 10px; color: white; z-index: 10; }
-        .camera-status { text-align: center; margin-top: 12px; font-size: 12px; padding: 8px; border-radius: 12px; }
-        .step-indicator { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; }
-        .step { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-        .step-number { width: 36px; height: 36px; border-radius: 36px; background: var(--border); display: flex; align-items: center; justify-content: center; font-weight: bold; }
-        .step.active .step-number { background: linear-gradient(135deg, var(--primary), var(--purple)); color: white; }
-        .register-form input, .register-form select { width: 100%; padding: 14px; border-radius: 60px; border: 1px solid var(--border); margin-bottom: 12px; font-size: 0.9rem; background: var(--card-bg); }
-        .face-preview { width: 32px; height: 32px; border-radius: 32px; object-fit: cover; cursor: pointer; }
-        
-        .voice-indicator { position: fixed; bottom: 100px; right: 20px; background: linear-gradient(135deg, var(--primary), var(--purple)); color: white; padding: 10px 20px; border-radius: 40px; display: flex; align-items: center; gap: 10px; z-index: 200; box-shadow: var(--shadow-lg); font-size: 12px; font-weight: 500; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* ----- LOGIN OVERLAY ----- */
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-overlay.hidden {
+            display: none;
+        }
+        .login-card {
+            background: var(--card-bg);
+            border-radius: 56px;
+            padding: 40px 32px;
+            width: 90%;
+            max-width: 380px;
+            text-align: center;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+        }
+        .login-card .logo-big {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 16px;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+        .login-card h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .login-card p.sub {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 24px;
+        }
+        .login-card input {
+            width: 100%;
+            padding: 16px 20px;
+            margin: 8px 0;
+            border-radius: 60px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            font-size: 1rem;
+            transition: border 0.2s;
+        }
+        .login-card input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: #fff;
+            padding: 14px 20px;
+            border-radius: 60px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.15s, box-shadow 0.2s;
+            font-size: 1rem;
+        }
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+        .btn-primary:hover {
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+        }
+        .btn-small {
+            padding: 8px 18px;
+            font-size: 0.75rem;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.15s;
+        }
+        .btn-small:active {
+            transform: scale(0.95);
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+        .btn-success {
+            background: var(--success);
+            color: #fff;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        /* ----- HEADER ----- */
+        .app-header {
+            background: var(--card-bg);
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            box-shadow: var(--shadow);
+        }
+        .app-header.hidden {
+            display: none;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-left .logo {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .header-left h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.2;
+        }
+        .header-left span {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            display: block;
+        }
+        .live-clock {
+            background: var(--bg);
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-family: monospace;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ----- BOTTOM NAV ----- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 16px;
+            left: 16px;
+            right: 16px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 60px;
+            display: flex;
+            justify-content: space-around;
+            padding: 6px 12px;
+            z-index: 100;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+        }
+        .bottom-nav.hidden {
+            display: none;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 8px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            font-size: 0.6rem;
+            font-weight: 500;
+            border: none;
+            background: none;
+            flex: 1;
+            max-width: 72px;
+        }
+        .nav-item i {
+            width: 22px;
+            height: 22px;
+        }
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        .nav-item:active {
+            transform: scale(0.94);
+        }
+
+        /* ----- MAIN CONTENT ----- */
+        .main-content {
+            padding: 16px 14px 100px;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+        .main-content.hidden {
+            display: none;
+        }
+
+        /* ----- STAT CARDS ----- */
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .hero-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 14px 8px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            transition: transform 0.15s;
+        }
+        .hero-card:active {
+            transform: scale(0.96);
+        }
+        .hero-card .icon {
+            width: 34px;
+            height: 34px;
+            margin: 0 auto 6px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+        .hero-card .value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .hero-card .label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .stat-card:active {
+            transform: scale(0.97);
+        }
+        .stat-card h4 {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        .stat-card .stat-number {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .stat-card .stat-icon {
+            width: 44px;
+            height: 44px;
+            background: rgba(99, 102, 241, 0.08);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+
+        /* ----- CHARTS ----- */
+        .chart-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        .chart-card h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chart-card canvas {
+            max-height: 180px;
+            width: 100% !important;
+        }
+
+        /* ----- TABLES ----- */
+        .data-table {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        .table-header {
+            padding: 14px 16px 10px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .table-header h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .table-header h3 i {
+            color: var(--primary);
+            width: 18px;
+            height: 18px;
+        }
+        .table-badge {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            padding: 3px 10px;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            font-weight: 500;
+        }
+        .table-container {
+            overflow-x: auto;
+            padding: 0 4px 4px 4px;
+        }
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        .modern-table th {
+            text-align: left;
+            padding: 10px 12px;
+            background: var(--bg);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            border-bottom: 1px solid var(--border);
+        }
+        .modern-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+        .modern-table tr:last-child td {
+            border-bottom: none;
+        }
+        .modern-table tr:hover td {
+            background: rgba(99, 102, 241, 0.02);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+        .status-hadir {
+            background: rgba(16, 185, 129, 0.12);
+            color: #10b981;
+        }
+        .status-lewat {
+            background: rgba(245, 158, 11, 0.12);
+            color: #f59e0b;
+        }
+        .status-teacher {
+            background: rgba(99, 102, 241, 0.12);
+            color: #6366f1;
+        }
+        .status-student {
+            background: rgba(139, 92, 246, 0.12);
+            color: #8b5cf6;
+        }
+        .status-stranger {
+            background: rgba(239, 68, 68, 0.12);
+            color: #ef4444;
+        }
+
+        .user-avatar-sm {
+            width: 30px;
+            height: 30px;
+            border-radius: 30px;
+            object-fit: cover;
+            background: var(--bg);
+            border: 2px solid var(--primary);
+        }
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .user-name {
+            font-weight: 600;
+        }
+        .user-role {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 4px;
+        }
+        .action-btn {
+            padding: 4px;
+            border-radius: 30px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+        }
+        .action-btn:hover {
+            background: var(--bg);
+        }
+        .action-edit {
+            color: var(--primary);
+        }
+        .action-delete {
+            color: var(--danger);
+        }
+
+        /* ----- CAMERA ----- */
+        .camera-section {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        .camera-container {
+            position: relative;
+            background: #0a0a0a;
+            border-radius: 20px;
+            overflow: hidden;
+            aspect-ratio: 4/3;
+        }
+        #securityVideo,
+        #registerVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+        .face-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: transparent;
+        }
+        .detection-indicator {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            color: #fff;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .camera-status {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 12px;
+            padding: 6px;
+            border-radius: 12px;
+            background: var(--bg);
+        }
+        .camera-status.status-active {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--success);
+        }
+        .camera-selector {
+            margin-bottom: 12px;
+        }
+        .camera-selector select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 60px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        /* ----- REGISTER ----- */
+        .register-form input,
+        .register-form select {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 60px;
+            border: 1px solid var(--border);
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            background: var(--card-bg);
+            transition: border 0.2s;
+        }
+        .register-form input:focus,
+        .register-form select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 16px;
+        }
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 32px;
+            background: var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            transition: 0.2s;
+        }
+        .step.active .step-number {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: #fff;
+        }
+        .step.completed .step-number {
+            background: var(--success);
+            color: #fff;
+        }
+        .step-label {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+        }
+
+        .face-preview {
+            width: 32px;
+            height: 32px;
+            border-radius: 32px;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid var(--border);
+        }
+
+        /* ----- ALERTS ----- */
+        .alert-card {
+            background: linear-gradient(135deg, #fff5f5, #fff);
+            border-left: 4px solid var(--danger);
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            transition: transform 0.15s;
+        }
+        .alert-card:active {
+            transform: scale(0.98);
+        }
+        .alert-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .alert-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--danger);
+            flex-shrink: 0;
+        }
+        .alert-details {
+            display: flex;
+            flex-direction: column;
+        }
+        .alert-details strong {
+            font-size: 0.85rem;
+        }
+        .alert-time {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+        }
+
+        .info-box {
+            background: rgba(99, 102, 241, 0.06);
+            border-radius: 20px;
+            padding: 14px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+        }
+
+        /* ----- FILTERS ----- */
+        .class-selector {
+            margin-bottom: 14px;
+        }
+        .class-selector select {
+            width: 100%;
+            padding: 10px 16px;
+            border-radius: 60px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        .search-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .search-bar input {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 60px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            font-size: 0.8rem;
+        }
+        .date-filter {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .date-filter input {
+            flex: 1;
+            padding: 8px 14px;
+            border-radius: 60px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            font-size: 0.75rem;
+            min-width: 100px;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            padding: 12px 0;
+        }
+        .page-btn {
+            padding: 4px 12px;
+            border-radius: 30px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: 0.15s;
+        }
+        .page-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        .page-btn:active {
+            transform: scale(0.93);
+        }
+
+        .select-all {
+            padding: 8px 16px;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8rem;
+        }
+        .user-checkbox {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+        .bulk-delete-bar {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--danger);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 60px;
+            display: flex;
+            gap: 14px;
+            z-index: 200;
+            box-shadow: var(--shadow-lg);
+            align-items: center;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .bulk-delete-bar.hidden {
+            display: none;
+        }
+
+        .voice-indicator {
+            position: fixed;
+            bottom: 100px;
+            right: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 200;
+            box-shadow: var(--shadow-lg);
+            font-size: 11px;
+            font-weight: 500;
+            transition: opacity 0.3s;
+        }
+        .voice-indicator.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* ----- RESPONSIVE TWEAKS ----- */
+        @media (max-width: 480px) {
+            .hero-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .header-left h1 {
+                font-size: 0.9rem;
+            }
+            .live-clock {
+                font-size: 0.7rem;
+                padding: 4px 10px;
+            }
+            .nav-item {
+                padding: 6px 8px;
+                font-size: 0.5rem;
+                max-width: 56px;
+            }
+            .nav-item i {
+                width: 18px;
+                height: 18px;
+            }
+        }
+        @media (max-width: 400px) {
+            .hero-stats {
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+            .hero-card {
+                padding: 10px 4px;
+            }
+            .hero-card .value {
+                font-size: 16px;
+            }
+            .stat-card .stat-number {
+                font-size: 1.2rem;
+            }
+        }
     </style>
 </head>
 <body>
+
+    <!-- ========== LOGIN OVERLAY ========== -->
     <div class="login-overlay" id="loginOverlay">
         <div class="login-card">
-            <div class="logo" style="margin: 0 auto 20px; width: 70px; height: 70px;"><i data-lucide="brain" style="width: 36px; height: 36px;"></i></div>
+            <div class="logo-big"><i data-lucide="brain" style="width:36px;height:36px;"></i></div>
             <h2>SmartClass Pro</h2>
-            <p style="margin-bottom: 24px;">Beautiful Tables • Firebase Cloud</p>
-            <form id="loginForm">
-                <input type="text" id="loginUsername" placeholder="Username" autocomplete="off">
-                <input type="password" id="loginPassword" placeholder="Password">
+            <p class="sub">AI Face Recognition · Cloud Sync</p>
+            <form id="loginForm" autocomplete="off">
+                <input type="text" id="loginUsername" placeholder="Username" autocomplete="off" />
+                <input type="password" id="loginPassword" placeholder="Password" />
                 <button type="button" class="btn-primary" id="loginBtn">Login</button>
             </form>
-            <p style="margin-top: 15px; font-size: 12px;">Demo: admin / admin123</p>
+            <p style="margin-top:14px;font-size:11px;color:var(--text-secondary);">Demo: admin / admin123</p>
         </div>
     </div>
 
-    <div class="header" id="mainHeader" style="display: none;">
-        <div class="header-left"><div class="logo"><i data-lucide="brain"></i></div><div><h1>SmartClass Pro</h1><p>Beautiful Tables • Cloud Sync</p></div></div>
-        <div class="live-clock"><span id="currentTime">--:--:--</span></div>
+    <!-- ========== HEADER ========== -->
+    <header class="app-header hidden" id="appHeader">
+        <div class="header-left">
+            <div class="logo"><i data-lucide="brain" style="width:22px;height:22px;"></i></div>
+            <div>
+                <h1>SmartClass Pro</h1>
+                <span>AI Face Recognition · Cloud Sync</span>
+            </div>
+        </div>
+        <div class="live-clock">
+            <i data-lucide="clock" style="width:14px;height:14px;"></i>
+            <span id="currentTime">--:--:--</span>
+        </div>
+    </header>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content hidden" id="mainContent">
+        <!-- Rendered dynamically -->
+    </main>
+
+    <!-- ========== BOTTOM NAV ========== -->
+    <nav class="bottom-nav hidden" id="bottomNav">
+        <button class="nav-item active" data-page="dashboard">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Home</span>
+        </button>
+        <button class="nav-item" data-page="camera">
+            <i data-lucide="camera"></i>
+            <span>Camera</span>
+        </button>
+        <button class="nav-item" data-page="register">
+            <i data-lucide="user-plus"></i>
+            <span>Register</span>
+        </button>
+        <button class="nav-item" data-page="records">
+            <i data-lucide="clipboard-list"></i>
+            <span>Records</span>
+        </button>
+        <button class="nav-item" data-page="users">
+            <i data-lucide="users"></i>
+            <span>Users</span>
+        </button>
+    </nav>
+
+    <!-- ========== FLOATING ELEMENTS ========== -->
+    <div class="voice-indicator hidden" id="voiceIndicator">
+        <i data-lucide="volume-2" style="width:16px;height:16px;"></i>
+        <span id="voiceText">Speaking...</span>
     </div>
 
-    <div class="main-content" id="mainContent" style="display: none;"></div>
-    <div class="bottom-nav" id="bottomNav" style="display: none;">
-        <div class="nav-item active" data-page="dashboard"><i data-lucide="layout-dashboard"></i><span>Home</span></div>
-        <div class="nav-item" data-page="security"><i data-lucide="camera"></i><span>Camera</span></div>
-        <div class="nav-item" data-page="register"><i数据-lucide="user-plus"></i><span>Register</span></div>
-        <div class="nav-item" data-page="records"><i data-lucide="clipboard-list"></i><span>Records</span></div>
-        <div class="nav-item" data-page="users"><i data-lucide="users"></i><span>Users</span></div>
+    <div class="bulk-delete-bar hidden" id="bulkDeleteBar">
+        <span id="selectedCount">0 selected</span>
+        <button class="btn-small btn-danger" id="confirmBulkDelete">Delete</button>
+        <button class="btn-small btn-outline" id="cancelBulkDelete" style="background:rgba(255,255,255,0.2);color:#fff;border-color:rgba(255,255,255,0.3);">Cancel</button>
     </div>
 
-    <div id="voiceIndicator" class="voice-indicator" style="display: none;"><i data-lucide="volume-2"></i><span id="voiceText">Speaking...</span></div>
-    <div id="bulkDeleteBar" class="bulk-delete-bar" style="display: none;"><span id="selectedCount">0 selected</span><button class="btn-small" id="confirmBulkDelete">Delete Selected</button><button class="btn-small" id="cancelBulkDelete">Cancel</button></div>
-
+    <!-- ================================================================== -->
+    <!-- ========================== JAVASCRIPT ============================= -->
+    <!-- ================================================================== -->
     <script>
-        // Firebase Config
+        // ================================================================
+        //  1.  FIREBASE CONFIG
+        // ================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyBZYM0Fe06bb_Q67U6Pn42RSoZB-mjo3io",
             authDomain: "secuirityschool.firebaseapp.com",
@@ -182,8 +979,103 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        
-        // Voice Functions
+
+        // ================================================================
+        //  2.  STATE
+        // ================================================================
+        let currentUser = null;
+        const validUsers = [{ username: "admin", password: "admin123", role: "admin", name: "Admin" }];
+
+        let registeredUsers = [];
+        let attendanceRecords = [];
+        let strangerAlerts = [];
+
+        let selectedClass = "Semua Kelas";
+        const availableClasses = ["5A", "5B", "5C", "4A", "4B", "4C", "3A", "3B", "2A", "2B", "1A", "1B"];
+
+        let currentPage = 'dashboard';
+        let currentPageNum = 1;
+        const itemsPerPage = 8;
+        let searchQuery = "";
+        let startDate = "";
+        let endDate = "";
+        let selectedUsers = new Set();
+
+        // Charts
+        let weeklyChart = null,
+            monthlyChart = null,
+            classChart = null;
+
+        // Camera & Face
+        let modelsLoaded = false;
+        let faceMatcher = null;
+        let securityStream = null,
+            registerStream = null;
+        let securityInterval = null,
+            registerInterval = null;
+        let isSecurityActive = false;
+        let currentCameraId = 'user';
+        let registerFaceDetected = false;
+        let registerDescriptor = null;
+        let capturedFaceImage = null;
+        let pendingRegistration = null;
+        let registerStep = 1;
+        let isCountingDown = false;
+        let countdown = 3;
+        let lastStrangerAlertTime = 0;
+        let lastAttendanceTime = {};
+        let audioCtx = null;
+        const DETECTION_INTERVAL = 250;
+        const INPUT_SIZE = 320;
+
+        // ================================================================
+        //  3.  HELPERS
+        // ================================================================
+        function getTodayDate() { return new Date().toLocaleDateString('en-CA'); }
+
+        function getCurrentTime() { return new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit',
+                second: '2-digit' }); }
+
+        function getCurrentSession() { return new Date().getHours() < 13 ? "pagi" : "petang"; }
+
+        function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : m ===
+                '>' ? '&gt;' : m); }
+
+        function playBeep() {
+            try {
+                if (!audioCtx) audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+                const o = audioCtx.createOscillator(),
+                    g = audioCtx.createGain();
+                o.connect(g);
+                g.connect(audioCtx.destination);
+                o.frequency.value = 880;
+                g.gain.value = 0.15;
+                o.start();
+                g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
+                setTimeout(() => o.stop(), 200);
+            } catch (_) {}
+        }
+
+        function playAlertBeep() {
+            try {
+                if (!audioCtx) audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        const o = audioCtx.createOscillator(),
+                            g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.frequency.value = 880;
+                        g.gain.value = 0.25;
+                        o.start();
+                        g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.15);
+                        setTimeout(() => o.stop(), 150);
+                    }, i * 200);
+                }
+            } catch (_) {}
+            if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+        }
+
         function speakText(text) {
             if (!text) return;
             const utterance = new SpeechSynthesisUtterance(text);
@@ -191,129 +1083,195 @@
             utterance.rate = 0.9;
             utterance.pitch = 1.1;
             const indicator = document.getElementById('voiceIndicator');
-            const voiceTextSpan = document.getElementById('voiceText');
-            if (indicator && voiceTextSpan) {
-                voiceTextSpan.innerText = text.length > 30 ? text.substring(0, 30) + '...' : text;
-                indicator.style.display = 'flex';
-                setTimeout(() => { if (indicator) indicator.style.display = 'none'; }, 2000);
+            const textSpan = document.getElementById('voiceText');
+            if (indicator && textSpan) {
+                textSpan.innerText = text.length > 30 ? text.substring(0, 30) + '...' : text;
+                indicator.classList.remove('hidden');
+                setTimeout(() => indicator.classList.add('hidden'), 2500);
             }
             window.speechSynthesis.cancel();
             window.speechSynthesis.speak(utterance);
         }
-        function speakAttendance(name, status) { speakText(`${name} is ${status === 'Hadir' ? 'present' : 'late'}`); }
-        function speakStrangerAlert() { speakText(`Warning! Stranger detected in classroom.`); }
-        function speakRegistrationSuccess(name) { speakText(`${name} registration successful.`); }
-        
-        // Data Variables
-        let currentUser = null;
-        const validUsers = [{ username: "admin", password: "admin123", role: "admin", name: "Admin" }];
-        let registeredUsers = [], attendanceRecords = [], strangerAlerts = [];
-        let selectedClass = "Semua Kelas";
-        let availableClasses = ["5A","5B","5C","4A","4B","4C","3A","3B","2A","2B","1A","1B"];
-        let currentPage = 'dashboard';
-        let attendanceChart = null, weeklyChart = null, classChart = null;
-        let registerStep = 1, pendingRegistration = null;
-        let currentPageNum = 1, itemsPerPage = 8, searchQuery = "", startDate = "", endDate = "";
-        let selectedUsers = new Set();
-        
-        // Camera
-        let securityStream = null, registerStream = null, securityInterval = null, isSecurityActive = false, currentCameraId = 'user';
-        let modelsLoaded = false, faceMatcher = null;
-        let audioCtx = null, lastStrangerAlertTime = 0, lastAttendanceTime = {};
-        let registerFaceDetected = false, registerDescriptor = null, registerInterval = null;
-        let captureTimer = null, countdown = 3, isCountingDown = false, capturedFaceImage = null;
-        const DETECTION_INTERVAL = 200, INPUT_SIZE = 320;
-        
-        // Helper Functions
-        function loadLocalData() {
-            const savedUsers = localStorage.getItem('smart_users'); if (savedUsers) registeredUsers = JSON.parse(savedUsers);
-            const savedAttendance = localStorage.getItem('smart_attendance'); if (savedAttendance) attendanceRecords = JSON.parse(savedAttendance);
-            const savedAlerts = localStorage.getItem('smart_strangers'); if (savedAlerts) strangerAlerts = JSON.parse(savedAlerts);
-            const savedClass = localStorage.getItem('smart_class'); if (savedClass) selectedClass = savedClass;
-            const savedDescriptors = localStorage.getItem('smart_descriptors');
-            if (savedDescriptors) { const desc = JSON.parse(savedDescriptors); registeredUsers.forEach(u => { if (desc[u.id]) u.descriptor = desc[u.id]; }); }
+
+        function speakAttendance(name, status) {
+            speakText(`${name} is ${status === 'Hadir' ? 'present' : 'late'}`);
         }
+
+        function speakStrangerAlert() { speakText('Warning! Stranger detected in classroom.'); }
+
+        function speakRegistrationSuccess(name) { speakText(`${name} registration successful.`); }
+
+        async function showSuccess(title, msg) {
+            await Swal.fire({ title, text: msg, icon: 'success', confirmButtonColor: '#6366f1', borderRadius: '24px' });
+        }
+
+        async function showError(title, msg) {
+            await Swal.fire({ title, text: msg, icon: 'error', confirmButtonColor: '#6366f1', borderRadius: '24px' });
+        }
+
+        function getUserById(id) { return registeredUsers.find(u => u.id === id); }
+
+        // ================================================================
+        //  4.  LOCAL STORAGE & FIREBASE SYNC
+        // ================================================================
+        function loadLocalData() {
+            const u = localStorage.getItem('smart_users');
+            if (u) registeredUsers = JSON.parse(u);
+            const a = localStorage.getItem('smart_attendance');
+            if (a) attendanceRecords = JSON.parse(a);
+            const s = localStorage.getItem('smart_strangers');
+            if (s) strangerAlerts = JSON.parse(s);
+            const c = localStorage.getItem('smart_class');
+            if (c) selectedClass = c;
+            const desc = localStorage.getItem('smart_descriptors');
+            if (desc) {
+                const d = JSON.parse(desc);
+                registeredUsers.forEach(user => { if (d[user.id]) user.descriptor = d[user.id]; });
+            }
+        }
+
         function saveLocalData() {
-            localStorage.setItem('smart_users', JSON.stringify(registeredUsers.map(u => ({ id: u.id, name: u.name, role: u.role, className: u.className, faceImage: u.faceImage, registeredAt: u.registeredAt }))));
+            localStorage.setItem('smart_users', JSON.stringify(registeredUsers.map(u => ({
+                id: u.id,
+                name: u.name,
+                role: u.role,
+                className: u.className,
+                faceImage: u.faceImage,
+                registeredAt: u.registeredAt
+            }))));
             localStorage.setItem('smart_attendance', JSON.stringify(attendanceRecords));
             localStorage.setItem('smart_strangers', JSON.stringify(strangerAlerts));
-            const desc = {}; registeredUsers.forEach(u => { if (u.descriptor) desc[u.id] = u.descriptor; });
+            const desc = {};
+            registeredUsers.forEach(u => { if (u.descriptor) desc[u.id] = u.descriptor; });
             localStorage.setItem('smart_descriptors', JSON.stringify(desc));
             localStorage.setItem('smart_class', selectedClass);
             syncToFirebase();
         }
+
         async function syncToFirebase() {
             try {
-                for (const user of registeredUsers) { const data = { ...user }; delete data.descriptor; await db.collection('users').doc(user.id).set(data, { merge: true }); }
-                for (const att of attendanceRecords) { await db.collection('attendance').doc(`${att.id}_${att.date}_${att.session}`).set(att, { merge: true }); }
-                for (const alert of strangerAlerts) { await db.collection('strangers').doc(alert.id.toString()).set(alert, { merge: true }); }
-            } catch(e) { console.error(e); }
+                for (const user of registeredUsers) {
+                    const data = { ...user };
+                    delete data.descriptor;
+                    await db.collection('users').doc(user.id).set(data, { merge: true });
+                }
+                for (const att of attendanceRecords) {
+                    await db.collection('attendance').doc(`${att.id}_${att.date}_${att.session}`).set(att, { merge: true });
+                }
+                for (const alert of strangerAlerts) {
+                    await db.collection('strangers').doc(alert.id.toString()).set(alert, { merge: true });
+                }
+            } catch (e) { console.error('Firebase sync error:', e); }
         }
+
         async function loadFromFirebase() {
             try {
-                const usersSnapshot = await db.collection('users').get();
-                usersSnapshot.forEach(doc => { const existing = registeredUsers.find(u => u.id === doc.id); if (!existing) registeredUsers.push(doc.data()); });
-                const attendanceSnapshot = await db.collection('attendance').get();
-                attendanceSnapshot.forEach(doc => { const att = doc.data(); const existing = attendanceRecords.find(a => a.id === att.id && a.date === att.date && a.session === att.session); if (!existing) attendanceRecords.push(att); });
-                const strangersSnapshot = await db.collection('strangers').get();
-                strangersSnapshot.forEach(doc => { const alert = doc.data(); const existing = strangerAlerts.find(s => s.id === alert.id); if (!existing) strangerAlerts.push(alert); });
-                const savedDescriptors = localStorage.getItem('smart_descriptors');
-                if (savedDescriptors) { const desc = JSON.parse(savedDescriptors); registeredUsers.forEach(u => { if (desc[u.id]) u.descriptor = desc[u.id]; }); }
+                const uSnap = await db.collection('users').get();
+                uSnap.forEach(doc => {
+                    const existing = registeredUsers.find(u => u.id === doc.id);
+                    if (!existing) registeredUsers.push(doc.data());
+                });
+                const aSnap = await db.collection('attendance').get();
+                aSnap.forEach(doc => {
+                    const att = doc.data();
+                    const existing = attendanceRecords.find(a => a.id === att.id && a.date === att.date && a
+                    .session === att.session);
+                    if (!existing) attendanceRecords.push(att);
+                });
+                const sSnap = await db.collection('strangers').get();
+                sSnap.forEach(doc => {
+                    const alert = doc.data();
+                    const existing = strangerAlerts.find(s => s.id === alert.id);
+                    if (!existing) strangerAlerts.push(alert);
+                });
+                const desc = localStorage.getItem('smart_descriptors');
+                if (desc) {
+                    const d = JSON.parse(desc);
+                    registeredUsers.forEach(u => { if (d[u.id]) u.descriptor = d[u.id]; });
+                }
                 saveLocalData();
-            } catch(e) { console.error(e); loadLocalData(); }
+            } catch (e) { console.error('Firebase load error:', e);
+                loadLocalData(); }
         }
-        
-        function getTodayDate() { return new Date().toLocaleDateString('en-CA'); }
-        function getCurrentTime() { return new Date().toLocaleTimeString('ms-MY', { hour:'2-digit', minute:'2-digit', second:'2-digit' }); }
-        function getCurrentSession() { return new Date().getHours() < 13 ? "pagi" : "petang"; }
-        function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m); }
-        async function showSuccess(t, m) { await Swal.fire({ title: t, text: m, icon: 'success', confirmButtonColor: '#6366f1', borderRadius: '24px' }); }
-        async function showError(t, m) { await Swal.fire({ title: t, text: m, icon: 'error', confirmButtonColor: '#6366f1', borderRadius: '24px' }); }
-        function playBeep() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value = 880; g.gain.value = 0.2; o.start(); g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2); setTimeout(() => o.stop(), 200); } catch(e) {} }
-        function playAlertBeep() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); for (let i = 0; i < 3; i++) { setTimeout(() => { const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value = 880; g.gain.value = 0.3; o.start(); g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.15); setTimeout(() => o.stop(), 150); }, i * 200); } } catch(e) {} if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]); }
-        async function captureImageFromVideo(video) { if (!video || !video.videoWidth) return null; const c = document.createElement('canvas'); c.width = video.videoWidth; c.height = video.videoHeight; c.getContext('2d').drawImage(video, 0, 0); return c.toDataURL('image/jpeg', 0.8); }
-        function updateUI() { if (currentPage === 'dashboard') renderDashboard(); if (currentPage === 'records') renderRecordsPage(); if (currentPage === 'users') renderUsersPage(); }
-        
-        // Face Recognition
+
+        // ================================================================
+        //  5.  FACE RECOGNITION MODELS & MATCHER
+        // ================================================================
         async function loadFaceModels() {
             const url = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
-            await Promise.all([faceapi.nets.ssdMobilenetv1.loadFromUri(url), faceapi.nets.faceLandmark68Net.loadFromUri(url), faceapi.nets.faceRecognitionNet.loadFromUri(url)]);
+            await Promise.all([
+                faceapi.nets.ssdMobilenetv1.loadFromUri(url),
+                faceapi.nets.faceLandmark68Net.loadFromUri(url),
+                faceapi.nets.faceRecognitionNet.loadFromUri(url)
+            ]);
             modelsLoaded = true;
             buildMatcher();
         }
+
         function buildMatcher() {
             const labeled = [];
-            for (const u of registeredUsers) if (u.descriptor) labeled.push(new faceapi.LabeledFaceDescriptors(u.id, [new Float32Array(u.descriptor)]));
-            if (labeled.length) faceMatcher = new faceapi.FaceMatcher(labeled, 0.55);
+            for (const u of registeredUsers) {
+                if (u.descriptor) {
+                    labeled.push(new faceapi.LabeledFaceDescriptors(u.id, [new Float32Array(u.descriptor)]));
+                }
+            }
+            if (labeled.length) {
+                faceMatcher = new faceapi.FaceMatcher(labeled, 0.55);
+            } else {
+                faceMatcher = null;
+            }
         }
-        
+
+        // ================================================================
+        //  6.  CAMERA — SECURITY
+        // ================================================================
         async function startSecurityCamera() {
             if (securityStream) stopSecurityCamera();
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentCameraId, width: { ideal: INPUT_SIZE }, height: { ideal: INPUT_SIZE }, frameRate: { ideal: 30 } } });
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: currentCameraId, width: { ideal: INPUT_SIZE }, height: { ideal: INPUT_SIZE },
+                        frameRate: { ideal: 30 } }
+                });
                 securityStream = stream;
-                const videoEl = document.getElementById('securityVideo');
-                if (videoEl) videoEl.srcObject = stream;
+                const video = document.getElementById('securityVideo');
+                if (video) video.srcObject = stream;
                 isSecurityActive = true;
                 if (!modelsLoaded) await loadFaceModels();
                 if (securityInterval) clearInterval(securityInterval);
                 securityInterval = setInterval(detectFaces, DETECTION_INTERVAL);
-                const statusEl = document.getElementById('securityStatus');
-                if (statusEl) { statusEl.innerHTML = '✅ Camera Active'; statusEl.className = 'camera-status status-active'; }
-            } catch(e) { console.error(e); showError('Camera Error', 'Please allow camera access'); }
+                const status = document.getElementById('securityStatus');
+                if (status) { status.innerHTML = '✅ Camera Active';
+                    status.className = 'camera-status status-active'; }
+            } catch (e) {
+                console.error(e);
+                showError('Camera Error', 'Please allow camera access');
+            }
         }
-        function stopSecurityCamera() { if (securityStream) { securityStream.getTracks().forEach(t => t.stop()); securityStream = null; } if (securityInterval) clearInterval(securityInterval); isSecurityActive = false; }
-        
+
+        function stopSecurityCamera() {
+            if (securityStream) { securityStream.getTracks().forEach(t => t.stop());
+                securityStream = null; }
+            if (securityInterval) { clearInterval(securityInterval);
+                securityInterval = null; }
+            isSecurityActive = false;
+            const status = document.getElementById('securityStatus');
+            if (status) { status.innerHTML = '⏸ Camera Stopped';
+                status.className = 'camera-status'; }
+        }
+
         async function detectFaces() {
             if (!isSecurityActive || !modelsLoaded) return;
             const video = document.getElementById('securityVideo');
             const canvas = document.getElementById('securityCanvas');
             if (!video || !video.videoWidth || !canvas) return;
-            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-            const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 })).withFaceLandmarks().withFaceDescriptors();
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 }))
+                .withFaceLandmarks().withFaceDescriptors();
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            let recognized = [], stranger = false;
+            let recognized = [],
+                stranger = false;
             for (const d of detections) {
                 let best = null;
                 if (faceMatcher) {
@@ -321,108 +1279,212 @@
                     if (result.label !== 'unknown') best = registeredUsers.find(u => u.id === result.label);
                 }
                 const box = d.detection.box;
-                ctx.beginPath(); ctx.rect(box.x, box.y, box.width, box.height);
+                ctx.beginPath();
+                ctx.rect(box.x, box.y, box.width, box.height);
                 if (best) {
-                    ctx.strokeStyle = '#10b981'; ctx.lineWidth = 3; ctx.stroke();
-                    ctx.fillStyle = '#10b981'; ctx.font = 'bold 14px system-ui';
+                    ctx.strokeStyle = '#10b981';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    ctx.fillStyle = '#10b981';
+                    ctx.font = 'bold 14px system-ui';
                     ctx.fillText(best.name, box.x, box.y - 5);
                     recognized.push(best.name);
                     await autoMarkAttendance(best);
                 } else {
-                    ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.stroke();
-                    ctx.fillStyle = '#ef4444'; ctx.font = 'bold 14px system-ui';
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    ctx.fillStyle = '#ef4444';
+                    ctx.font = 'bold 14px system-ui';
                     ctx.fillText('⚠️ STRANGER', box.x, box.y - 5);
                     stranger = true;
                 }
             }
             const detectEl = document.getElementById('detectCount');
             if (detectEl) detectEl.innerHTML = detections.length ? `👤 ${detections.length} face(s)` : '👤 No face';
-            const recognizedEl = document.getElementById('recognizedNames');
-            if (recognizedEl) recognizedEl.innerHTML = recognized.length ? `✅ Recognized: ${recognized.join(', ')}` : '✅ Waiting...';
-            if (stranger && Date.now() - lastStrangerAlertTime > 8000) { lastStrangerAlertTime = Date.now(); const img = await captureImageFromVideo(video); await reportStranger(img); }
+            const recogEl = document.getElementById('recognizedNames');
+            if (recogEl) recogEl.innerHTML = recognized.length ? `✅ Recognized: ${recognized.join(', ')}` :
+            '✅ Waiting...';
+            if (stranger && Date.now() - lastStrangerAlertTime > 8000) {
+                lastStrangerAlertTime = Date.now();
+                const img = await captureImageFromVideo(video);
+                await reportStranger(img);
+            }
         }
-        
+
+        async function captureImageFromVideo(video) {
+            if (!video || !video.videoWidth) return null;
+            const c = document.createElement('canvas');
+            c.width = video.videoWidth;
+            c.height = video.videoHeight;
+            c.getContext('2d').drawImage(video, 0, 0);
+            return c.toDataURL('image/jpeg', 0.8);
+        }
+
         async function autoMarkAttendance(user) {
-            const today = getTodayDate(), session = getCurrentSession(), key = `${user.id}_${today}_${session}`;
+            const today = getTodayDate(),
+                session = getCurrentSession(),
+                key = `${user.id}_${today}_${session}`;
             if (lastAttendanceTime[key] && Date.now() - lastAttendanceTime[key] < 3000) return;
             const already = attendanceRecords.find(r => r.id === user.id && r.date === today && r.session === session);
             if (!already) {
                 lastAttendanceTime[key] = Date.now();
-                const tv = new Date().getHours() * 60 + new Date().getMinutes();
+                const minutes = new Date().getHours() * 60 + new Date().getMinutes();
                 let status = "Hadir";
-                if (session === 'pagi' && tv > 510) status = "Lewat";
-                if (session === 'petang' && tv > 810) status = "Lewat";
-                attendanceRecords.push({ id: user.id, name: user.name, role: user.role, className: user.className, status, session, sessionName: session === 'pagi' ? 'Morning' : 'Afternoon', time: getCurrentTime(), date: today, timestamp: Date.now(), method: 'Face Auto' });
+                if (session === 'pagi' && minutes > 510) status = "Lewat";
+                if (session === 'petang' && minutes > 810) status = "Lewat";
+                attendanceRecords.push({
+                    id: user.id,
+                    name: user.name,
+                    role: user.role,
+                    className: user.className,
+                    status,
+                    session,
+                    sessionName: session === 'pagi' ? 'Morning' : 'Afternoon',
+                    time: getCurrentTime(),
+                    date: today,
+                    timestamp: Date.now(),
+                    method: 'Face Auto'
+                });
                 saveLocalData();
                 playBeep();
                 speakAttendance(user.name, status);
                 updateUI();
             }
         }
-        
+
         async function reportStranger(img) {
-            const alert = { id: Date.now(), className: selectedClass === "Semua Kelas" ? "Unknown" : selectedClass, time: getCurrentTime(), date: getTodayDate(), session: getCurrentSession(), imageData: img };
+            const alert = {
+                id: Date.now(),
+                className: selectedClass === "Semua Kelas" ? "Unknown" : selectedClass,
+                time: getCurrentTime(),
+                date: getTodayDate(),
+                session: getCurrentSession(),
+                imageData: img
+            };
             strangerAlerts.push(alert);
             saveLocalData();
             playAlertBeep();
             speakStrangerAlert();
-            await Swal.fire({ title: '⚠️ SECURITY ALERT!', html: `<img src="${img}" style="width:150px;border-radius:16px;margin:10px 0;"><br><strong>Stranger detected!</strong><br>Class: ${alert.className}<br>Time: ${alert.time}`, icon: 'warning', confirmButtonColor: '#ef4444' });
+            await Swal.fire({
+                title: '⚠️ SECURITY ALERT!',
+                html: `<img src="${img}" style="width:150px;border-radius:16px;margin:10px 0;"><br><strong>Stranger detected!</strong><br>Class: ${alert.className}<br>Time: ${alert.time}`,
+                icon: 'warning',
+                confirmButtonColor: '#ef4444',
+                borderRadius: '24px'
+            });
             updateUI();
         }
-        
-        // Register Functions
+
+        // ================================================================
+        //  7.  CAMERA — REGISTRATION
+        // ================================================================
         function startRegisterCamera() {
             if (registerStream) stopRegisterCamera();
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: INPUT_SIZE }, height: { ideal: INPUT_SIZE } } })
-                .then(s => { registerStream = s; const videoEl = document.getElementById('registerVideo'); if (videoEl) videoEl.srcObject = s; if (registerInterval) clearInterval(registerInterval); registerInterval = setInterval(checkRegisterFace, 150); }).catch(e => console.error(e));
+            navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: { ideal: INPUT_SIZE }, height: { ideal: INPUT_SIZE } }
+                })
+                .then(s => {
+                    registerStream = s;
+                    const video = document.getElementById('registerVideo');
+                    if (video) video.srcObject = s;
+                    if (registerInterval) clearInterval(registerInterval);
+                    registerInterval = setInterval(checkRegisterFace, 150);
+                })
+                .catch(e => console.error(e));
         }
-        function stopRegisterCamera() { if (registerStream) { registerStream.getTracks().forEach(t => t.stop()); registerStream = null; } if (registerInterval) clearInterval(registerInterval); if (captureTimer) clearTimeout(captureTimer); isCountingDown = false; }
-        
+
+        function stopRegisterCamera() {
+            if (registerStream) { registerStream.getTracks().forEach(t => t.stop());
+                registerStream = null; }
+            if (registerInterval) { clearInterval(registerInterval);
+                registerInterval = null; }
+            if (captureTimer) clearTimeout(captureTimer);
+            isCountingDown = false;
+        }
+        let captureTimer = null;
+
         async function checkRegisterFace() {
             const video = document.getElementById('registerVideo');
             const canvas = document.getElementById('registerCanvas');
             if (!video || !video.videoWidth || !canvas || !modelsLoaded) return;
-            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-            const detection = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 })).withFaceLandmarks().withFaceDescriptor();
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const detection = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 }))
+                .withFaceLandmarks().withFaceDescriptor();
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const cx = canvas.width/4, cy = canvas.height/4, w = canvas.width/2, h = canvas.height/2;
-            ctx.beginPath(); ctx.rect(cx, cy, w, h);
+            const cx = canvas.width / 4,
+                cy = canvas.height / 4,
+                w = canvas.width / 2,
+                h = canvas.height / 2;
+            ctx.beginPath();
+            ctx.rect(cx, cy, w, h);
             if (detection) {
-                ctx.strokeStyle = '#10b981'; ctx.lineWidth = 3; ctx.stroke();
-                ctx.fillStyle = '#10b981'; ctx.font = 'bold 14px system-ui';
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.fillStyle = '#10b981';
+                ctx.font = 'bold 14px system-ui';
                 ctx.fillText('✓ Face Detected!', cx, cy - 5);
-                if (!registerFaceDetected) { registerFaceDetected = true; registerDescriptor = Array.from(detection.descriptor); capturedFaceImage = await captureImageFromVideo(video); startCountdown(); }
+                if (!registerFaceDetected) {
+                    registerFaceDetected = true;
+                    registerDescriptor = Array.from(detection.descriptor);
+                    capturedFaceImage = await captureImageFromVideo(video);
+                    startCountdown();
+                }
             } else {
-                ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2; ctx.stroke();
-                ctx.fillStyle = '#f59e0b'; ctx.font = 'bold 14px system-ui';
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.fillStyle = '#f59e0b';
+                ctx.font = 'bold 14px system-ui';
                 ctx.fillText('Place your face here', cx, cy - 5);
                 registerFaceDetected = false;
                 if (captureTimer) clearTimeout(captureTimer);
                 isCountingDown = false;
-                const statusEl = document.getElementById('regCameraStatus');
-                if (statusEl) statusEl.innerHTML = '● Position your face';
+                const status = document.getElementById('regCameraStatus');
+                if (status) status.innerHTML = '● Position your face';
             }
         }
-        
+
         function startCountdown() {
             if (isCountingDown) return;
             isCountingDown = true;
             countdown = 3;
             const showCount = () => {
                 if (!registerFaceDetected) { isCountingDown = false; return; }
-                const statusEl = document.getElementById('regCameraStatus');
-                if (statusEl) statusEl.innerHTML = `🎯 Capturing in ${countdown}...`;
-                if (countdown === 0) { isCountingDown = false; autoRegister(); }
-                else { countdown--; setTimeout(showCount, 1000); }
+                const status = document.getElementById('regCameraStatus');
+                if (status) status.innerHTML = `🎯 Capturing in ${countdown}...`;
+                if (countdown === 0) {
+                    isCountingDown = false;
+                    autoRegister();
+                } else {
+                    countdown--;
+                    setTimeout(showCount, 1000);
+                }
             };
             showCount();
         }
-        
+
         async function autoRegister() {
-            if (!pendingRegistration) { await showError('Error', 'Please fill name and class first'); registerStep = 1; renderRegisterPage(); return; }
-            if (!registerFaceDetected || !registerDescriptor) { await showError('No Face', 'Position your face in the box'); return; }
-            const newUser = { id: Date.now().toString(), ...pendingRegistration, descriptor: registerDescriptor, faceImage: capturedFaceImage, registeredAt: new Date().toISOString() };
+            if (!pendingRegistration) {
+                await showError('Error', 'Please fill name and class first');
+                registerStep = 1;
+                renderRegisterPage();
+                return;
+            }
+            if (!registerFaceDetected || !registerDescriptor) {
+                await showError('No Face', 'Position your face in the box');
+                return;
+            }
+            const newUser = {
+                id: Date.now().toString(),
+                ...pendingRegistration,
+                descriptor: registerDescriptor,
+                faceImage: capturedFaceImage,
+                registeredAt: new Date().toISOString()
+            };
             registeredUsers.push(newUser);
             saveLocalData();
             buildMatcher();
@@ -430,49 +1492,162 @@
             await showSuccess('✅ Registration Successful!', `${newUser.name} - Class ${newUser.className}\nFace saved!`);
             pendingRegistration = null;
             registerStep = 1;
-            if (!availableClasses.includes(newUser.className)) { availableClasses.push(newUser.className); availableClasses.sort(); }
+            if (!availableClasses.includes(newUser.className)) {
+                availableClasses.push(newUser.className);
+                availableClasses.sort();
+            }
             renderRegisterPage();
         }
-        
+
         async function saveNameAndClass() {
             const name = document.getElementById('regName').value.trim();
             const role = document.getElementById('regRole').value;
             let className = document.getElementById('regClass').value;
             if (!name) { await showError('Error', 'Enter name'); return false; }
             if (!className) { await showError('Error', 'Select class'); return false; }
-            if (registeredUsers.some(u => u.name.toLowerCase() === name.toLowerCase())) { await showError('Name Exists', `"${name}" already registered`); return false; }
+            if (registeredUsers.some(u => u.name.toLowerCase() === name.toLowerCase())) {
+                await showError('Name Exists', `"${name}" already registered`);
+                return false;
+            }
             pendingRegistration = { name, role, className };
             registerStep = 2;
             renderRegisterStep2();
             return true;
         }
-        function backToStep1() { registerStep = 1; pendingRegistration = null; renderRegisterPage(); }
-        
-        // Edit/Delete User
+
+        function backToStep1() { registerStep = 1;
+            pendingRegistration = null;
+            renderRegisterPage(); }
+
+        // ================================================================
+        //  8.  USER MANAGEMENT (Edit / Delete / Bulk)
+        // ================================================================
         async function editUser(user) {
-            const r = await Swal.fire({ title: 'Edit User', html: `<input id="n" class="swal2-input" value="${escapeHtml(user.name)}"><select id="r"><option value="student" ${user.role === 'student' ? 'selected' : ''}>Student</option><option value="teacher" ${user.role === 'teacher' ? 'selected' : ''}>Teacher</option></select><input id="c" class="swal2-input" value="${escapeHtml(user.className)}">`, preConfirm: () => ({ name: document.getElementById('n').value, role: document.getElementById('r').value, className: document.getElementById('c').value }) });
-            if (r.value) { user.name = r.value.name; user.role = r.value.role; user.className = r.value.className; saveLocalData(); buildMatcher(); updateUI(); await showSuccess('Updated', 'User info updated'); }
+            const r = await Swal.fire({
+                title: 'Edit User',
+                html: `<input id="n" class="swal2-input" value="${escapeHtml(user.name)}">
+                       <select id="r" class="swal2-input">
+                         <option value="student" ${user.role==='student'?'selected':''}>Student</option>
+                         <option value="teacher" ${user.role==='teacher'?'selected':''}>Teacher</option>
+                       </select>
+                       <input id="c" class="swal2-input" value="${escapeHtml(user.className)}">`,
+                preConfirm: () => ({
+                    name: document.getElementById('n').value,
+                    role: document.getElementById('r').value,
+                    className: document.getElementById('c').value
+                })
+            });
+            if (r.value) {
+                user.name = r.value.name;
+                user.role = r.value.role;
+                user.className = r.value.className;
+                saveLocalData();
+                buildMatcher();
+                updateUI();
+                await showSuccess('Updated', 'User info updated');
+            }
         }
+
         async function deleteSingleUser(user) {
-            const c = await Swal.fire({ title: 'Delete User?', text: `Delete ${user.name}?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Yes' });
-            if (c.isConfirmed) { registeredUsers = registeredUsers.filter(u => u.id !== user.id); selectedUsers.delete(user.id); saveLocalData(); buildMatcher(); updateUI(); await showSuccess('Deleted', 'User removed'); }
+            const c = await Swal.fire({
+                title: 'Delete User?',
+                text: `Delete ${user.name}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Yes'
+            });
+            if (c.isConfirmed) {
+                registeredUsers = registeredUsers.filter(u => u.id !== user.id);
+                selectedUsers.delete(user.id);
+                saveLocalData();
+                buildMatcher();
+                updateUI();
+                await showSuccess('Deleted', 'User removed');
+            }
         }
-        function getUserById(id) { return registeredUsers.find(u => u.id === id); }
-        
-        function toggleSelectUser(userId) { if (selectedUsers.has(userId)) selectedUsers.delete(userId); else selectedUsers.add(userId); updateBulkDeleteBar(); renderUsersPage(); }
-        function selectAllUsers() { if (selectedUsers.size === registeredUsers.length) selectedUsers.clear(); else registeredUsers.forEach(u => selectedUsers.add(u.id)); updateBulkDeleteBar(); renderUsersPage(); }
-        function updateBulkDeleteBar() { const bar = document.getElementById('bulkDeleteBar'), countSpan = document.getElementById('selectedCount'); if (bar && countSpan) { bar.style.display = selectedUsers.size > 0 ? 'flex' : 'none'; countSpan.innerText = `${selectedUsers.size} selected`; } }
-        async function deleteSelectedUsers() { if (selectedUsers.size === 0) return; const result = await Swal.fire({ title: 'Delete Users?', text: `Delete ${selectedUsers.size} user(s)?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Yes' }); if (result.isConfirmed) { registeredUsers = registeredUsers.filter(u => !selectedUsers.has(u.id)); selectedUsers.clear(); saveLocalData(); buildMatcher(); updateBulkDeleteBar(); renderUsersPage(); await showSuccess('Deleted!', `${selectedUsers.size} user(s) deleted`); } }
-        function cancelBulkDelete() { selectedUsers.clear(); updateBulkDeleteBar(); renderUsersPage(); }
-        
+
+        function toggleSelectUser(userId) {
+            if (selectedUsers.has(userId)) selectedUsers.delete(userId);
+            else selectedUsers.add(userId);
+            updateBulkDeleteBar();
+            renderUsersPage();
+        }
+
+        function selectAllUsers() {
+            if (selectedUsers.size === registeredUsers.length) selectedUsers.clear();
+            else registeredUsers.forEach(u => selectedUsers.add(u.id));
+            updateBulkDeleteBar();
+            renderUsersPage();
+        }
+
+        function updateBulkDeleteBar() {
+            const bar = document.getElementById('bulkDeleteBar'),
+                count = document.getElementById('selectedCount');
+            if (bar && count) {
+                bar.classList.toggle('hidden', selectedUsers.size === 0);
+                count.innerText = `${selectedUsers.size} selected`;
+            }
+        }
+
+        async function deleteSelectedUsers() {
+            if (selectedUsers.size === 0) return;
+            const result = await Swal.fire({
+                title: 'Delete Users?',
+                text: `Delete ${selectedUsers.size} user(s)?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Yes'
+            });
+            if (result.isConfirmed) {
+                const ids = new Set(selectedUsers);
+                registeredUsers = registeredUsers.filter(u => !ids.has(u.id));
+                selectedUsers.clear();
+                saveLocalData();
+                buildMatcher();
+                updateBulkDeleteBar();
+                renderUsersPage();
+                await showSuccess('Deleted!', 'User(s) deleted');
+            }
+        }
+
+        function cancelBulkDelete() { selectedUsers.clear();
+            updateBulkDeleteBar();
+            renderUsersPage(); }
+
+        window.editUserById = (id) => { const u = getUserById(id); if (u) editUser(u); };
+        window.deleteUserById = (id) => { const u = getUserById(id); if (u) deleteSingleUser(u); };
+        window.viewFaceImage = (img) => {
+            Swal.fire({ imageUrl: img, imageWidth: 300, confirmButtonColor: '#6366f1', borderRadius: '24px' });
+        };
+        window.downloadImage = (data, id) => { const a = document.createElement('a');
+            a.href = data;
+            a.download = `stranger_${id}.jpg`;
+            a.click(); };
+
+        // ================================================================
+        //  9.  EXPORT CSV
+        // ================================================================
         function exportToCSV() {
             let csv = "Name,Class,Status,Session,Date,Time\n";
             const filtered = getFilteredAttendance();
-            for (const r of filtered) csv += `"${r.name}","${r.className}","${r.status}","${r.sessionName}","${r.date}","${r.time}"\n`;
-            const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `attendance_${getTodayDate()}.csv`; a.click(); URL.revokeObjectURL(url);
+            for (const r of filtered) {
+                csv += `"${r.name}","${r.className}","${r.status}","${r.sessionName}","${r.date}","${r.time}"\n`;
+            }
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `attendance_${getTodayDate()}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
             showSuccess('Export Complete', 'CSV downloaded');
         }
-        
+
+        // ================================================================
+        //  10. FILTERS & PAGINATION
+        // ================================================================
         function getFilteredAttendance() {
             let filtered = [...attendanceRecords];
             if (selectedClass !== "Semua Kelas") filtered = filtered.filter(r => r.className === selectedClass);
@@ -481,29 +1656,63 @@
             if (endDate) filtered = filtered.filter(r => r.date <= endDate);
             return filtered;
         }
-        function getPaginatedData(data) { const start = (currentPageNum - 1) * itemsPerPage; return data.slice(start, start + itemsPerPage); }
-        function renderPagination(totalItems) { const totalPages = Math.ceil(totalItems / itemsPerPage); let html = '<div class="pagination">'; for (let i = 1; i <= Math.min(totalPages, 5); i++) html += `<button class="page-btn ${i === currentPageNum ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`; html += '</div>'; return html; }
-        window.goToPage = (page) => { currentPageNum = page; renderRecordsPage(); };
-        
-        // Analytics Functions
+
+        function getPaginatedData(data) {
+            const start = (currentPageNum - 1) * itemsPerPage;
+            return data.slice(start, start + itemsPerPage);
+        }
+
+        function renderPagination(totalItems) {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            let html = '<div class="pagination">';
+            for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+                html += `<button class="page-btn ${i === currentPageNum ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+            }
+            html += '</div>';
+            return html;
+        }
+        window.goToPage = (page) => { currentPageNum = page;
+            renderRecordsPage(); };
+
+        // ================================================================
+        //  11. ANALYTICS DATA
+        // ================================================================
         function getWeeklyData() {
             const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
             const today = new Date();
-            const values = days.map((_, i) => { const d = new Date(today); d.setDate(today.getDate() - (today.getDay() + 6 - i) % 7); const dateStr = d.toLocaleDateString('en-CA'); return attendanceRecords.filter(r => r.date === dateStr).length; });
+            const values = days.map((_, i) => {
+                const d = new Date(today);
+                d.setDate(today.getDate() - (today.getDay() + 6 - i) % 7);
+                const dateStr = d.toLocaleDateString('en-CA');
+                return attendanceRecords.filter(r => r.date === dateStr).length;
+            });
             return { labels: days, values };
         }
+
         function getMonthlyData() {
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             const values = months.map((_, i) => attendanceRecords.filter(r => new Date(r.date).getMonth() === i).length);
             return { labels: months, values };
         }
+
         function getClassData() {
             const classStats = {};
             availableClasses.forEach(c => { classStats[c] = attendanceRecords.filter(r => r.className === c).length; });
             return { labels: Object.keys(classStats), values: Object.values(classStats) };
         }
-        
-        // ==================== RENDER FUNCTIONS ====================
+
+        // ================================================================
+        //  12. RENDER FUNCTIONS
+        // ================================================================
+        function updateUI() {
+            if (currentPage === 'dashboard') renderDashboard();
+            else if (currentPage === 'camera') renderCameraPage();
+            else if (currentPage === 'register') renderRegisterPage();
+            else if (currentPage === 'records') renderRecordsPage();
+            else if (currentPage === 'users') renderUsersPage();
+        }
+
+        // ---------- DASHBOARD ----------
         function renderDashboard() {
             const today = getTodayDate();
             const todayAttendance = attendanceRecords.filter(r => r.date === today).length;
@@ -512,22 +1721,25 @@
             const present = attendanceRecords.filter(r => r.date === today && r.status === 'Hadir').length;
             const late = attendanceRecords.filter(r => r.date === today && r.status === 'Lewat').length;
             const strangers = strangerAlerts.filter(a => a.date === today).length;
-            const attendanceRate = registeredUsers.length > 0 ? Math.round((todayAttendance / registeredUsers.length) * 100) : 0;
-            
+            const attendanceRate = registeredUsers.length > 0 ? Math.round((todayAttendance / registeredUsers.length) * 100) :
+                0;
+
             const weeklyData = getWeeklyData();
             const monthlyData = getMonthlyData();
             const classData = getClassData();
-            
-            const recentRows = attendanceRecords.filter(r => selectedClass === "Semua Kelas" || r.className === selectedClass).slice(-8).reverse().map(r => `
-                <tr>
-                    <td><div class="user-name">${escapeHtml(r.name)}<div class="user-role">${r.role === 'teacher' ? 'Teacher' : 'Student'}</div></div></td>
-                    <td><span class="status-badge ${r.role === 'teacher' ? 'status-teacher' : 'status-student'}">${r.className}</span></td>
-                    <td><span class="status-badge ${r.status === 'Hadir' ? 'status-hadir' : 'status-lewat'}"><i data-lucide="${r.status === 'Hadir' ? 'check-circle' : 'clock'}" style="width: 12px; height: 12px;"></i> ${r.status}</span></td>
-                    <td>${r.time}</td>
-                    <td>${r.date}</td>
-                </tr>
-            `).join('');
-            
+
+            const recentRows = attendanceRecords
+                .filter(r => selectedClass === "Semua Kelas" || r.className === selectedClass)
+                .slice(-8).reverse().map(r => `
+                    <tr>
+                        <td><div class="user-name">${escapeHtml(r.name)}<div class="user-role">${r.role === 'teacher' ? 'Teacher' : 'Student'}</div></div></td>
+                        <td><span class="status-badge ${r.role === 'teacher' ? 'status-teacher' : 'status-student'}">${escapeHtml(r.className)}</span></td>
+                        <td><span class="status-badge ${r.status === 'Hadir' ? 'status-hadir' : 'status-lewat'}"><i data-lucide="${r.status === 'Hadir' ? 'check-circle' : 'clock'}" style="width:12px;height:12px;"></i> ${r.status}</span></td>
+                        <td>${r.time}</td>
+                        <td>${r.date}</td>
+                    </tr>
+                `).join('');
+
             const html = `
                 <div class="hero-stats">
                     <div class="hero-card"><div class="icon"><i data-lucide="users"></i></div><div class="value">${registeredUsers.length}</div><div class="label">Total Users</div></div>
@@ -542,154 +1754,205 @@
                     <div class="stat-card"><div><h4>Present</h4><div class="stat-number">${present}</div></div><div class="stat-icon"><i data-lucide="smile"></i></div></div>
                     <div class="stat-card"><div><h4>Late</h4><div class="stat-number">${late}</div></div><div class="stat-icon"><i data-lucide="clock"></i></div></div>
                 </div>
-                <div class="chart-card"><h3><i数据-lucide="trending-up"></i> Weekly Trend</h3><canvas id="weeklyChart"></canvas></div>
+                <div class="chart-card"><h3><i data-lucide="trending-up"></i> Weekly Trend</h3><canvas id="weeklyChart"></canvas></div>
                 <div class="chart-card"><h3><i data-lucide="bar-chart-3"></i> Monthly Overview</h3><canvas id="monthlyChart"></canvas></div>
                 <div class="chart-card"><h3><i data-lucide="pie-chart"></i> By Class</h3><canvas id="classChart"></canvas></div>
                 <div class="data-table">
-                    <div class="table-header"><h3><i数据-lucide="clock"></i> Recent Records</h3><span class="table-badge">Last 8 entries</span></div>
-                    <div class="table-container"><table class="modern-table"><thead><tr><th>Name</th><th>Class</th><th>Status</th><th>Time</th><th>Date</th></tr></thead><tbody>${recentRows || '<tr><td colspan="5" style="text-align: center; padding: 40px;">No records yet</td></tr>'}</tbody></table></div>
+                    <div class="table-header"><h3><i data-lucide="clock"></i> Recent Records</h3><span class="table-badge">Last 8 entries</span></div>
+                    <div class="table-container"><table class="modern-table"><thead><tr><th>Name</th><th>Class</th><th>Status</th><th>Time</th><th>Date</th></tr></thead><tbody>${recentRows || '<tr><td colspan="5" style="text-align:center;padding:40px;">No records yet</td></tr>'}</tbody></table></div>
                 </div>
-                <div class="info-box"><i data-lucide="cloud"></i><div><strong>☁️ Firebase Cloud Sync</strong> - All data is automatically backed up to cloud.<br><strong>🔊 Voice Announcement</strong> - System speaks when attendance is recorded.</div></div>
+                <div class="info-box"><i data-lucide="cloud"></i><div><strong>☁️ Firebase Cloud Sync</strong> — All data automatically backed up.<br><strong>🔊 Voice Announcement</strong> — System speaks when attendance is recorded.</div></div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
-            
-            const weeklyCtx = document.getElementById('weeklyChart')?.getContext('2d');
-            if (weeklyCtx) { if (weeklyChart) weeklyChart.destroy(); weeklyChart = new Chart(weeklyCtx, { type: 'line', data: { labels: weeklyData.labels, datasets: [{ label: 'Attendance', data: weeklyData.values, borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', fill: true, tension: 0.4 }] }, options: { responsive: true } }); }
-            const monthlyCtx = document.getElementById('monthlyChart')?.getContext('2d');
-            if (monthlyCtx) { if (attendanceChart) attendanceChart.destroy(); attendanceChart = new Chart(monthlyCtx, { type: 'bar', data: { labels: monthlyData.labels, datasets: [{ label: 'Attendance', data: monthlyData.values, backgroundColor: '#6366f1', borderRadius: 8 }] }, options: { responsive: true } }); }
-            const classCtx = document.getElementById('classChart')?.getContext('2d');
-            if (classCtx) { if (classChart) classChart.destroy(); classChart = new Chart(classCtx, { type: 'doughnut', data: { labels: classData.labels.slice(0, 6), datasets: [{ data: classData.values.slice(0, 6), backgroundColor: ['#6366f1', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#ec4899'] }] }, options: { responsive: true } }); }
-            
-            const classFilter = document.getElementById('classFilter');
-            if (classFilter) classFilter.onchange = (e) => { selectedClass = e.target.value; saveLocalData(); renderDashboard(); };
+
+            // Charts
+            const wCtx = document.getElementById('weeklyChart')?.getContext('2d');
+            if (wCtx) { if (weeklyChart) weeklyChart.destroy();
+                weeklyChart = new Chart(wCtx, { type: 'line', data: { labels: weeklyData.labels, datasets: [{ label: 'Attendance',
+                            data: weeklyData.values, borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)',
+                            fill: true, tension: 0.4 }] }, options: { responsive: true } }); }
+            const mCtx = document.getElementById('monthlyChart')?.getContext('2d');
+            if (mCtx) { if (monthlyChart) monthlyChart.destroy();
+                monthlyChart = new Chart(mCtx, { type: 'bar', data: { labels: monthlyData.labels, datasets: [{ label: 'Attendance',
+                            data: monthlyData.values, backgroundColor: '#6366f1', borderRadius: 8 }] },
+                    options: { responsive: true } }); }
+            const cCtx = document.getElementById('classChart')?.getContext('2d');
+            if (cCtx) { if (classChart) classChart.destroy();
+                classChart = new Chart(cCtx, { type: 'doughnut', data: { labels: classData.labels.slice(0, 6),
+                        datasets: [{ data: classData.values.slice(0, 6), backgroundColor: ['#6366f1', '#8b5cf6',
+                                '#10b981', '#f59e0b', '#ef4444', '#ec4899'
+                            ] }] }, options: { responsive: true } }); }
+
+            const filter = document.getElementById('classFilter');
+            if (filter) filter.onchange = (e) => { selectedClass = e.target.value;
+                saveLocalData();
+                renderDashboard(); };
         }
-        
-        function renderSecurityPage() {
+
+        // ---------- CAMERA ----------
+        function renderCameraPage() {
             const html = `
                 <div class="camera-section">
                     <div class="camera-selector"><select id="cameraSelect"><option value="user">📱 Front Camera</option><option value="environment">📷 Back Camera</option></select></div>
                     <div class="camera-container"><video id="securityVideo" autoplay playsinline></video><canvas id="securityCanvas" class="face-canvas"></canvas><div class="detection-indicator" id="detectCount">👤 Initializing...</div></div>
                     <div class="camera-status" id="securityStatus">🎯 Starting camera...</div>
                     <div class="camera-status" id="recognizedNames">✅ Waiting for face...</div>
+                    <button class="btn-primary" id="toggleCamBtn" style="margin-top:10px;"><i data-lucide="power"></i> Toggle Camera</button>
                 </div>
                 <div class="info-box"><i data-lucide="camera"></i><div><strong>🔊 Voice Alert System</strong><br>✓ Green box = Recognized → Voice says name & status<br>✓ Red box = Stranger → Voice announces alert</div></div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
-            const cameraSelect = document.getElementById('cameraSelect');
-            if (cameraSelect) cameraSelect.onchange = (e) => { currentCameraId = e.target.value; startSecurityCamera(); };
+
+            const select = document.getElementById('cameraSelect');
+            if (select) select.onchange = (e) => { currentCameraId = e.target.value;
+                startSecurityCamera(); };
+            const toggle = document.getElementById('toggleCamBtn');
+            if (toggle) toggle.onclick = () => { if (isSecurityActive) stopSecurityCamera();
+                else startSecurityCamera(); };
             startSecurityCamera();
         }
-        
+
+        // ---------- REGISTER ----------
         function renderRegisterPage() {
             const html = `
                 <div class="step-indicator"><div class="step active"><div class="step-number">1</div><div class="step-label">Info</div></div><div class="step"><div class="step-number">2</div><div class="step-label">Capture</div></div></div>
-                <div class="data-table" style="padding: 20px;">
+                <div class="data-table" style="padding:20px;">
                     <div class="register-form">
                         <input type="text" id="regName" placeholder="Full Name *">
                         <select id="regRole"><option value="student">🎓 Student</option><option value="teacher">👩‍🏫 Teacher</option></select>
                         <select id="regClass"><option value="">Select Class *</option>${availableClasses.map(c => `<option value="${c}">Class ${c}</option>`).join('')}<option value="Lain-lain">Other</option></select>
                         <input type="text" id="regClassOther" placeholder="Other class" style="display:none;">
-                        <button class="btn-primary" id="continueBtn" style="width: 100%;">Continue →</button>
+                        <button class="btn-primary" id="continueBtn">Continue →</button>
                     </div>
                 </div>
                 <div class="data-table">
                     <div class="table-header"><h3><i data-lucide="users"></i> Registered Users</h3><span class="table-badge">${registeredUsers.length} total</span></div>
-                    <div class="table-container"><table class="modern-table"><thead><tr><th>Photo</th><th>Name</th><th>Role</th><th>Class</th><th>Action</th></tr></thead><tbody>${registeredUsers.map(u => `<tr><td>${u.faceImage ? `<img src="${u.faceImage}" class="face-preview" onclick="viewFaceImage('${u.faceImage}')">` : '<div class="face-preview" style="background:#ddd;"></div>'}</td><td><div class="user-name">${escapeHtml(u.name)}</div></td><td><span class="status-badge ${u.role === 'teacher' ? 'status-teacher' : 'status-student'}">${u.role === 'teacher' ? 'Teacher' : 'Student'}</span></td><td><span class="status-badge">${escapeHtml(u.className)}</span></td><td class="action-btns"><button class="action-btn action-edit" onclick="editUserById('${u.id}')"><i data-lucide="edit-2" style="width: 16px; height: 16px;"></i></button><button class="action-btn action-delete" onclick="deleteUserById('${u.id}')"><i data-lucide="trash-2" style="width: 16px; height: 16px;"></i></button></td></tr>`).join('') || '<tr><td colspan="5" style="text-align: center; padding: 40px;">No users registered</td></tr>'}</tbody></table></div>
+                    <div class="table-container"><table class="modern-table"><thead><tr><th>Photo</th><th>Name</th><th>Role</th><th>Class</th><th>Action</th></tr></thead><tbody>${registeredUsers.map(u => `<tr><td>${u.faceImage ? `<img src="${u.faceImage}" class="face-preview" onclick="viewFaceImage('${u.faceImage}')">` : '<div class="face-preview" style="background:#ddd;"></div>'}</td><td><div class="user-name">${escapeHtml(u.name)}</div></td><td><span class="status-badge ${u.role === 'teacher' ? 'status-teacher' : 'status-student'}">${u.role === 'teacher' ? 'Teacher' : 'Student'}</span></td><td><span class="status-badge">${escapeHtml(u.className)}</span></td><td class="action-btns"><button class="action-btn action-edit" onclick="editUserById('${u.id}')"><i data-lucide="edit-2" style="width:16px;height:16px;"></i></button><button class="action-btn action-delete" onclick="deleteUserById('${u.id}')"><i data-lucide="trash-2" style="width:16px;height:16px;"></i></button></td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;padding:40px;">No users registered</td></tr>'}</tbody></table></div>
                 </div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
+
             const classSelect = document.getElementById('regClass');
             const classOther = document.getElementById('regClassOther');
-            if (classSelect) classSelect.onchange = () => { if (classOther) classOther.style.display = classSelect.value === 'Lain-lain' ? 'block' : 'none'; };
-            const continueBtn = document.getElementById('continueBtn');
-            if (continueBtn) continueBtn.onclick = async () => { let className = document.getElementById('regClass').value; if (className === 'Lain-lain') className = document.getElementById('regClassOther').value.trim(); if (!className) { await showError('Error', 'Please select class'); return; } await saveNameAndClass(); };
+            if (classSelect) classSelect.onchange = () => { if (classOther) classOther.style.display = classSelect.value ===
+                    'Lain-lain' ? 'block' : 'none'; };
+            const cont = document.getElementById('continueBtn');
+            if (cont) cont.onclick = async () => {
+                let className = document.getElementById('regClass').value;
+                if (className === 'Lain-lain') className = document.getElementById('regClassOther').value.trim();
+                if (!className) { await showError('Error', 'Please select class'); return; }
+                await saveNameAndClass();
+            };
         }
-        
-        function renderUsersPage() {
-            const html = `
-                <div class="data-table">
-                    <div class="table-header"><h3><i data-lucide="users"></i> All Users</h3><div><span class="table-badge">${registeredUsers.length} total</span><button class="btn-small" id="exportCsvBtn" style="margin-left: 10px;">📊 Export CSV</button></div></div>
-                    <div class="select-all"><input type="checkbox" id="selectAllCheckbox" ${selectedUsers.size === registeredUsers.length && registeredUsers.length > 0 ? 'checked' : ''}><label for="selectAllCheckbox">Select All Users</label></div>
-                    <div class="table-container"><table class="modern-table"><thead><td><th style="width:40px;"></th><th>Photo</th><th>Name</th><th>Role</th><th>Class</th><th>Registered Date</th><th>Action</th></tr></thead><tbody>${registeredUsers.map(u => `<tr><td><input type="checkbox" class="user-checkbox" data-id="${u.id}" ${selectedUsers.has(u.id) ? 'checked' : ''}></td><td>${u.faceImage ? `<img src="${u.faceImage}" class="face-preview" onclick="viewFaceImage('${u.faceImage}')">` : '<div class="face-preview" style="background:#ddd;"></div>'}</td><td><div class="user-name">${escapeHtml(u.name)}</div></td><td><span class="status-badge ${u.role === 'teacher' ? 'status-teacher' : 'status-student'}">${u.role === 'teacher' ? 'Teacher' : 'Student'}</span></td><td><span class="status-badge">${escapeHtml(u.className)}</span></td><td>${new Date(u.registeredAt).toLocaleDateString() || '-'}</td><td class="action-btns"><button class="action-btn action-edit" onclick="editUserById('${u.id}')"><i data-lucide="edit-2" style="width: 16px; height: 16px;"></i></button><button class="action-btn action-delete" onclick="deleteUserById('${u.id}')"><i data-lucide="trash-2" style="width: 16px; height: 16px;"></i></button></td></tr>`).join('') || '<tr><td colspan="7" style="text-align: center; padding: 40px;">No users registered</td></tr>'}</tbody></table></div>
-                </div>
-            `;
-            document.getElementById('mainContent').innerHTML = html;
-            lucide.createIcons();
-            document.querySelectorAll('.user-checkbox').forEach(cb => cb.addEventListener('change', (e) => toggleSelectUser(cb.dataset.id)));
-            const selectAll = document.getElementById('selectAllCheckbox');
-            if (selectAll) selectAll.addEventListener('change', () => selectAllUsers());
-            const exportBtn = document.getElementById('exportCsvBtn');
-            if (exportBtn) exportBtn.onclick = exportToCSV;
-            const confirmBtn = document.getElementById('confirmBulkDelete'), cancelBtn = document.getElementById('cancelBulkDelete');
-            if (confirmBtn) confirmBtn.onclick = deleteSelectedUsers;
-            if (cancelBtn) cancelBtn.onclick = cancelBulkDelete;
-        }
-        
+
         function renderRegisterStep2() {
             const html = `
                 <div class="step-indicator"><div class="step completed"><div class="step-number">✓</div><div class="step-label">Info</div></div><div class="step active"><div class="step-number">2</div><div class="step-label">Capture</div></div></div>
-                <div class="info-box"><i数据-lucide="camera"></i><div><strong>Auto Capture in 3 seconds</strong><br>Position your face in the green box</div></div>
+                <div class="info-box"><i data-lucide="camera"></i><div><strong>Auto Capture in 3 seconds</strong><br>Position your face in the green box</div></div>
                 <div class="camera-container"><video id="registerVideo" autoplay playsinline></video><canvas id="registerCanvas" class="face-canvas"></canvas></div>
                 <div class="camera-status" id="regCameraStatus">● Position your face</div>
-                <div class="data-table" style="padding: 20px;"><div style="background:rgba(16,185,129,0.1);padding:16px;border-radius:20px;margin-bottom:16px;"><strong>📝 ${escapeHtml(pendingRegistration.name)}</strong><br>${pendingRegistration.role === 'teacher' ? 'Teacher' : 'Student'} | Class ${pendingRegistration.className}</div><button class="btn-primary" id="backBtn" style="background: #64748b;">← Back</button></div>
+                <div class="data-table" style="padding:20px;"><div style="background:rgba(16,185,129,0.1);padding:16px;border-radius:20px;margin-bottom:16px;"><strong>📝 ${escapeHtml(pendingRegistration.name)}</strong><br>${pendingRegistration.role === 'teacher' ? 'Teacher' : 'Student'} | Class ${pendingRegistration.className}</div><button class="btn-primary" id="backBtn" style="background:#64748b;">← Back</button></div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
             startRegisterCamera();
-            const backBtn = document.getElementById('backBtn');
-            if (backBtn) backBtn.onclick = backToStep1;
+            const back = document.getElementById('backBtn');
+            if (back) back.onclick = backToStep1;
         }
-        
+
+        // ---------- RECORDS ----------
         function renderRecordsPage() {
             let filtered = getFilteredAttendance();
             const paginated = getPaginatedData(filtered);
             const totalItems = filtered.length;
-            const todayStrangers = strangerAlerts.filter(a => a.date === getTodayDate() && (selectedClass === "Semua Kelas" || a.className === selectedClass));
-            
+            const todayStrangers = strangerAlerts.filter(a => a.date === getTodayDate() && (selectedClass === "Semua Kelas" ||
+                a.className === selectedClass));
+
             const html = `
                 <div class="class-selector"><select id="recordClassFilter"><option value="Semua Kelas" ${selectedClass === "Semua Kelas" ? 'selected' : ''}>📚 All Classes</option>${availableClasses.map(c => `<option value="${c}" ${selectedClass === c ? 'selected' : ''}>📖 Class ${c}</option>`).join('')}</select></div>
-                <div class="search-bar"><input type="text" id="searchInput" placeholder="🔍 Search by name..." value="${escapeHtml(searchQuery)}"><button class="btn-small" id="searchBtn">Search</button></div>
-                <div class="date-filter"><input type="date" id="startDateInput" value="${startDate}"><input type="date" id="endDateInput" value="${endDate}"><button class="btn-small" id="filterBtn">Filter</button><button class="btn-small" id="resetBtn">Reset</button></div>
+                <div class="search-bar"><input type="text" id="searchInput" placeholder="🔍 Search by name..." value="${escapeHtml(searchQuery)}"><button class="btn-small btn-primary" id="searchBtn">Search</button></div>
+                <div class="date-filter"><input type="date" id="startDateInput" value="${startDate}"><input type="date" id="endDateInput" value="${endDate}"><button class="btn-small btn-primary" id="filterBtn">Filter</button><button class="btn-small btn-outline" id="resetBtn">Reset</button></div>
                 <div class="data-table">
-                    <div class="table-header"><h3><i data-lucide="alert-triangle"></i> Stranger Alerts</h3><span class="table-badge">${todayStrangers.length} alerts</span><button class="btn-small" id="exportBtn" style="background: var(--primary);">📊 Export CSV</button></div>
-                    <div id="strangerList" style="padding: 0 16px 16px 16px;">${todayStrangers.length ? todayStrangers.map(a => `<div class="alert-card"><div class="alert-info"><div class="alert-icon"><i data-lucide="alert-triangle" style="width: 20px; height: 20px;"></i></div><div class="alert-details"><strong>⚠️ Stranger Detected!</strong><span class="alert-time">Class: ${a.className} | Time: ${a.time}</span></div></div><button class="action-btn" onclick="downloadImage('${a.imageData}',${a.id})" style="color: var(--primary);"><i data-lucide="download" style="width: 18px; height: 18px;"></i></button></div>`).join('') : '<p style="text-align: center; padding: 40px;">✅ No stranger alerts today</p>'}</div>
+                    <div class="table-header"><h3><i data-lucide="alert-triangle"></i> Stranger Alerts</h3><span class="table-badge">${todayStrangers.length} alerts</span><button class="btn-small btn-primary" id="exportBtn" style="background:var(--primary);">📊 Export CSV</button></div>
+                    <div id="strangerList" style="padding:0 16px 16px 16px;">${todayStrangers.length ? todayStrangers.map(a => `<div class="alert-card"><div class="alert-info"><div class="alert-icon"><i data-lucide="alert-triangle" style="width:20px;height:20px;"></i></div><div class="alert-details"><strong>⚠️ Stranger Detected!</strong><span class="alert-time">Class: ${a.className} | Time: ${a.time}</span></div></div><button class="action-btn" onclick="downloadImage('${a.imageData}',${a.id})" style="color:var(--primary);"><i data-lucide="download" style="width:18px;height:18px;"></i></button></div>`).join('') : '<p style="text-align:center;padding:40px;">✅ No stranger alerts today</p>'}</div>
                 </div>
                 <div class="data-table">
-                    <div class="table-header"><h3><i数据-lucide="clipboard-list"></i> Attendance Records</h3><span class="table-badge">${totalItems} records</span></div>
-                    <div class="table-container"><table class="modern-table"><thead></tr><th>Name</th><th>Class</th><th>Session</th><th>Status</th><th>Date</th><th>Time</th></tr></thead><tbody>${paginated.map(r => `<tr><td><div class="user-name">${escapeHtml(r.name)}</div></td><td><span class="status-badge">${escapeHtml(r.className)}</span></td><td>${r.sessionName}</td><td><span class="status-badge ${r.status === 'Hadir' ? 'status-hadir' : 'status-lewat'}">${r.status}</span></td><td>${r.date}</td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align: center; padding: 40px;">No records found</td></tr>'}</tbody></table></div>
+                    <div class="table-header"><h3><i data-lucide="clipboard-list"></i> Attendance Records</h3><span class="table-badge">${totalItems} records</span></div>
+                    <div class="table-container"><table class="modern-table"><thead><tr><th>Name</th><th>Class</th><th>Session</th><th>Status</th><th>Date</th><th>Time</th></tr></thead><tbody>${paginated.map(r => `<tr><td><div class="user-name">${escapeHtml(r.name)}</div></td><td><span class="status-badge">${escapeHtml(r.className)}</span></td><td>${r.sessionName}</td><td><span class="status-badge ${r.status === 'Hadir' ? 'status-hadir' : 'status-lewat'}">${r.status}</span></td><td>${r.date}</td><td>${r.time}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:40px;">No records found</td></tr>'}</tbody></table></div>
                     ${renderPagination(totalItems)}
                 </div>
             `;
             document.getElementById('mainContent').innerHTML = html;
             lucide.createIcons();
-            
-            const recordFilter = document.getElementById('recordClassFilter'); if (recordFilter) recordFilter.onchange = (e) => { selectedClass = e.target.value; saveLocalData(); currentPageNum = 1; renderRecordsPage(); };
-            const searchBtn = document.getElementById('searchBtn'); if (searchBtn) searchBtn.onclick = () => { searchQuery = document.getElementById('searchInput').value; currentPageNum = 1; renderRecordsPage(); };
-            const filterBtn = document.getElementById('filterBtn'); if (filterBtn) filterBtn.onclick = () => { startDate = document.getElementById('startDateInput').value; endDate = document.getElementById('endDateInput').value; currentPageNum = 1; renderRecordsPage(); };
-            const resetBtn = document.getElementById('resetBtn'); if (resetBtn) resetBtn.onclick = () => { searchQuery = ""; startDate = ""; endDate = ""; currentPageNum = 1; renderRecordsPage(); };
-            const exportBtn = document.getElementById('exportBtn'); if (exportBtn) exportBtn.onclick = exportToCSV;
+
+            const rf = document.getElementById('recordClassFilter');
+            if (rf) rf.onchange = (e) => { selectedClass = e.target.value;
+                saveLocalData();
+                currentPageNum = 1;
+                renderRecordsPage(); };
+            const sb = document.getElementById('searchBtn');
+            if (sb) sb.onclick = () => { searchQuery = document.getElementById('searchInput').value;
+                currentPageNum = 1;
+                renderRecordsPage(); };
+            const fb = document.getElementById('filterBtn');
+            if (fb) fb.onclick = () => { startDate = document.getElementById('startDateInput').value;
+                endDate = document.getElementById('endDateInput').value;
+                currentPageNum = 1;
+                renderRecordsPage(); };
+            const rb = document.getElementById('resetBtn');
+            if (rb) rb.onclick = () => { searchQuery = "";
+                startDate = "";
+                endDate = "";
+                currentPageNum = 1;
+                renderRecordsPage(); };
+            const eb = document.getElementById('exportBtn');
+            if (eb) eb.onclick = exportToCSV;
         }
-        
-        window.editUserById = (id) => { const u = getUserById(id); if (u) editUser(u); };
-        window.deleteUserById = (id) => { const u = getUserById(id); if (u) deleteSingleUser(u); };
-        window.viewFaceImage = (img) => { Swal.fire({ imageUrl: img, imageWidth: 300, confirmButtonColor: '#6366f1', borderRadius: '24px' }); };
-        window.viewStrangerImage = (img) => { Swal.fire({ imageUrl: img, imageWidth: 300, confirmButtonColor: '#6366f1', borderRadius: '24px' }); };
-        window.downloadImage = (data, id) => { const a = document.createElement('a'); a.href = data; a.download = `stranger_${id}.jpg`; a.click(); };
-        
+
+        // ---------- USERS ----------
+        function renderUsersPage() {
+            const html = `
+                <div class="data-table">
+                    <div class="table-header"><h3><i data-lucide="users"></i> All Users</h3><div><span class="table-badge">${registeredUsers.length} total</span><button class="btn-small btn-primary" id="exportCsvBtn" style="margin-left:10px;background:var(--primary);">📊 Export CSV</button></div></div>
+                    <div class="select-all"><input type="checkbox" id="selectAllCheckbox" ${selectedUsers.size === registeredUsers.length && registeredUsers.length > 0 ? 'checked' : ''}><label for="selectAllCheckbox">Select All Users</label></div>
+                    <div class="table-container"><table class="modern-table"><thead><tr><th style="width:36px;"></th><th>Photo</th><th>Name</th><th>Role</th><th>Class</th><th>Registered</th><th>Action</th></tr></thead><tbody>${registeredUsers.map(u => `<tr><td><input type="checkbox" class="user-checkbox" data-id="${u.id}" ${selectedUsers.has(u.id) ? 'checked' : ''}></td><td>${u.faceImage ? `<img src="${u.faceImage}" class="face-preview" onclick="viewFaceImage('${u.faceImage}')">` : '<div class="face-preview" style="background:#ddd;"></div>'}</td><td><div class="user-name">${escapeHtml(u.name)}</div></td><td><span class="status-badge ${u.role === 'teacher' ? 'status-teacher' : 'status-student'}">${u.role === 'teacher' ? 'Teacher' : 'Student'}</span></td><td><span class="status-badge">${escapeHtml(u.className)}</span></td><td>${new Date(u.registeredAt).toLocaleDateString() || '-'}</td><td class="action-btns"><button class="action-btn action-edit" onclick="editUserById('${u.id}')"><i data-lucide="edit-2" style="width:16px;height:16px;"></i></button><button class="action-btn action-delete" onclick="deleteUserById('${u.id}')"><i data-lucide="trash-2" style="width:16px;height:16px;"></i></button></td></tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:40px;">No users registered</td></tr>'}</tbody></table></div>
+                </div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+            lucide.createIcons();
+
+            document.querySelectorAll('.user-checkbox').forEach(cb => {
+                cb.addEventListener('change', () => toggleSelectUser(cb.dataset.id));
+            });
+            const sa = document.getElementById('selectAllCheckbox');
+            if (sa) sa.addEventListener('change', selectAllUsers);
+            const exp = document.getElementById('exportCsvBtn');
+            if (exp) exp.onclick = exportToCSV;
+            document.getElementById('confirmBulkDelete').onclick = deleteSelectedUsers;
+            document.getElementById('cancelBulkDelete').onclick = cancelBulkDelete;
+            updateBulkDeleteBar();
+        }
+
+        // ================================================================
+        //  13. NAVIGATION
+        // ================================================================
         function navigateTo(page) {
             currentPage = page;
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.toggle('active', i.dataset.page === page));
-            stopSecurityCamera(); stopRegisterCamera();
-            if (page === 'dashboard') renderDashboard();
-            else if (page === 'security') renderSecurityPage();
-            else if (page === 'register') renderRegisterPage();
-            else if (page === 'records') renderRecordsPage();
-            else if (page === 'users') renderUsersPage();
+            document.querySelectorAll('.nav-item').forEach(b => {
+                b.classList.toggle('active', b.dataset.page === page);
+            });
+            // Stop cameras when leaving camera/register
+            if (page !== 'camera') stopSecurityCamera();
+            if (page !== 'register') stopRegisterCamera();
+            updateUI();
         }
-        
+
+        // ================================================================
+        //  14. LOGIN / LOGOUT
+        // ================================================================
         function login() {
             const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
@@ -697,31 +1960,77 @@
             if (user) {
                 currentUser = user;
                 localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
-                document.getElementById('loginOverlay').style.display = 'none';
-                document.getElementById('mainHeader').style.display = 'flex';
-                document.getElementById('mainContent').style.display = 'block';
-                document.getElementById('bottomNav').style.display = 'flex';
-                loadFromFirebase().then(() => { buildMatcher(); renderDashboard(); lucide.createIcons(); loadFaceModels(); });
-            } else { showError('Login Failed', 'Invalid username or password'); }
+                document.getElementById('loginOverlay').classList.add('hidden');
+                document.getElementById('appHeader').classList.remove('hidden');
+                document.getElementById('mainContent').classList.remove('hidden');
+                document.getElementById('bottomNav').classList.remove('hidden');
+                loadFromFirebase().then(() => {
+                    buildMatcher();
+                    renderDashboard();
+                    lucide.createIcons();
+                    loadFaceModels();
+                });
+            } else {
+                showError('Login Failed', 'Invalid username or password');
+            }
         }
-        
-        function logout() { localStorage.removeItem('loggedInUser'); location.reload(); }
-        
-        document.getElementById('loginBtn').onclick = login;
-        document.getElementById('loginPassword').addEventListener('keypress', (e) => { if (e.key === 'Enter') login(); });
-        document.querySelectorAll('.nav-item').forEach(i => i.addEventListener('click', () => navigateTo(i.dataset.page)));
-        window.navigateTo = navigateTo;
-        setInterval(() => { const timeEl = document.getElementById('currentTime'); if (timeEl) timeEl.innerText = new Date().toLocaleTimeString('en-GB'); }, 1000);
-        
-        const savedUser = localStorage.getItem('loggedInUser');
-        if (savedUser) {
-            currentUser = JSON.parse(savedUser);
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('mainHeader').style.display = 'flex';
-            document.getElementById('mainContent').style.display = 'block';
-            document.getElementById('bottomNav').style.display = 'flex';
-            loadFromFirebase().then(() => { buildMatcher(); renderDashboard(); lucide.createIcons(); loadFaceModels(); });
+
+        function logout() {
+            localStorage.removeItem('loggedInUser');
+            location.reload();
         }
+
+        // ================================================================
+        //  15. INIT
+        // ================================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Clock
+            setInterval(() => {
+                const el = document.getElementById('currentTime');
+                if (el) el.innerText = new Date().toLocaleTimeString('en-GB');
+            }, 1000);
+
+            // Login
+            document.getElementById('loginBtn').onclick = login;
+            document.getElementById('loginPassword').addEventListener('keypress', (e) => { if (e.key === 'Enter') login(); });
+
+            // Nav
+            document.querySelectorAll('.nav-item').forEach(b => {
+                b.addEventListener('click', () => navigateTo(b.dataset.page));
+            });
+            window.navigateTo = navigateTo;
+
+            // Check saved session
+            const saved = localStorage.getItem('loggedInUser');
+            if (saved) {
+                currentUser = JSON.parse(saved);
+                document.getElementById('loginOverlay').classList.add('hidden');
+                document.getElementById('appHeader').classList.remove('hidden');
+                document.getElementById('mainContent').classList.remove('hidden');
+                document.getElementById('bottomNav').classList.remove('hidden');
+                loadFromFirebase().then(() => {
+                    buildMatcher();
+                    renderDashboard();
+                    lucide.createIcons();
+                    loadFaceModels();
+                });
+            } else {
+                document.getElementById('loginOverlay').classList.remove('hidden');
+            }
+        });
+
+        // Expose for inline onclick
+        window.editUserById = (id) => { const u = getUserById(id); if (u) editUser(u); };
+        window.deleteUserById = (id) => { const u = getUserById(id); if (u) deleteSingleUser(u); };
+        window.viewFaceImage = (img) => {
+            Swal.fire({ imageUrl: img, imageWidth: 300, confirmButtonColor: '#6366f1', borderRadius: '24px' });
+        };
+        window.downloadImage = (data, id) => { const a = document.createElement('a');
+            a.href = data;
+            a.download = `stranger_${id}.jpg`;
+            a.click(); };
+        window.goToPage = (page) => { currentPageNum = page;
+            renderRecordsPage(); };
     </script>
 </body>
 </html>
