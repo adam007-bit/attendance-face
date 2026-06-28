@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>SmartClass Pro – Face Recognition</title>
+    <title>SmartClass Pro – Complete System</title>
 
-    <!-- Libraries - Keep only what's needed -->
+    <!-- Libraries -->
     <script src="https://unpkg.com/lucide@latest" async defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" async defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" async defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js" async defer></script>
     
     <!-- Face API - Lazy Load -->
     <script>
@@ -33,7 +36,6 @@
     </script>
 
     <style>
-        /* ===== CSS ===== */
         * {
             margin: 0;
             padding: 0;
@@ -63,7 +65,7 @@
             font-size: 14px;
         }
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -173,8 +175,13 @@
             grid-template-columns: 1fr 1fr;
             gap: 12px;
         }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
         @media (max-width: 768px) {
-            .grid-2 {
+            .grid-2, .grid-3 {
                 grid-template-columns: 1fr;
             }
         }
@@ -283,6 +290,10 @@
             background: var(--danger);
             color: #fff;
         }
+        .btn-warning {
+            background: var(--warning);
+            color: #fff;
+        }
         .btn-outline {
             background: transparent;
             border: 1px solid var(--border);
@@ -370,6 +381,10 @@
             background: rgba(245, 158, 11, 0.12);
             color: var(--warning);
         }
+        .status-holiday {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--danger);
+        }
         .status-teacher {
             background: rgba(99, 102, 241, 0.12);
             color: var(--primary);
@@ -429,8 +444,8 @@
             gap: 6px;
         }
         .user-item .avatar {
-            width: 24px;
-            height: 24px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             background: var(--bg);
             display: flex;
@@ -438,6 +453,7 @@
             justify-content: center;
             font-size: 0.6rem;
             overflow: hidden;
+            border: 2px solid var(--border);
         }
         .user-item .avatar img {
             width: 100%;
@@ -624,15 +640,55 @@
             display: none;
         }
 
-        /* Stranger alert */
-        .stranger-alert {
-            background: rgba(239, 68, 68, 0.05);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            padding: 6px 10px;
-            border-radius: 8px;
-            margin-top: 4px;
-            font-size: 0.7rem;
+        /* Face preview */
+        .face-preview-container {
+            display: none;
+            margin-top: 8px;
+            text-align: center;
+        }
+        .face-preview-container img {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            border: 2px solid var(--primary);
+            object-fit: cover;
+        }
+        .face-preview-container .label {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* Holiday list */
+        .holiday-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 6px;
+        }
+        .holiday-item {
+            background: rgba(239, 68, 68, 0.1);
             color: var(--danger);
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 0.65rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .holiday-item .remove {
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        /* Chart containers */
+        .chart-container {
+            position: relative;
+            max-height: 150px;
+        }
+        .chart-container canvas {
+            max-height: 150px !important;
         }
 
         /* Responsive */
@@ -687,6 +743,12 @@
             </button>
             <button class="nav-tab" data-tab="records">
                 <i data-lucide="clock"></i> Records
+            </button>
+            <button class="nav-tab" data-tab="holidays">
+                <i data-lucide="calendar"></i> Holidays
+            </button>
+            <button class="nav-tab" data-tab="reports">
+                <i data-lucide="file-text"></i> Reports
             </button>
         </nav>
 
@@ -745,6 +807,34 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Charts Section -->
+            <div class="grid-3" style="margin-top:12px;">
+                <div class="card">
+                    <div class="card-title">
+                        <span><i data-lucide="trending-up" style="width:16px;height:16px;color:var(--primary);"></i> Weekly Trend</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="weeklyChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">
+                        <span><i data-lucide="bar-chart-3" style="width:16px;height:16px;color:var(--primary);"></i> Monthly Overview</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">
+                        <span><i data-lucide="pie-chart" style="width:16px;height:16px;color:var(--primary);"></i> Class Distribution</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="classChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- ===== TAB 2: REGISTER ===== -->
@@ -792,6 +882,10 @@
                             <button type="button" class="btn btn-outline" onclick="resetReg()">
                                 <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i>
                             </button>
+                        </div>
+                        <div class="face-preview-container" id="facePreviewContainer">
+                            <img id="facePreview" alt="Face preview">
+                            <span class="label">📸 Face Captured</span>
                         </div>
                         <div class="reg-status" id="regStatus">💡 Fill details, then click "Capture Face"</div>
                     </form>
@@ -866,6 +960,99 @@
                 </div>
             </div>
         </div>
+
+        <!-- ===== TAB 5: HOLIDAYS (KPM Malaysia) ===== -->
+        <div class="tab-content" id="tab-holidays">
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">
+                        <span><i data-lucide="calendar" style="width:16px;height:16px;color:var(--primary);"></i> School Holidays (KPM)</span>
+                        <button class="btn btn-sm btn-danger" onclick="clearHolidays()">Clear All</button>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+                        <input type="date" id="holidayDate" style="flex:1;padding:4px 8px;border-radius:8px;border:1px solid var(--border);font-size:0.7rem;">
+                        <input type="text" id="holidayName" placeholder="Holiday name" style="flex:1;padding:4px 8px;border-radius:8px;border:1px solid var(--border);font-size:0.7rem;">
+                        <button class="btn btn-sm btn-primary" onclick="addHoliday()">Add</button>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+                        <button class="btn btn-sm btn-warning" onclick="loadKPMSchedule()">📅 Load KPM Schedule</button>
+                        <button class="btn btn-sm btn-success" onclick="loadRamadanHolidays()">🌙 Ramadan Holidays</button>
+                    </div>
+                    <div id="holidayListContainer">
+                        <div class="holiday-list" id="holidayList"></div>
+                    </div>
+                    <div style="margin-top:8px;font-size:0.6rem;color:var(--text-secondary);">
+                        <strong>Note:</strong> Attendance will not be recorded on holidays
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <span><i data-lucide="info" style="width:16px;height:16px;color:var(--primary);"></i> Holiday Information</span>
+                    </div>
+                    <div style="font-size:0.75rem;color:var(--text-secondary);">
+                        <p><strong>📅 KPM School Holidays 2024:</strong></p>
+                        <ul style="list-style:none;padding:0;margin-top:6px;">
+                            <li>🎆 <strong>1 Jan</strong> - New Year</li>
+                            <li>🕌 <strong>10-11 Apr</strong> - Hari Raya Aidilfitri</li>
+                            <li>🎓 <strong>1 May</strong> - Labour Day</li>
+                            <li>🌙 <strong>22 May</strong> - Wesak Day</li>
+                            <li>👑 <strong>3 Jun</strong> - Agong's Birthday</li>
+                            <li>🕌 <strong>17-18 Jun</strong> - Hari Raya Haji</li>
+                            <li>🌙 <strong>7 Jul</strong> - Awal Muharram</li>
+                            <li>🇲🇾 <strong>31 Aug</strong> - Independence Day</li>
+                            <li>🇲🇾 <strong>16 Sep</strong> - Malaysia Day</li>
+                            <li>🕌 <strong>20 Sep</strong> - Maulidur Rasul</li>
+                            <li>🎄 <strong>25 Dec</strong> - Christmas</li>
+                        </ul>
+                        <p style="margin-top:8px;"><strong>📚 School Term Breaks:</strong></p>
+                        <ul style="list-style:none;padding:0;">
+                            <li>🏖️ <strong>Mar-Apr</strong> - Mid Term Break</li>
+                            <li>🏖️ <strong>Jun-Jul</strong> - Mid Year Holidays</li>
+                            <li>🏖️ <strong>Sep-Oct</strong> - Mid Term Break</li>
+                            <li>🏖️ <strong>Dec-Feb</strong> - Year End Holidays</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TAB 6: REPORTS ===== -->
+        <div class="tab-content" id="tab-reports">
+            <div class="card">
+                <div class="card-title">
+                    <span><i data-lucide="file-text" style="width:16px;height:16px;color:var(--primary);"></i> Generate Reports</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
+                    <button class="btn btn-primary btn-block" onclick="generatePDFReport('daily')">
+                        <i data-lucide="file-text" style="width:14px;height:14px;"></i> Daily Report
+                    </button>
+                    <button class="btn btn-success btn-block" onclick="generatePDFReport('weekly')">
+                        <i data-lucide="file-text" style="width:14px;height:14px;"></i> Weekly Report
+                    </button>
+                    <button class="btn btn-warning btn-block" onclick="generatePDFReport('monthly')">
+                        <i data-lucide="file-text" style="width:14px;height:14px;"></i> Monthly Report
+                    </button>
+                    <button class="btn btn-danger btn-block" onclick="generatePDFReport('class')">
+                        <i data-lucide="file-text" style="width:14px;height:14px;"></i> Class Report
+                    </button>
+                    <button class="btn btn-outline btn-block" onclick="generatePDFReport('holiday')">
+                        <i data-lucide="calendar" style="width:14px;height:14px;"></i> Holiday Report
+                    </button>
+                </div>
+
+                <div style="margin-top:16px;padding:12px;background:var(--bg);border-radius:8px;">
+                    <div class="card-title" style="font-size:0.75rem;margin-bottom:4px;">
+                        <span>📊 Quick Stats</span>
+                    </div>
+                    <div class="grid-3" style="gap:8px;">
+                        <div class="stat-box"><div class="number" id="reportTotalUsers">0</div><div class="label">Total Users</div></div>
+                        <div class="stat-box"><div class="number" id="reportTotalAttendance">0</div><div class="label">Total Attendance</div></div>
+                        <div class="stat-box"><div class="number" id="reportAvgRate">0%</div><div class="label">Average Rate</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Toast -->
@@ -881,7 +1068,7 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- JAVASCRIPT - Complete & Optimized -->
+    <!-- JAVASCRIPT - Complete -->
     <!-- ============================================================ -->
     <script>
         // ================================================================
@@ -898,9 +1085,117 @@
         let audioCtx = null;
         let lastAttendance = {};
         let strangerAlerts = [];
+        let holidays = [];
+        let weeklyChart = null;
+        let monthlyChart = null;
+        let classChart = null;
 
         // ================================================================
-        // 2. LOAD MODELS
+        // 2. KPM HOLIDAYS (Malaysia School Calendar)
+        // ================================================================
+        const KPM_HOLIDAYS = {
+            '2024-01-01': 'New Year Day',
+            '2024-01-25': 'Thaipusam',
+            '2024-02-10': 'Chinese New Year',
+            '2024-02-11': 'Chinese New Year',
+            '2024-04-10': 'Hari Raya Aidilfitri',
+            '2024-04-11': 'Hari Raya Aidilfitri',
+            '2024-05-01': 'Labour Day',
+            '2024-05-22': 'Wesak Day',
+            '2024-06-03': 'Agong Birthday',
+            '2024-06-17': 'Hari Raya Haji',
+            '2024-06-18': 'Hari Raya Haji',
+            '2024-07-07': 'Awal Muharram',
+            '2024-08-31': 'Independence Day',
+            '2024-09-16': 'Malaysia Day',
+            '2024-09-20': 'Maulidur Rasul',
+            '2024-10-31': 'Deepavali',
+            '2024-12-25': 'Christmas',
+            // School term breaks (custom)
+            '2024-03-18': 'Mid Term Break',
+            '2024-03-19': 'Mid Term Break',
+            '2024-03-20': 'Mid Term Break',
+            '2024-03-21': 'Mid Term Break',
+            '2024-03-22': 'Mid Term Break',
+            '2024-06-01': 'Mid Year Holiday',
+            '2024-06-02': 'Mid Year Holiday',
+            '2024-06-03': 'Mid Year Holiday',
+            '2024-06-04': 'Mid Year Holiday',
+            '2024-06-05': 'Mid Year Holiday',
+            '2024-09-09': 'Mid Term Break',
+            '2024-09-10': 'Mid Term Break',
+            '2024-09-11': 'Mid Term Break',
+            '2024-09-12': 'Mid Term Break',
+            '2024-09-13': 'Mid Term Break',
+            '2024-12-16': 'Year End Holiday',
+            '2024-12-17': 'Year End Holiday',
+            '2024-12-18': 'Year End Holiday',
+            '2024-12-19': 'Year End Holiday',
+            '2024-12-20': 'Year End Holiday',
+            '2024-12-23': 'Year End Holiday',
+            '2024-12-24': 'Year End Holiday',
+            '2024-12-26': 'Year End Holiday',
+            '2024-12-27': 'Year End Holiday',
+            '2024-12-30': 'Year End Holiday',
+            '2024-12-31': 'Year End Holiday'
+        };
+
+        // Ramadan/Islamic holidays
+        const RAMADAN_HOLIDAYS = {
+            '2024-03-10': 'Ramadan Start',
+            '2024-03-11': 'Ramadan Start',
+            '2024-03-12': 'Ramadan Start',
+            '2024-03-13': 'Ramadan Start',
+            '2024-03-14': 'Ramadan Start',
+            '2024-03-15': 'Ramadan Start',
+            '2024-03-16': 'Ramadan Start',
+            '2024-03-17': 'Ramadan Start',
+            '2024-04-09': 'Eid Celebration',
+            '2024-04-12': 'Eid Celebration',
+            '2024-04-13': 'Eid Celebration',
+            '2024-04-14': 'Eid Celebration',
+            '2024-04-15': 'Eid Celebration'
+        };
+
+        function loadKPMSchedule() {
+            const confirmed = Object.keys(KPM_HOLIDAYS);
+            let added = 0;
+            confirmed.forEach(date => {
+                if (!holidays.find(h => h.date === date)) {
+                    holidays.push({ date: date, name: KPM_HOLIDAYS[date] });
+                    added++;
+                }
+            });
+            saveHolidays();
+            renderHolidays();
+            showToast(`✅ Added ${added} KPM holidays`, 'success');
+        }
+
+        function loadRamadanHolidays() {
+            const ramadan = Object.keys(RAMADAN_HOLIDAYS);
+            let added = 0;
+            ramadan.forEach(date => {
+                if (!holidays.find(h => h.date === date)) {
+                    holidays.push({ date: date, name: RAMADAN_HOLIDAYS[date] });
+                    added++;
+                }
+            });
+            saveHolidays();
+            renderHolidays();
+            showToast(`🌙 Added ${added} Ramadan holidays`, 'success');
+        }
+
+        function isHoliday(date) {
+            return holidays.some(h => h.date === date);
+        }
+
+        function getHolidayName(date) {
+            const h = holidays.find(h => h.date === date);
+            return h ? h.name : null;
+        }
+
+        // ================================================================
+        // 3. LOAD MODELS
         // ================================================================
         async function loadModels() {
             try {
@@ -921,8 +1216,10 @@
 
                 loadUsers();
                 loadAttendance();
+                loadHolidays();
                 loadStrangers();
                 updateUI();
+                renderCharts();
 
                 setTimeout(startCamera, 300);
 
@@ -942,7 +1239,7 @@
         }
 
         // ================================================================
-        // 3. CAMERA
+        // 4. CAMERA
         // ================================================================
         async function startCamera() {
             try {
@@ -989,7 +1286,7 @@
         }
 
         // ================================================================
-        // 4. FACE DETECTION (Attendance)
+        // 5. FACE DETECTION (Attendance)
         // ================================================================
         async function detectFaces() {
             if (!modelsReady || !camActive) return;
@@ -1013,6 +1310,17 @@
 
             let names = [];
             let hasStranger = false;
+
+            // Check if today is holiday
+            const today = new Date().toISOString().split('T')[0];
+            const isHolidayToday = isHoliday(today);
+
+            if (isHolidayToday) {
+                const holidayName = getHolidayName(today);
+                ctx.fillStyle = '#f59e0b';
+                ctx.font = 'bold 16px system-ui';
+                ctx.fillText(`🎉 ${holidayName || 'Holiday'} - No Attendance`, 20, 40);
+            }
 
             for (const d of detections) {
                 const box = d.detection.box;
@@ -1043,10 +1351,18 @@
 
                     ctx.fillStyle = '#10b981';
                     ctx.font = 'bold 12px system-ui';
-                    ctx.fillText(`✅ ${match.name} (${(1 - bestDist).toFixed(2)})`, box.x, box.y - 4);
+                    ctx.fillText(`✅ ${match.name}`, box.x, box.y - 4);
 
                     names.push(match.name);
-                    autoAttendance(match);
+
+                    // Only mark attendance if not holiday
+                    if (!isHolidayToday) {
+                        autoAttendance(match);
+                    } else {
+                        ctx.fillStyle = '#f59e0b';
+                        ctx.font = '10px system-ui';
+                        ctx.fillText('🎉 Holiday', box.x, box.y + box.height + 14);
+                    }
                 } else {
                     ctx.strokeStyle = '#ef4444';
                     ctx.lineWidth = 2;
@@ -1058,8 +1374,7 @@
 
                     hasStranger = true;
 
-                    // Report stranger (with cooldown)
-                    if (Date.now() - lastStrangerAlertTime > 10000) {
+                    if (!isHolidayToday && Date.now() - lastStrangerAlertTime > 10000) {
                         lastStrangerAlertTime = Date.now();
                         reportStranger();
                     }
@@ -1076,7 +1391,11 @@
 
             // Update recognized list
             const listEl = document.getElementById('recognizedList');
-            if (names.length > 0) {
+            if (isHolidayToday) {
+                const holidayName = getHolidayName(today) || 'Holiday';
+                listEl.innerHTML =
+                `<span style="color:var(--warning);font-weight:600;">🎉 ${holidayName} - No attendance today</span>`;
+            } else if (names.length > 0) {
                 listEl.innerHTML = names.map(n =>
                     `<span style="background:rgba(16,185,129,0.1);color:var(--success);padding:1px 8px;border-radius:12px;font-size:0.6rem;font-weight:600;">✅ ${n}</span>`
                 ).join(' ');
@@ -1100,10 +1419,16 @@
         let lastStrangerAlertTime = 0;
 
         // ================================================================
-        // 5. AUTO ATTENDANCE
+        // 6. AUTO ATTENDANCE
         // ================================================================
         function autoAttendance(user) {
             const today = new Date().toISOString().split('T')[0];
+            
+            // Check if holiday
+            if (isHoliday(today)) {
+                return;
+            }
+
             const session = new Date().getHours() < 13 ? 'pagi' : 'petang';
             const key = `${user.id}_${today}_${session}`;
 
@@ -1129,7 +1454,8 @@
                 time: new Date().toLocaleTimeString('ms-MY'),
                 date: today,
                 timestamp: Date.now(),
-                method: 'Face Recognition'
+                method: 'Face Recognition',
+                isHoliday: false
             };
 
             attendance.push(record);
@@ -1137,13 +1463,14 @@
 
             saveAttendance();
             updateUI();
+            renderCharts();
             playBeep();
             speak(`${user.name} is ${status === 'Hadir' ? 'present' : 'late'}`);
             showToast(`✅ ${user.name} - ${status}`, 'success');
         }
 
         // ================================================================
-        // 6. STRANGER ALERT
+        // 7. STRANGER ALERT
         // ================================================================
         function reportStranger() {
             const alert = {
@@ -1168,7 +1495,6 @@
                 timerProgressBar: true
             });
 
-            // Show in recognized list
             const listEl = document.getElementById('recognizedList');
             listEl.innerHTML +=
                 `<span style="background:rgba(239,68,68,0.1);color:var(--danger);padding:1px 8px;border-radius:12px;font-size:0.6rem;font-weight:600;">⚠️ Stranger Alert!</span>`;
@@ -1195,7 +1521,7 @@
         }
 
         // ================================================================
-        // 7. REGISTRATION
+        // 8. REGISTRATION
         // ================================================================
         async function startRegCamera() {
             try {
@@ -1222,6 +1548,16 @@
                 regInterval = null; }
         }
 
+        function captureFaceImage() {
+            const video = document.getElementById('regVideo');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 480;
+            canvas.height = video.videoHeight || 360;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            return canvas.toDataURL('image/jpeg', 0.8);
+        }
+
         async function detectRegFace() {
             if (!modelsReady) return;
 
@@ -1246,6 +1582,7 @@
                 document.getElementById('regCamStatus').textContent = '● No face';
                 document.getElementById('regCamStatus').className = 'cam-status';
                 document.getElementById('registerBtn').disabled = true;
+                document.getElementById('facePreviewContainer').style.display = 'none';
                 return;
             }
 
@@ -1278,7 +1615,7 @@
                 ctx.fill();
             });
 
-            // Draw face connections (simplified)
+            // Draw face connections
             ctx.strokeStyle = 'rgba(99,102,241,0.15)';
             ctx.lineWidth = 1;
             for (let i = 0; i < 16; i++) {
@@ -1300,12 +1637,18 @@
                 ctx.stroke();
             }
 
+            // Capture face image
+            const imgData = captureFaceImage();
+            document.getElementById('facePreview').src = imgData;
+            document.getElementById('facePreviewContainer').style.display = 'block';
+
             // Store face data
             currentFace = {
                 landmarks: pos.map(p => ({ x: p.x, y: p.y })),
                 descriptor: Array.from(d.descriptor),
                 confidence: d.detection.score,
-                positions: pos
+                positions: pos,
+                imageData: imgData
             };
 
             document.getElementById('regPoints').textContent = `📍 ${pos.length} pts`;
@@ -1381,7 +1724,7 @@
                 className: cls,
                 registeredAt: new Date().toISOString(),
                 descriptor: currentFace.descriptor,
-                faceImage: null,
+                faceImage: currentFace.imageData || null,
                 biometricPoints: currentFace.landmarks.length,
                 confidence: currentFace.confidence
             };
@@ -1396,6 +1739,7 @@
             document.getElementById('registerBtn').disabled = true;
             document.getElementById('regStatus').textContent = '💡 Fill details, then click "Capture Face"';
             document.getElementById('regStatus').className = 'reg-status';
+            document.getElementById('facePreviewContainer').style.display = 'none';
             currentFace = null;
             document.getElementById('regPoints').textContent = '📍 0 pts';
             document.getElementById('regConf').textContent = '0%';
@@ -1403,11 +1747,11 @@
             document.getElementById('regCamStatus').className = 'cam-status';
 
             updateClassFilters();
+            renderCharts();
             showToast(`✅ ${name} registered successfully!`, 'success');
             speak(`${name} registration successful`);
             playBeep();
 
-            // Reset step
             document.getElementById('step1').className = 'step active';
             document.getElementById('step2').className = 'step';
         }
@@ -1418,6 +1762,7 @@
             document.getElementById('registerBtn').disabled = true;
             document.getElementById('regStatus').textContent = '💡 Fill details, then click "Capture Face"';
             document.getElementById('regStatus').className = 'reg-status';
+            document.getElementById('facePreviewContainer').style.display = 'none';
             currentFace = null;
             document.getElementById('regPoints').textContent = '📍 0 pts';
             document.getElementById('regConf').textContent = '0%';
@@ -1427,11 +1772,11 @@
         }
 
         // ================================================================
-        // 8. DATA MANAGEMENT
+        // 9. DATA MANAGEMENT
         // ================================================================
         function saveUsers() {
             try {
-                localStorage.setItem('smart_users', JSON.stringify(users.map(u => ({ ...u, faceImage: null }))));
+                localStorage.setItem('smart_users', JSON.stringify(users.map(u => ({ ...u, faceImage: u.faceImage || null }))));
             } catch (e) {}
         }
 
@@ -1454,6 +1799,18 @@
             } catch (e) { attendance = []; }
         }
 
+        function saveHolidays() {
+            try { localStorage.setItem('smart_holidays', JSON.stringify(holidays)); } catch (e) {}
+        }
+
+        function loadHolidays() {
+            try {
+                const data = localStorage.getItem('smart_holidays');
+                if (data) holidays = JSON.parse(data);
+            } catch (e) { holidays = []; }
+            renderHolidays();
+        }
+
         function saveStrangers() {
             try { localStorage.setItem('smart_strangers', JSON.stringify(strangerAlerts)); } catch (e) {}
         }
@@ -1466,7 +1823,184 @@
         }
 
         // ================================================================
-        // 9. RENDER FUNCTIONS
+        // 10. HOLIDAYS
+        // ================================================================
+        function addHoliday() {
+            const date = document.getElementById('holidayDate').value;
+            const name = document.getElementById('holidayName').value.trim() || 'Holiday';
+            if (!date) { showToast('Select date', 'warning'); return; }
+            if (holidays.some(h => h.date === date)) { showToast('Already added', 'warning'); return; }
+            holidays.push({ date: date, name: name });
+            saveHolidays();
+            renderHolidays();
+            showToast('Holiday added', 'success');
+            document.getElementById('holidayName').value = '';
+        }
+
+        function renderHolidays() {
+            const container = document.getElementById('holidayList');
+            if (holidays.length === 0) {
+                container.innerHTML = '<span style="color:var(--text-secondary);font-size:0.7rem;">No holidays set</span>';
+                return;
+            }
+            const sorted = [...holidays].sort((a, b) => a.date.localeCompare(b.date));
+            container.innerHTML = sorted.map(h => `
+                <span class="holiday-item">
+                    📅 ${h.date}: ${h.name}
+                    <span class="remove" onclick="removeHoliday('${h.date}')">✕</span>
+                </span>
+            `).join('');
+        }
+
+        function removeHoliday(date) {
+            holidays = holidays.filter(h => h.date !== date);
+            saveHolidays();
+            renderHolidays();
+            showToast('Holiday removed', 'success');
+        }
+
+        function clearHolidays() {
+            if (holidays.length === 0) return;
+            Swal.fire({
+                title: 'Clear All Holidays?',
+                text: 'This will remove all holiday dates',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Yes, Clear All'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    holidays = [];
+                    saveHolidays();
+                    renderHolidays();
+                    showToast('All holidays cleared', 'success');
+                }
+            });
+        }
+
+        // ================================================================
+        // 11. CHARTS
+        // ================================================================
+        function renderCharts() {
+            const today = new Date();
+            const currentYear = today.getFullYear();
+
+            // Weekly data (last 7 days)
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const weeklyData = days.map((_, i) => {
+                const d = new Date(today);
+                d.setDate(today.getDate() - (today.getDay() + 6 - i) % 7);
+                const dateStr = d.toISOString().split('T')[0];
+                return attendance.filter(r => r.date === dateStr).length;
+            });
+
+            // Weekly Chart
+            const wCtx = document.getElementById('weeklyChart')?.getContext('2d');
+            if (wCtx) {
+                if (weeklyChart) weeklyChart.destroy();
+                weeklyChart = new Chart(wCtx, {
+                    type: 'line',
+                    data: {
+                        labels: days,
+                        datasets: [{
+                            label: 'Attendance',
+                            data: weeklyData,
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99,102,241,0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+
+            // Monthly data
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const monthlyData = months.map((_, i) => {
+                return attendance.filter(r => {
+                    const d = new Date(r.date);
+                    return d.getMonth() === i && d.getFullYear() === currentYear;
+                }).length;
+            });
+
+            // Monthly Chart
+            const mCtx = document.getElementById('monthlyChart')?.getContext('2d');
+            if (mCtx) {
+                if (monthlyChart) monthlyChart.destroy();
+                monthlyChart = new Chart(mCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: months,
+                        datasets: [{
+                            label: 'Attendance',
+                            data: monthlyData,
+                            backgroundColor: '#6366f1',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+
+            // Class distribution
+            const classStats = {};
+            users.forEach(u => {
+                if (!classStats[u.className]) classStats[u.className] = 0;
+                classStats[u.className]++;
+            });
+
+            const colors = ['#6366f1', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#14b8a6', '#f472b6'];
+
+            // Class Chart
+            const cCtx = document.getElementById('classChart')?.getContext('2d');
+            if (cCtx) {
+                if (classChart) classChart.destroy();
+                const labels = Object.keys(classStats);
+                const data = Object.values(classStats);
+                classChart = new Chart(cCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: colors.slice(0, labels.length)
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { boxWidth: 10, font: { size: 8 } }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Update report stats
+            const totalUsers = users.length;
+            const totalAttendance = attendance.length;
+            const avgRate = totalUsers > 0 ? Math.round((totalAttendance / (totalUsers * 30)) * 100) : 0;
+            document.getElementById('reportTotalUsers').textContent = totalUsers;
+            document.getElementById('reportTotalAttendance').textContent = totalAttendance;
+            document.getElementById('reportAvgRate').textContent = `${Math.min(avgRate, 100)}%`;
+        }
+
+        // ================================================================
+        // 12. RENDER FUNCTIONS
         // ================================================================
         function renderUsers() {
             const container = document.getElementById('userList');
@@ -1488,7 +2022,9 @@
             container.innerHTML = filtered.map(u => `
                 <div class="user-item">
                     <div class="info">
-                        <div class="avatar">👤</div>
+                        <div class="avatar">
+                            ${u.faceImage ? `<img src="${u.faceImage}" alt="${u.name}">` : '👤'}
+                        </div>
                         <div>
                             <span class="name">${u.name}</span>
                             <span style="font-size:0.6rem;color:var(--text-secondary);margin-left:4px;">${u.className}</span>
@@ -1517,6 +2053,7 @@
                 renderUsers();
                 updateUI();
                 updateClassFilters();
+                renderCharts();
                 showToast('User deleted', 'success');
             }
         }
@@ -1544,8 +2081,15 @@
 
             const tbody = document.getElementById('attendanceTableBody');
             if (filtered.length === 0) {
-                tbody.innerHTML =
-                    `<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-secondary);font-size:0.7rem;">No attendance records today</td></tr>`;
+                const isHolidayToday = isHoliday(today);
+                const holidayName = getHolidayName(today);
+                if (isHolidayToday) {
+                    tbody.innerHTML =
+                        `<tr><td colspan="4" style="text-align:center;padding:15px;color:var(--warning);font-size:0.7rem;">🎉 ${holidayName || 'Holiday'} - No attendance today</td></tr>`;
+                } else {
+                    tbody.innerHTML =
+                        `<tr><td colspan="4" style="text-align:center;padding:15px;color:var(--text-secondary);font-size:0.7rem;">No attendance records today</td></tr>`;
+                }
                 return;
             }
 
@@ -1573,7 +2117,7 @@
         }
 
         // ================================================================
-        // 10. RECORDS
+        // 13. RECORDS
         // ================================================================
         function renderRecords() {
             const date = document.getElementById('recordDateFilter')?.value || '';
@@ -1589,7 +2133,7 @@
             const tbody = document.getElementById('recordsTableBody');
             if (filtered.length === 0) {
                 tbody.innerHTML =
-                    `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-secondary);font-size:0.7rem;">No records found</td></tr>`;
+                    `<tr><td colspan="5" style="text-align:center;padding:15px;color:var(--text-secondary);font-size:0.7rem;">No records found</td></tr>`;
                 return;
             }
 
@@ -1608,7 +2152,7 @@
             showToast('Records filtered', 'success'); }
 
         // ================================================================
-        // 11. EXPORT
+        // 14. EXPORT
         // ================================================================
         function exportCSV() {
             if (attendance.length === 0) { showToast('No records to export', 'warning'); return; }
@@ -1629,7 +2173,127 @@
         }
 
         // ================================================================
-        // 12. UI HELPERS
+        // 15. PDF REPORT GENERATOR
+        // ================================================================
+        function generatePDFReport(type) {
+            if (typeof window.jspdf === 'undefined') {
+                showToast('Loading PDF library... Please wait', 'warning');
+                // Wait for jspdf to load
+                setTimeout(() => generatePDFReport(type), 1000);
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+
+            // Header
+            doc.setFontSize(18);
+            doc.setTextColor(99, 102, 241);
+            doc.text('SmartClass Pro - Attendance Report', 14, 22);
+
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text(`Report Type: ${type.toUpperCase()}`, 14, 30);
+            doc.text(`Generated: ${new Date().toLocaleString('ms-MY')}`, 14, 36);
+            doc.text(`Total Users: ${users.length}`, 14, 42);
+
+            // Holiday info
+            const today = new Date().toISOString().split('T')[0];
+            if (isHoliday(today)) {
+                doc.setTextColor(239, 68, 68);
+                doc.text(`🎉 ${getHolidayName(today) || 'Holiday'} - No attendance today`, 14, 48);
+                doc.setTextColor(100);
+            }
+
+            // Get data based on type
+            let data = [];
+            let title = '';
+
+            switch (type) {
+                case 'daily':
+                    data = attendance.filter(r => r.date === today);
+                    title = `Daily Report - ${today}`;
+                    break;
+                case 'weekly':
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    const weekStart = weekAgo.toISOString().split('T')[0];
+                    data = attendance.filter(r => r.date >= weekStart && r.date <= today);
+                    title = `Weekly Report - ${weekStart} to ${today}`;
+                    break;
+                case 'monthly':
+                    const monthStart = new Date(today);
+                    monthStart.setDate(1);
+                    const startDate = monthStart.toISOString().split('T')[0];
+                    data = attendance.filter(r => r.date >= startDate && r.date <= today);
+                    title = `Monthly Report - ${startDate} to ${today}`;
+                    break;
+                case 'class':
+                    const classFilter = document.getElementById('recordClassFilter')?.value || 'all';
+                    data = attendance.filter(r => classFilter === 'all' || r.className === classFilter);
+                    title = `Class Report - ${classFilter === 'all' ? 'All Classes' : classFilter}`;
+                    break;
+                case 'holiday':
+                    data = holidays.map(h => ({ date: h.date, name: h.name, status: 'Holiday' }));
+                    title = 'Holiday Report';
+                    break;
+                default:
+                    data = attendance;
+                    title = 'Full Report';
+            }
+
+            // Summary stats
+            let yPos = 52;
+            doc.setFontSize(9);
+            doc.setTextColor(50);
+
+            if (type !== 'holiday') {
+                const total = data.length;
+                const present = data.filter(r => r.status === 'Hadir').length;
+                const late = data.filter(r => r.status === 'Lewat').length;
+                const rate = data.length > 0 ? Math.round((present / data.length) * 100) : 0;
+
+                doc.text(`Total Records: ${total}`, 14, yPos);
+                doc.text(`Present: ${present} (${rate}%)`, 14, yPos + 6);
+                doc.text(`Late: ${late}`, 14, yPos + 12);
+                yPos += 20;
+            }
+
+            // Table
+            const tableData = data.slice(0, 30).map(r => {
+                if (type === 'holiday') {
+                    return [r.date, r.name || 'Holiday', '🎉'];
+                }
+                return [r.name || 'N/A', r.className || 'N/A', r.status || 'N/A', r.date || 'N/A', r.time || 'N/A'];
+            });
+
+            const headers = type === 'holiday' ?
+                ['Date', 'Holiday Name', 'Status'] :
+                ['Name', 'Class', 'Status', 'Date', 'Time'];
+
+            doc.autoTable({
+                head: [headers],
+                body: tableData,
+                startY: yPos,
+                styles: { fontSize: 8 },
+                headStyles: { fillColor: [99, 102, 241] },
+                didDrawPage: function(data) {
+                    // Footer
+                    doc.setFontSize(7);
+                    doc.setTextColor(150);
+                    doc.text('Generated by SmartClass Pro v2.0', 14, 285);
+                    doc.text(`Page ${data.pageNumber}`, 190, 285);
+                }
+            });
+
+            // Save PDF
+            const filename = `${type}_report_${today}.pdf`;
+            doc.save(filename);
+            showToast(`📄 ${title} exported successfully!`, 'success');
+        }
+
+        // ================================================================
+        // 16. UI HELPERS
         // ================================================================
         function showToast(msg, type = 'success') {
             const t = document.getElementById('toast');
@@ -1686,7 +2350,7 @@
         }
 
         // ================================================================
-        // 13. NAVIGATION
+        // 17. NAVIGATION
         // ================================================================
         function navigateTo(tab) {
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
@@ -1694,11 +2358,14 @@
 
             if (tab === 'records') renderRecords();
             if (tab === 'users') renderUsers();
-            if (tab === 'attendance') updateUI();
+            if (tab === 'attendance') { updateUI();
+                renderCharts(); }
+            if (tab === 'holidays') renderHolidays();
+            if (tab === 'reports') renderCharts();
         }
 
         // ================================================================
-        // 14. INIT
+        // 18. INIT
         // ================================================================
         document.addEventListener('DOMContentLoaded', () => {
             // Navigation
@@ -1724,8 +2391,9 @@
             loadModels();
             lucide.createIcons();
 
-            console.log('🚀 SmartClass Pro - Face Recognition System');
+            console.log('🚀 SmartClass Pro - Complete System');
             console.log(`📚 ${users.length} users, 📋 ${attendance.length} records`);
+            console.log(`📅 ${holidays.length} holidays loaded`);
         });
 
         // Expose functions globally
@@ -1738,1463 +2406,12 @@
         window.filterRecords = filterRecords;
         window.exportCSV = exportCSV;
         window.navigateTo = navigateTo;
-    </script>
-</body>
-</html>        /* Minimal CSS - only what's needed */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        :root {
-            --primary: #6366f1;
-            --purple: #8b5cf6;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --bg: #f1f5f9;
-            --card-bg: #ffffff;
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --border: #e2e8f0;
-            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08);
-            --radius: 16px;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text-primary);
-            min-height: 100vh;
-            padding: 12px;
-            font-size: 14px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* Header - simplified */
-        .app-header {
-            background: var(--card-bg);
-            padding: 12px 16px;
-            border-radius: var(--radius);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 8px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            margin-bottom: 12px;
-        }
-        .app-header h1 {
-            font-size: 1.1rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary), var(--purple));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .app-header h1 i {
-            background: linear-gradient(135deg, var(--primary), var(--purple));
-            padding: 6px;
-            border-radius: 10px;
-            color: white;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .header-controls {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .status-badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.6rem;
-            font-weight: 600;
-        }
-        .status-online {
-            background: rgba(16, 185, 129, 0.12);
-            color: var(--success);
-        }
-        .status-loading {
-            background: rgba(245, 158, 11, 0.12);
-            color: var(--warning);
-        }
-        .status-offline {
-            background: rgba(239, 68, 68, 0.12);
-            color: var(--danger);
-        }
-
-        /* Navigation - tabs */
-        .nav-tabs {
-            display: flex;
-            gap: 4px;
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 4px;
-            border: 1px solid var(--border);
-            margin-bottom: 12px;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        .nav-tab {
-            padding: 6px 14px;
-            border-radius: 10px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.75rem;
-            transition: all 0.2s;
-            color: var(--text-secondary);
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .nav-tab.active {
-            background: linear-gradient(135deg, var(--primary), var(--purple));
-            color: #fff;
-            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
-        }
-        .nav-tab i {
-            width: 14px;
-            height: 14px;
-        }
-
-        /* Grid */
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        @media (max-width: 768px) {
-            .grid-2 {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Cards */
-        .card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 14px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-        }
-        .card-title {
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-        }
-
-        /* Camera */
-        .camera-container {
-            position: relative;
-            background: #0a0a0a;
-            border-radius: 12px;
-            overflow: hidden;
-            aspect-ratio: 4/3;
-        }
-        #videoFeed, #regVideo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1);
-        }
-        #canvasOverlay, #regCanvas {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            background: transparent;
-        }
-        .cam-overlay {
-            position: absolute;
-            bottom: 6px;
-            left: 6px;
-            right: 6px;
-            display: flex;
-            justify-content: space-between;
-            pointer-events: none;
-            gap: 4px;
-        }
-        .cam-status {
-            background: rgba(0, 0, 0, 0.7);
-            color: #fff;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.55rem;
-            pointer-events: none;
-        }
-        .cam-status.success {
-            background: rgba(16, 185, 129, 0.8);
-        }
-        .cam-status.error {
-            background: rgba(239, 68, 68, 0.8);
-        }
-        .cam-status.warning {
-            background: rgba(245, 158, 11, 0.8);
-        }
-
-        /* Buttons - compact */
-        .btn {
-            padding: 6px 14px;
-            border-radius: 8px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.15s;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.75rem;
-        }
-        .btn:active {
-            transform: scale(0.95);
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--purple));
-            color: #fff;
-        }
-        .btn-success {
-            background: var(--success);
-            color: #fff;
-        }
-        .btn-danger {
-            background: var(--danger);
-            color: #fff;
-        }
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-secondary);
-        }
-        .btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-        .btn-sm {
-            padding: 4px 10px;
-            font-size: 0.65rem;
-        }
-
-        /* Forms */
-        .form-group {
-            margin-bottom: 8px;
-        }
-        .form-group label {
-            display: block;
-            font-size: 0.65rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 2px;
-        }
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 6px 10px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            font-size: 0.8rem;
-        }
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        /* Tables */
-        .table-container {
-            overflow-x: auto;
-            max-height: 250px;
-            overflow-y: auto;
-        }
-        .modern-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.7rem;
-        }
-        .modern-table th {
-            text-align: left;
-            padding: 4px 8px;
-            background: var(--bg);
-            color: var(--text-secondary);
-            font-weight: 600;
-            font-size: 0.55rem;
-            text-transform: uppercase;
-            position: sticky;
-            top: 0;
-            z-index: 5;
-        }
-        .modern-table td {
-            padding: 4px 8px;
-            border-bottom: 1px solid var(--border);
-        }
-        .status-badge {
-            padding: 1px 8px;
-            border-radius: 12px;
-            font-size: 0.6rem;
-            font-weight: 600;
-        }
-        .status-hadir {
-            background: rgba(16, 185, 129, 0.12);
-            color: var(--success);
-        }
-        .status-lewat {
-            background: rgba(245, 158, 11, 0.12);
-            color: var(--warning);
-        }
-
-        /* Stats */
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        @media (max-width: 480px) {
-            .stats-row {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-        .stat-box {
-            background: var(--card-bg);
-            padding: 8px;
-            border-radius: 10px;
-            text-align: center;
-            border: 1px solid var(--border);
-        }
-        .stat-box .number {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-        .stat-box .label {
-            font-size: 0.5rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-        }
-
-        /* User list */
-        .user-list {
-            max-height: 250px;
-            overflow-y: auto;
-        }
-        .user-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 4px 6px;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.75rem;
-        }
-        .user-item .info {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .user-item .avatar {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: var(--bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.6rem;
-            overflow: hidden;
-        }
-        .user-item .avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .user-item .name {
-            font-weight: 600;
-        }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 16px;
-            right: 16px;
-            background: var(--card-bg);
-            padding: 10px 16px;
-            border-radius: 12px;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border);
-            max-width: 300px;
-            z-index: 1000;
-            animation: slideUp 0.25s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.8rem;
-        }
-        .toast.hidden {
-            display: none;
-        }
-        .toast.success {
-            border-left: 3px solid var(--success);
-        }
-        .toast.error {
-            border-left: 3px solid var(--danger);
-        }
-        .toast.warning {
-            border-left: 3px solid var(--warning);
-        }
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(16px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-
-        .camera-controls {
-            display: flex;
-            gap: 6px;
-            margin-top: 8px;
-            flex-wrap: wrap;
-        }
-
-        .reg-status {
-            margin-top: 8px;
-            padding: 6px 10px;
-            background: var(--bg);
-            border-radius: 8px;
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-        }
-        .reg-status.success {
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--success);
-        }
-        .reg-status.error {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
-        }
-
-        .search-bar {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 8px;
-            flex-wrap: wrap;
-        }
-        .search-bar input,
-        .search-bar select {
-            padding: 4px 10px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            font-size: 0.7rem;
-            flex: 1;
-            min-width: 80px;
-        }
-
-        .step-indicator {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin-bottom: 12px;
-        }
-        .step {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-        }
-        .step-number {
-            width: 24px;
-            height: 24px;
-            border-radius: 24px;
-            background: var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.65rem;
-        }
-        .step.active .step-number {
-            background: linear-gradient(135deg, var(--primary), var(--purple));
-            color: #fff;
-        }
-        .step.completed .step-number {
-            background: var(--success);
-            color: #fff;
-        }
-        .step-label {
-            font-size: 0.5rem;
-            color: var(--text-secondary);
-        }
-
-        .voice-indicator {
-            position: fixed;
-            bottom: 70px;
-            right: 16px;
-            background: linear-gradient(135deg, var(--primary), var(--purple));
-            color: #fff;
-            padding: 4px 12px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            z-index: 999;
-            font-size: 0.6rem;
-            box-shadow: var(--shadow-lg);
-        }
-        .voice-indicator.hidden {
-            display: none;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        <!-- Header -->
-        <header class="app-header">
-            <h1>
-                <i data-lucide="scan-face" style="width:18px;height:18px;"></i>
-                SmartClass
-            </h1>
-            <div class="header-controls">
-                <span class="status-badge status-loading" id="modelStatus">Loading...</span>
-                <button class="btn btn-sm btn-outline" onclick="toggleCamera()">
-                    <i data-lucide="camera" style="width:12px;height:12px;"></i>
-                    <span id="camToggleText">Start</span>
-                </button>
-            </div>
-        </header>
-
-        <!-- Navigation -->
-        <nav class="nav-tabs">
-            <button class="nav-tab active" data-tab="attendance">
-                <i data-lucide="clipboard-check"></i> Attendance
-            </button>
-            <button class="nav-tab" data-tab="register">
-                <i data-lucide="user-plus"></i> Register
-            </button>
-            <button class="nav-tab" data-tab="users">
-                <i data-lucide="users"></i> Users
-            </button>
-            <button class="nav-tab" data-tab="records">
-                <i data-lucide="clock"></i> Records
-            </button>
-        </nav>
-
-        <!-- Attendance Tab -->
-        <div class="tab-content active" id="tab-attendance">
-            <div class="stats-row" id="attendanceStats">
-                <div class="stat-box"><div class="number" id="totalRegistered">0</div><div class="label">Users</div></div>
-                <div class="stat-box"><div class="number" id="todayPresent">0</div><div class="label">Present</div></div>
-                <div class="stat-box"><div class="number" id="todayLate">0</div><div class="label">Late</div></div>
-                <div class="stat-box"><div class="number" id="attendanceRate">0%</div><div class="label">Rate</div></div>
-            </div>
-
-            <div class="grid-2">
-                <div class="card">
-                    <div class="card-title">
-                        <span><i data-lucide="camera" style="width:16px;height:16px;color:var(--primary);"></i> Camera</span>
-                        <span class="badge" id="faceCount">👤 0</span>
-                    </div>
-                    <div class="camera-container">
-                        <video id="videoFeed" autoplay playsinline></video>
-                        <canvas id="canvasOverlay"></canvas>
-                        <div class="cam-overlay">
-                            <span class="cam-status" id="camStatus">● Waiting</span>
-                            <span class="cam-status" id="recogStatus">⏳</span>
-                        </div>
-                    </div>
-                    <div class="camera-controls">
-                        <select id="cameraSelect" style="padding:4px 8px;border-radius:8px;border:1px solid var(--border);font-size:0.7rem;flex:1;">
-                            <option value="user">Front</option>
-                            <option value="environment">Back</option>
-                        </select>
-                        <button class="btn btn-sm btn-primary" onclick="takeAttendance()">
-                            <i data-lucide="clipboard-check" style="width:12px;height:12px;"></i> Mark
-                        </button>
-                    </div>
-                    <div style="margin-top:6px;padding:4px 8px;background:var(--bg);border-radius:8px;min-height:28px;font-size:0.65rem;" id="recognizedList">
-                        👤 Waiting for faces...
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-title">
-                        <span><i data-lucide="clipboard-list" style="width:16px;height:16px;color:var(--primary);"></i> Today</span>
-                        <span class="badge" id="todayCount">0</span>
-                    </div>
-                    <select id="attendanceClassFilter" style="width:100%;padding:4px 8px;border-radius:8px;border:1px solid var(--border);font-size:0.7rem;margin-bottom:6px;">
-                        <option value="all">All Classes</option>
-                    </select>
-                    <div class="table-container" id="attendanceTableContainer">
-                        <table class="modern-table">
-                            <thead><tr><th>Name</th><th>Class</th><th>Status</th><th>Time</th></tr></thead>
-                            <tbody id="attendanceTableBody">
-                                <tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-secondary);font-size:0.7rem;">No records</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Register Tab -->
-        <div class="tab-content" id="tab-register">
-            <div class="step-indicator">
-                <div class="step active" id="step1"><div class="step-number">1</div><div class="step-label">Info</div></div>
-                <div class="step" id="step2"><div class="step-number">2</div><div class="step-label">Capture</div></div>
-            </div>
-
-            <div class="grid-2">
-                <div class="card">
-                    <div class="card-title"><span><i data-lucide="user-plus" style="width:16px;height:16px;color:var(--primary);"></i> Register</span></div>
-                    <form id="registerForm" onsubmit="return false;">
-                        <div class="form-group">
-                            <label>Name *</label>
-                            <input type="text" id="regName" placeholder="Full name" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Role</label>
-                            <select id="regRole">
-                                <option value="student">Student</option>
-                                <option value="teacher">Teacher</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Class *</label>
-                            <select id="regClass" required>
-                                <option value="">Select</option>
-                                <option value="5A">5A</option><option value="5B">5B</option><option value="5C">5C</option>
-                                <option value="4A">4A</option><option value="4B">4B</option><option value="4C">4C</option>
-                                <option value="3A">3A</option><option value="3B">3B</option>
-                                <option value="2A">2A</option><option value="2B">2B</option>
-                                <option value="1A">1A</option><option value="1B">1B</option>
-                            </select>
-                        </div>
-                        <div style="display:flex;gap:4px;flex-wrap:wrap;">
-                            <button type="button" class="btn btn-primary" onclick="captureFace()">
-                                <i data-lucide="camera" style="width:14px;height:14px;"></i> Capture
-                            </button>
-                            <button type="button" class="btn btn-success" id="registerBtn" disabled onclick="registerUser()">
-                                <i data-lucide="save" style="width:14px;height:14px;"></i> Register
-                            </button>
-                            <button type="button" class="btn btn-outline" onclick="resetReg()">
-                                <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i>
-                            </button>
-                        </div>
-                        <div class="reg-status" id="regStatus">💡 Fill details, then Capture</div>
-                    </form>
-                </div>
-
-                <div class="card">
-                    <div class="card-title">
-                        <span><i data-lucide="scan" style="width:16px;height:16px;color:var(--primary);"></i> Face Capture</span>
-                        <span id="regPoints">📍 0 pts</span>
-                    </div>
-                    <div class="camera-container">
-                        <video id="regVideo" autoplay playsinline></video>
-                        <canvas id="regCanvas"></canvas>
-                        <div class="cam-overlay">
-                            <span class="cam-status" id="regCamStatus">● Waiting</span>
-                            <span class="cam-status" id="regConf">0%</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Users Tab -->
-        <div class="tab-content" id="tab-users">
-            <div class="card">
-                <div class="card-title">
-                    <span><i data-lucide="users" style="width:16px;height:16px;color:var(--primary);"></i> Users</span>
-                    <span class="badge" id="userTotal">0</span>
-                </div>
-                <div class="search-bar">
-                    <input type="text" id="userSearch" placeholder="Search...">
-                    <select id="userRoleFilter">
-                        <option value="all">All</option>
-                        <option value="student">Students</option>
-                        <option value="teacher">Teachers</option>
-                    </select>
-                </div>
-                <div class="user-list" id="userList">
-                    <div style="text-align:center;padding:30px;color:var(--text-secondary);font-size:0.8rem;">No users</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Records Tab -->
-        <div class="tab-content" id="tab-records">
-            <div class="card">
-                <div class="card-title">
-                    <span><i data-lucide="clock" style="width:16px;height:16px;color:var(--primary);"></i> History</span>
-                    <span class="badge" id="recordTotal">0</span>
-                </div>
-                <div class="search-bar">
-                    <input type="date" id="recordDateFilter">
-                    <select id="recordClassFilter">
-                        <option value="all">All Classes</option>
-                    </select>
-                    <button class="btn btn-sm btn-primary" onclick="filterRecords()">Filter</button>
-                    <button class="btn btn-sm btn-success" onclick="exportCSV()">CSV</button>
-                </div>
-                <div class="table-container" style="max-height:300px;">
-                    <table class="modern-table">
-                        <thead>
-                            <tr><th>Name</th><th>Class</th><th>Status</th><th>Date</th><th>Time</th></tr>
-                        </thead>
-                        <tbody id="recordsTableBody">
-                            <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-secondary);font-size:0.7rem;">No records</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast -->
-    <div class="toast hidden" id="toast">
-        <i data-lucide="check-circle" style="width:18px;height:18px;"></i>
-        <span id="toastMsg">Success</span>
-    </div>
-
-    <!-- Voice Indicator -->
-    <div class="voice-indicator hidden" id="voiceIndicator">
-        <i data-lucide="volume-2" style="width:12px;height:12px;"></i>
-        <span id="voiceText">Speaking...</span>
-    </div>
-
-    <script>
-        // ================================================================
-        // OPTIMIZED JAVASCRIPT - Lightweight & Fast
-        // ================================================================
-
-        // ================================================================
-        // 1. STATE (minimal)
-        // ================================================================
-        let modelsReady = false;
-        let camActive = false;
-        let camStream = null;
-        let detectInterval = null;
-        let regInterval = null;
-        let users = [];
-        let attendance = [];
-        let currentFace = null;
-        let audioCtx = null;
-        let lastAttendance = {};
-
-        // ================================================================
-        // 2. LOAD MODELS (only when needed)
-        // ================================================================
-        async function loadModels() {
-            try {
-                updateStatus('modelStatus', 'Loading models...', 'status-loading');
-
-                // Load face-api library first
-                await loadFaceAPI();
-                
-                // Load models
-                const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
-                await Promise.all([
-                    faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
-                ]);
-
-                modelsReady = true;
-                updateStatus('modelStatus', '✅ Ready', 'status-online');
-
-                // Load data
-                loadUsers();
-                loadAttendance();
-                updateUI();
-
-                // Start camera
-                setTimeout(startCamera, 300);
-
-                showToast('✅ Ready!', 'success');
-
-            } catch (e) {
-                console.error('Model error:', e);
-                updateStatus('modelStatus', '❌ Failed', 'status-offline');
-                showToast('Please refresh and try again', 'error');
-            }
-        }
-
-        function updateStatus(elId, text, className) {
-            const el = document.getElementById(elId);
-            if (el) { el.textContent = text;
-                el.className = `status-badge ${className}`; }
-        }
-
-        // ================================================================
-        // 3. CAMERA (optimized)
-        // ================================================================
-        async function startCamera() {
-            try {
-                if (camStream) camStream.getTracks().forEach(t => t.stop());
-
-                const facing = document.getElementById('cameraSelect').value || 'user';
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: facing, width: { ideal: 480 }, height: { ideal: 360 }, frameRate: { ideal: 15 } }
-                });
-
-                camStream = stream;
-                const video = document.getElementById('videoFeed');
-                video.srcObject = stream;
-                await video.play();
-
-                camActive = true;
-                document.getElementById('camToggleText').textContent = 'Stop';
-
-                if (detectInterval) clearInterval(detectInterval);
-                detectInterval = setInterval(detectFaces, 200);
-
-                // Start reg camera too
-                startRegCamera();
-
-            } catch (e) {
-                console.error('Camera error:', e);
-                showToast('Please allow camera access', 'error');
-            }
-        }
-
-        function stopCamera() {
-            if (camStream) { camStream.getTracks().forEach(t => t.stop());
-                camStream = null; }
-            if (detectInterval) { clearInterval(detectInterval);
-                detectInterval = null; }
-            camActive = false;
-            document.getElementById('camToggleText').textContent = 'Start';
-        }
-
-        function toggleCamera() {
-            if (camActive) { stopCamera();
-                stopRegCamera(); } else startCamera();
-        }
-
-        // ================================================================
-        // 4. FACE DETECTION (lightweight)
-        // ================================================================
-        async function detectFaces() {
-            if (!modelsReady || !camActive) return;
-
-            const video = document.getElementById('videoFeed');
-            const canvas = document.getElementById('canvasOverlay');
-
-            if (!video.videoWidth) return;
-
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-
-            const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.4 }))
-                .withFaceLandmarks()
-                .withFaceDescriptors();
-
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            document.getElementById('faceCount').textContent = `👤 ${detections.length}`;
-
-            let names = [];
-
-            for (const d of detections) {
-                const box = d.detection.box;
-                const desc = d.descriptor;
-
-                // Find match
-                let match = null;
-                let bestDist = 0.55;
-
-                for (const u of users) {
-                    if (u.descriptor) {
-                        const dist = faceapi.euclideanDistance(desc, new Float32Array(u.descriptor));
-                        if (dist < bestDist) {
-                            bestDist = dist;
-                            match = u;
-                        }
-                    }
-                }
-
-                // Draw
-                ctx.beginPath();
-                ctx.rect(box.x, box.y, box.width, box.height);
-
-                if (match) {
-                    ctx.strokeStyle = '#10b981';
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-                    ctx.fillStyle = '#10b981';
-                    ctx.font = 'bold 12px system-ui';
-                    ctx.fillText(`✅ ${match.name}`, box.x, box.y - 4);
-
-                    names.push(match.name);
-                    autoAttendance(match);
-                } else {
-                    ctx.strokeStyle = '#ef4444';
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-                    ctx.fillStyle = '#ef4444';
-                    ctx.font = 'bold 12px system-ui';
-                    ctx.fillText('⚠️ Stranger', box.x, box.y - 4);
-                }
-
-                // Show landmarks (simplified)
-                const pos = d.landmarks.positions;
-                pos.forEach(p => {
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(99,102,241,0.6)';
-                    ctx.fill();
-                });
-            }
-
-            // Update recognized list
-            const listEl = document.getElementById('recognizedList');
-            if (names.length > 0) {
-                listEl.innerHTML = names.map(n => `<span style="background:rgba(16,185,129,0.1);color:var(--success);padding:1px 8px;border-radius:12px;font-size:0.6rem;font-weight:600;">✅ ${n}</span>`).join(
-                    ' ');
-                document.getElementById('recogStatus').textContent = `✅ ${names.join(', ')}`;
-                document.getElementById('recogStatus').className = 'cam-status success';
-            } else if (detections.length > 0) {
-                document.getElementById('recogStatus').textContent = '⚠️ Unknown';
-                document.getElementById('recogStatus').className = 'cam-status warning';
-            } else {
-                document.getElementById('recogStatus').textContent = '⏳';
-                document.getElementById('recogStatus').className = 'cam-status';
-            }
-        }
-
-        // ================================================================
-        // 5. AUTO ATTENDANCE (optimized)
-        // ================================================================
-        function autoAttendance(user) {
-            const today = new Date().toISOString().split('T')[0];
-            const session = new Date().getHours() < 13 ? 'pagi' : 'petang';
-            const key = `${user.id}_${today}_${session}`;
-
-            if (lastAttendance[key] && Date.now() - lastAttendance[key] < 15000) return;
-
-            const exists = attendance.find(r => r.userId === user.id && r.date === today && r.session === session);
-            if (exists) return;
-
-            const mins = new Date().getHours() * 60 + new Date().getMinutes();
-            let status = "Hadir";
-            if (session === 'pagi' && mins > 510) status = "Lewat";
-            if (session === 'petang' && mins > 810) status = "Lewat";
-
-            const record = {
-                id: Date.now().toString(),
-                userId: user.id,
-                name: user.name,
-                role: user.role,
-                className: user.className,
-                status: status,
-                session: session,
-                sessionName: session === 'pagi' ? 'Morning' : 'Afternoon',
-                time: new Date().toLocaleTimeString('ms-MY'),
-                date: today,
-                timestamp: Date.now()
-            };
-
-            attendance.push(record);
-            lastAttendance[key] = Date.now();
-
-            saveAttendance();
-            updateUI();
-            playBeep();
-            speak(`${user.name} ${status === 'Hadir' ? 'present' : 'late'}`);
-            showToast(`✅ ${user.name} ${status}`, 'success');
-        }
-
-        // ================================================================
-        // 6. REGISTRATION
-        // ================================================================
-        async function startRegCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 360 } }
-                });
-                const video = document.getElementById('regVideo');
-                video.srcObject = stream;
-                await video.play();
-
-                if (regInterval) clearInterval(regInterval);
-                regInterval = setInterval(detectRegFace, 200);
-
-            } catch (e) { console.error('Reg camera error:', e); }
-        }
-
-        function stopRegCamera() {
-            const video = document.getElementById('regVideo');
-            if (video.srcObject) {
-                video.srcObject.getTracks().forEach(t => t.stop());
-                video.srcObject = null;
-            }
-            if (regInterval) { clearInterval(regInterval);
-                regInterval = null; }
-        }
-
-        async function detectRegFace() {
-            if (!modelsReady) return;
-
-            const video = document.getElementById('regVideo');
-            const canvas = document.getElementById('regCanvas');
-            const ctx = canvas.getContext('2d');
-
-            if (!video.videoWidth) return;
-
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-
-            const d = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.4 }))
-                .withFaceLandmarks()
-                .withFaceDescriptor();
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            if (!d) {
-                document.getElementById('regPoints').textContent = '📍 0 pts';
-                document.getElementById('regConf').textContent = '0%';
-                document.getElementById('regCamStatus').textContent = '● No face';
-                document.getElementById('regCamStatus').className = 'cam-status';
-                document.getElementById('registerBtn').disabled = true;
-                return;
-            }
-
-            const box = d.detection.box;
-            const pos = d.landmarks.positions;
-
-            // Draw
-            ctx.beginPath();
-            ctx.rect(box.x, box.y, box.width, box.height);
-            ctx.strokeStyle = '#10b981';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            pos.forEach(p => {
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
-                ctx.fillStyle = '#6366f1';
-                ctx.fill();
-            });
-
-            // Store
-            currentFace = {
-                landmarks: pos.map(p => ({ x: p.x, y: p.y })),
-                descriptor: Array.from(d.descriptor),
-                confidence: d.detection.score
-            };
-
-            document.getElementById('regPoints').textContent = `📍 ${pos.length} pts`;
-            document.getElementById('regConf').textContent = `${(d.detection.score * 100).toFixed(0)}%`;
-            document.getElementById('regCamStatus').textContent = '✅ Face detected';
-            document.getElementById('regCamStatus').className = 'cam-status success';
-
-            // Enable register if face is centered
-            const cx = canvas.width / 2,
-                cy = canvas.height / 2;
-            const fx = box.x + box.width / 2,
-                fy = box.y + box.height / 2;
-            if (Math.abs(fx - cx) / canvas.width < 0.2 && Math.abs(fy - cy) / canvas.height < 0.2) {
-                document.getElementById('registerBtn').disabled = false;
-                document.getElementById('regStatus').textContent = `✅ Face captured! ${pos.length} points. Ready to register.`;
-                document.getElementById('regStatus').className = 'reg-status success';
-            } else {
-                document.getElementById('registerBtn').disabled = true;
-                document.getElementById('regStatus').textContent = '⚠️ Center your face';
-                document.getElementById('regStatus').className = 'reg-status error';
-            }
-        }
-
-        function captureFace() {
-            if (!currentFace) {
-                showToast('No face detected. Look at camera.', 'warning');
-                return;
-            }
-            if (currentFace.landmarks.length < 68) {
-                showToast('Full face not visible', 'warning');
-                return;
-            }
-            const name = document.getElementById('regName').value.trim();
-            const cls = document.getElementById('regClass').value;
-            if (!name || !cls) {
-                showToast('Fill name and class', 'error');
-                return;
-            }
-            if (users.some(u => u.name.toLowerCase() === name.toLowerCase())) {
-                showToast('Name already exists', 'error');
-                return;
-            }
-            document.getElementById('registerBtn').disabled = false;
-            document.getElementById('regStatus').textContent = `✅ Ready to register ${name}`;
-            document.getElementById('regStatus').className = 'reg-status success';
-            showToast('Face captured! Click Register', 'success');
-            playBeep();
-        }
-
-        function registerUser() {
-            const name = document.getElementById('regName').value.trim();
-            const role = document.getElementById('regRole').value;
-            const cls = document.getElementById('regClass').value;
-
-            if (!name || !cls || !currentFace) {
-                showToast('Please capture face first', 'error');
-                return;
-            }
-
-            const user = {
-                id: Date.now().toString(),
-                name: name,
-                role: role,
-                className: cls,
-                registeredAt: new Date().toISOString(),
-                descriptor: currentFace.descriptor,
-                faceImage: null,
-                points: currentFace.landmarks.length
-            };
-
-            users.push(user);
-            saveUsers();
-            renderUsers();
-            updateUI();
-
-            document.getElementById('regName').value = '';
-            document.getElementById('regClass').value = '';
-            document.getElementById('registerBtn').disabled = true;
-            document.getElementById('regStatus').textContent = '💡 Fill details, then Capture';
-            document.getElementById('regStatus').className = 'reg-status';
-            currentFace = null;
-
-            updateClassFilters();
-            showToast(`✅ ${name} registered!`, 'success');
-            speak(`${name} registered`);
-            playBeep();
-        }
-
-        function resetReg() {
-            document.getElementById('regName').value = '';
-            document.getElementById('regClass').value = '';
-            document.getElementById('registerBtn').disabled = true;
-            document.getElementById('regStatus').textContent = '💡 Fill details, then Capture';
-            document.getElementById('regStatus').className = 'reg-status';
-            currentFace = null;
-            document.getElementById('regPoints').textContent = '📍 0 pts';
-            document.getElementById('regConf').textContent = '0%';
-            document.getElementById('regCamStatus').textContent = '● Waiting';
-            document.getElementById('regCamStatus').className = 'cam-status';
-            showToast('Reset', 'warning');
-        }
-
-        // ================================================================
-        // 7. DATA MANAGEMENT
-        // ================================================================
-        function saveUsers() {
-            try { localStorage.setItem('smart_users', JSON.stringify(users.map(u => ({ ...u, faceImage: null })))); } catch (
-            e) {}
-        }
-
-        function loadUsers() {
-            try {
-                const data = localStorage.getItem('smart_users');
-                if (data) users = JSON.parse(data);
-            } catch (e) { users = []; }
-        }
-
-        function saveAttendance() {
-            try { localStorage.setItem('smart_attendance', JSON.stringify(attendance)); } catch (e) {}
-        }
-
-        function loadAttendance() {
-            try {
-                const data = localStorage.getItem('smart_attendance');
-                if (data) attendance = JSON.parse(data);
-            } catch (e) { attendance = []; }
-        }
-
-        function renderUsers() {
-            const container = document.getElementById('userList');
-            const search = document.getElementById('userSearch')?.value.toLowerCase() || '';
-            const filter = document.getElementById('userRoleFilter')?.value || 'all';
-
-            let filtered = users;
-            if (search) filtered = filtered.filter(u => u.name.toLowerCase().includes(search));
-            if (filter !== 'all') filtered = filtered.filter(u => u.role === filter);
-
-            document.getElementById('userTotal').textContent = filtered.length;
-
-            if (filtered.length === 0) {
-                container.innerHTML =
-                    `<div style="text-align:center;padding:20px;color:var(--text-secondary);font-size:0.8rem;">No users</div>`;
-                return;
-            }
-
-            container.innerHTML = filtered.map(u => `
-                <div class="user-item">
-                    <div class="info">
-                        <div class="avatar">👤</div>
-                        <div><span class="name">${u.name}</span> <span style="font-size:0.6rem;color:var(--text-secondary);">${u.className}</span></div>
-                    </div>
-                    <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id}')" style="padding:2px 6px;font-size:0.55rem;">✕</button>
-                </div>
-            `).join('');
-        }
-
-        async function deleteUser(id) {
-            const result = await Swal.fire({ title: 'Delete?', text: 'Remove this user?', icon: 'warning',
-                showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Yes' });
-            if (result.isConfirmed) {
-                users = users.filter(u => u.id !== id);
-                saveUsers();
-                renderUsers();
-                updateUI();
-                updateClassFilters();
-                showToast('User deleted', 'success');
-            }
-        }
-
-        function updateUI() {
-            const total = users.length;
-            document.getElementById('totalRegistered').textContent = total;
-
-            const today = new Date().toISOString().split('T')[0];
-            const todayRecs = attendance.filter(r => r.date === today);
-            const present = todayRecs.filter(r => r.status === 'Hadir').length;
-            const late = todayRecs.filter(r => r.status === 'Lewat').length;
-
-            document.getElementById('todayPresent').textContent = present;
-            document.getElementById('todayLate').textContent = late;
-            document.getElementById('attendanceRate').textContent = total > 0 ? `${Math.round((present/total)*100)}%` : '0%';
-
-            // Update attendance table
-            const classFilter = document.getElementById('attendanceClassFilter')?.value || 'all';
-            let filtered = todayRecs;
-            if (classFilter !== 'all') filtered = filtered.filter(r => r.className === classFilter);
-
-            document.getElementById('todayCount').textContent = filtered.length;
-
-            const tbody = document.getElementById('attendanceTableBody');
-            if (filtered.length === 0) {
-                tbody.innerHTML =
-                    `<tr><td colspan="4" style="text-align:center;padding:15px;color:var(--text-secondary);font-size:0.7rem;">No records</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = filtered.map(r => `
-                <tr>
-                    <td><strong>${r.name}</strong></td>
-                    <td><span class="status-badge">${r.className}</span></td>
-                    <td><span class="status-badge ${r.status === 'Hadir' ? 'status-hadir' : 'status-lewat'}">${r.status}</span></td>
-                    <td>${r.time}</td>
-                </tr>
-            `).join('');
-        }
-
-        function updateClassFilters() {
-            const classes = [...new Set(users.map(u => u.className))].sort();
-
-            ['attendanceClassFilter', 'recordClassFilter'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    const current = el.value;
-                    el.innerHTML = `<option value="all">All Classes</option>${classes.map(c => `<option value="${c}">${c}</option>`).join('')}`;
-                    if (classes.includes(current)) el.value = current;
-                }
-            });
-        }
-
-        // ================================================================
-        // 8. RECORDS
-        // ================================================================
-        function renderRecords() {
-            const date = document.getElementById('recordDateFilter')?.value || '';
-            const cls = document.getElementById('recordClassFilter')?.value || 'all';
-
-            let filtered = [...attendance];
-            if (date) filtered = filtered.filter(r => r.date === date);
-            if (cls !== 'all') filtered = filtered.filter(r => r.className === cls);
-            filtered.sort((a, b) => b.timestamp - a.timestamp);
-
-            document.getElementById('recordTotal').textContent = filtered.length;
-
-            const tbody = document.getElementById('recordsTableBody');
-            if (filtered.length === 0) {
-                tbody.innerHTML =
-                    `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-secondary);font-size:0.7rem;">No records</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = filtered.map(r => `
-                <tr>
-                    <td><strong>${r.name}</strong></td>
-                    <td><span class="status-badge">${r.className}</span></td>
-                    <td><span class="status-badge ${r.status === 'Hadir' ? 'status-hadir' : 'status-lewat'}">${r.status}</span></td>
-                    <td>${r.date}</td>
-                    <td>${r.time}</td>
-                </tr>
-            `).join('');
-        }
-
-        function filterRecords() { renderRecords();
-            showToast('Filtered', 'success'); }
-
-        // ================================================================
-        // 9. EXPORT
-        // ================================================================
-        function exportCSV() {
-            if (attendance.length === 0) { showToast('No records', 'warning'); return; }
-
-            let csv = 'Name,Class,Status,Date,Time,Session\n';
-            attendance.forEach(r => {
-                csv += `"${r.name}","${r.className}","${r.status}","${r.date}","${r.time}","${r.sessionName}"\n`;
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `attendance_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast('CSV exported!', 'success');
-        }
-
-        // ================================================================
-        // 10. UI HELPERS
-        // ================================================================
-        function showToast(msg, type = 'success') {
-            const t = document.getElementById('toast');
-            const m = document.getElementById('toastMsg');
-            const icon = t.querySelector('i');
-
-            t.className = `toast ${type}`;
-            m.textContent = msg;
-
-            const icons = { success: 'check-circle', error: 'x-circle', warning: 'alert-circle' };
-            if (icon) icon.setAttribute('data-lucide', icons[type] || 'check-circle');
-
-            t.classList.remove('hidden');
-            lucide.createIcons();
-
-            clearTimeout(t._hide);
-            t._hide = setTimeout(() => t.classList.add('hidden'), 3000);
-        }
-
-        function playBeep() {
-            try {
-                if (!audioCtx) audioCtx = new(window.AudioContext || window.webkitAudioContext)();
-                const o = audioCtx.createOscillator(),
-                    g = audioCtx.createGain();
-                o.connect(g);
-                g.connect(audioCtx.destination);
-                o.frequency.value = 880;
-                g.gain.value = 0.08;
-                o.start();
-                g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.15);
-                setTimeout(() => o.stop(), 150);
-            } catch (_) {}
-        }
-
-        function speak(text) {
-            if (!text) return;
-            const u = new SpeechSynthesisUtterance(text);
-            u.lang = 'ms-MY';
-            u.rate = 0.85;
-
-            const ind = document.getElementById('voiceIndicator');
-            const txt = document.getElementById('voiceText');
-            if (ind && txt) { txt.textContent = text;
-                ind.classList.remove('hidden');
-                setTimeout(() => ind.classList.add('hidden'), 2000); }
-
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(u);
-        }
-
-        function takeAttendance() { detectFaces();
-            showToast('Checking attendance...', 'success'); }
-
-        // ================================================================
-        // 11. NAVIGATION
-        // ================================================================
-        function navigateTo(tab) {
-            document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === `tab-${tab}`));
-
-            if (tab === 'records') renderRecords();
-            if (tab === 'users') renderUsers();
-            if (tab === 'attendance') updateUI();
-        }
-
-        // ================================================================
-        // 12. INIT
-        // ================================================================
-        document.addEventListener('DOMContentLoaded', () => {
-            // Navigation
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.addEventListener('click', () => navigateTo(tab.dataset.tab));
-            });
-
-            // Filters
-            document.getElementById('attendanceClassFilter')?.addEventListener('change', updateUI);
-            document.getElementById('userSearch')?.addEventListener('input', renderUsers);
-            document.getElementById('userRoleFilter')?.addEventListener('change', renderUsers);
-            document.getElementById('cameraSelect')?.addEventListener('change', () => {
-                if (camActive) { stopCamera();
-                    setTimeout(startCamera, 300); }
-            });
-
-            // Enter key
-            document.getElementById('regName')?.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') captureFace();
-            });
-
-            // Start
-            loadModels();
-            lucide.createIcons();
-
-            console.log('🚀 SmartClass Pro - Optimized');
-            console.log(`📚 ${users.length} users, 📋 ${attendance.length} records`);
-        });
-
-        // Expose globals
-        window.toggleCamera = toggleCamera;
-        window.captureFace = captureFace;
-        window.registerUser = registerUser;
-        window.resetReg = resetReg;
-        window.deleteUser = deleteUser;
-        window.takeAttendance = takeAttendance;
-        window.filterRecords = filterRecords;
-        window.exportCSV = exportCSV;
-        window.navigateTo = navigateTo;
+        window.addHoliday = addHoliday;
+        window.removeHoliday = removeHoliday;
+        window.clearHolidays = clearHolidays;
+        window.loadKPMSchedule = loadKPMSchedule;
+        window.loadRamadanHolidays = loadRamadanHolidays;
+        window.generatePDFReport = generatePDFReport;
     </script>
 </body>
 </html>
