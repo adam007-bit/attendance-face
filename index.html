@@ -3,39 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>SmartClass Pro 2026 - AI Face Recognition</title>
+    <title>SmartClass Pro 2026 - Face Recognition</title>
 
-    <!-- ===== 2026 TECH STACK ===== -->
-    <!-- Fast, Modern, Optimized -->
-    
-    <!-- Modern UI Icons -->
+    <!-- Libraries -->
     <script src="https://unpkg.com/lucide@latest" defer></script>
-    
-    <!-- Better Alerts - Modern -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
-    
-    <!-- Charts 4.0 - Faster -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
     
-    <!-- Face API - Latest 2026 -->
+    <!-- Face API - Lazy Load -->
     <script>
-        // Modern lazy loading with priority hints
         let faceAPILoaded = false;
         let faceAPIPromise = null;
         
         function loadFaceAPI() {
             if (faceAPIPromise) return faceAPIPromise;
-            
             faceAPIPromise = new Promise((resolve, reject) => {
                 const script = document.createElement('script');
-                // Latest 2026 version with improved models
                 script.src = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.min.js';
                 script.async = true;
-                script.fetchPriority = 'high';
-                script.onload = () => {
-                    faceAPILoaded = true;
-                    resolve();
-                };
+                script.onload = () => { faceAPILoaded = true; resolve(); };
                 script.onerror = reject;
                 document.head.appendChild(script);
             });
@@ -43,277 +29,168 @@
         }
     </script>
 
-    <!-- ===== MODERN 2026 STYLES ===== -->
     <style>
-        /* ===== 2026 DESIGN SYSTEM ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
-        /* Modern Color Palette 2026 */
         :root {
             --primary: #6366f1;
-            --primary-light: #818cf8;
-            --primary-dark: #4f46e5;
-            --success: #10b981;
-            --success-light: #34d399;
-            --danger: #ef4444;
-            --danger-light: #f87171;
-            --warning: #f59e0b;
-            --warning-light: #fbbf24;
             --purple: #8b5cf6;
-            --pink: #ec4899;
-            --cyan: #06b6d4;
-            
-            --bg: #f0f4ff;
-            --bg-dark: #0f172a;
-            --card-bg: rgba(255, 255, 255, 0.85);
-            --card-bg-dark: rgba(30, 41, 59, 0.9);
-            
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --text-light: #94a3b8;
-            
-            --border: rgba(226, 232, 240, 0.6);
-            --border-dark: rgba(51, 65, 85, 0.6);
-            
-            --shadow: 0 4px 24px rgba(99, 102, 241, 0.08);
-            --shadow-lg: 0 8px 40px rgba(99, 102, 241, 0.15);
-            --shadow-glow: 0 0 60px rgba(99, 102, 241, 0.1);
-            
-            --radius: 20px;
-            --radius-sm: 12px;
-            --radius-full: 9999px;
-            
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-            
-            --glass-bg: rgba(255, 255, 255, 0.15);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --text2: #475569;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.08);
+            --radius: 14px;
         }
-        
-        /* Dark Mode Support */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #0f172a;
-                --card-bg: rgba(30, 41, 59, 0.9);
-                --text-primary: #f1f5f9;
-                --text-secondary: #94a3b8;
-                --border: rgba(51, 65, 85, 0.6);
-                --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-                --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
-                --glass-bg: rgba(30, 41, 59, 0.3);
-            }
-        }
-        
-        /* Global */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, system-ui, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
-            color: var(--text-primary);
+            color: var(--text);
+            padding: 10px;
+            font-size: 14px;
             min-height: 100vh;
-            padding: 16px;
-            transition: var(--transition);
-            background-image: radial-gradient(ellipse at 50% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
         }
         .container {
-            max-width: 1440px;
+            max-width: 1400px;
             margin: 0 auto;
         }
-        
-        /* ===== GLASSMORPHISM HEADER ===== */
+
+        /* Header */
         .app-header {
             background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
+            padding: 10px 14px;
             border-radius: var(--radius);
-            padding: 14px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 6px;
             box-shadow: var(--shadow);
-            margin-bottom: 16px;
-            transition: var(--transition);
-        }
-        .app-header:hover {
-            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            margin-bottom: 10px;
         }
         .app-header h1 {
-            font-size: 1.2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--purple), var(--pink));
+            font-size: 1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-        .app-header h1 .badge-2026 {
-            font-size: 0.5rem;
-            background: linear-gradient(135deg, var(--primary), var(--purple));
-            color: white;
-            padding: 2px 8px;
-            border-radius: var(--radius-full);
-            font-weight: 700;
-            letter-spacing: 0.5px;
+            gap: 6px;
         }
         .app-header h1 i {
             background: linear-gradient(135deg, var(--primary), var(--purple));
-            padding: 8px;
-            border-radius: var(--radius-sm);
-            color: white;
-            width: 34px;
-            height: 34px;
+            padding: 5px;
+            border-radius: 8px;
+            color: #fff;
+            width: 24px;
+            height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
         .header-controls {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
             flex-wrap: wrap;
         }
-        
-        /* ===== MODERN BADGES ===== */
         .status-badge {
-            padding: 5px 14px;
-            border-radius: var(--radius-full);
-            font-size: 0.6rem;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-            text-transform: uppercase;
-            transition: var(--transition-fast);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+            padding: 3px 10px;
+            border-radius: 16px;
+            font-size: 0.55rem;
+            font-weight: 600;
         }
-        .status-badge .dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            display: inline-block;
-            animation: pulse-dot 2s infinite;
-        }
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.8); }
-        }
-        .status-online { background: rgba(16, 185, 129, 0.12); color: var(--success); }
-        .status-online .dot { background: var(--success); }
-        .status-loading { background: rgba(245, 158, 11, 0.12); color: var(--warning); }
-        .status-loading .dot { background: var(--warning); }
-        .status-offline { background: rgba(239, 68, 68, 0.12); color: var(--danger); }
-        .status-offline .dot { background: var(--danger); }
-        
-        /* ===== MODERN NAV ===== */
+        .status-online { background: rgba(16,185,129,0.12); color: var(--success); }
+        .status-loading { background: rgba(245,158,11,0.12); color: var(--warning); }
+        .status-offline { background: rgba(239,68,68,0.12); color: var(--danger); }
+
+        /* Navigation */
         .nav-tabs {
             display: flex;
-            gap: 4px;
+            gap: 3px;
             background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             border-radius: var(--radius);
-            padding: 6px;
+            padding: 4px;
             border: 1px solid var(--border);
-            margin-bottom: 16px;
+            margin-bottom: 10px;
             overflow-x: auto;
             scrollbar-width: none;
             -webkit-overflow-scrolling: touch;
-            box-shadow: var(--shadow);
         }
         .nav-tabs::-webkit-scrollbar { display: none; }
         .nav-tab {
-            padding: 8px 18px;
-            border-radius: var(--radius-sm);
+            padding: 5px 12px;
+            border-radius: 8px;
             border: none;
             background: none;
             cursor: pointer;
             font-weight: 600;
-            font-size: 0.75rem;
-            transition: var(--transition-fast);
-            color: var(--text-secondary);
+            font-size: 0.7rem;
+            transition: all 0.2s;
+            color: var(--text2);
             white-space: nowrap;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 3px;
             flex: 1;
             justify-content: center;
-            position: relative;
         }
-        .nav-tab::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: var(--radius-sm);
+        .nav-tab.active {
             background: linear-gradient(135deg, var(--primary), var(--purple));
-            opacity: 0;
-            transition: var(--transition-fast);
-            z-index: -1;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(99,102,241,0.25);
         }
-        .nav-tab:hover { color: var(--text-primary); background: rgba(99, 102, 241, 0.05); }
-        .nav-tab.active { color: white; }
-        .nav-tab.active::before { opacity: 1; }
-        .nav-tab i { width: 16px; height: 16px; position: relative; z-index: 1; }
-        .nav-tab span { position: relative; z-index: 1; }
-        
-        /* ===== GLASS CARDS ===== */
+        .nav-tab i { width: 13px; height: 13px; }
+
+        /* Grid */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        @media(max-width:768px){ .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+        /* Cards */
         .card {
             background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 16px;
+            padding: 12px;
             box-shadow: var(--shadow);
-            transition: var(--transition);
+            border: 1px solid var(--border);
         }
-        .card:hover {
-            box-shadow: var(--shadow-lg);
-            transform: translateY(-2px);
-        }
-        .card:active { transform: scale(0.99); }
         .card-title {
-            font-size: 0.9rem;
-            font-weight: 700;
-            margin-bottom: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 8px;
+            gap: 6px;
         }
         .card-title .badge {
-            font-size: 0.6rem;
-            font-weight: 600;
-            padding: 3px 12px;
-            border-radius: var(--radius-full);
-            background: rgba(99, 102, 241, 0.08);
-            color: var(--primary);
+            font-size: 0.55rem;
+            font-weight: 500;
+            padding: 1px 6px;
+            border-radius: 10px;
+            background: var(--bg);
+            color: var(--text2);
         }
-        
-        /* ===== GRID LAYOUT ===== */
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-        .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
-        @media (max-width: 1024px) { .grid-4 { grid-template-columns: 1fr 1fr; } }
-        @media (max-width: 768px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
-        
-        /* ===== CAMERA - 2026 STYLE ===== */
+
+        /* Camera Container */
         .camera-container {
             position: relative;
             background: #0a0a0a;
-            border-radius: var(--radius-sm);
+            border-radius: 10px;
             overflow: hidden;
             aspect-ratio: 4/3;
-            box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.5);
         }
         #videoFeed, #regVideo {
             width: 100%;
@@ -330,761 +207,521 @@
         }
         .cam-overlay {
             position: absolute;
-            bottom: 10px;
-            left: 10px;
-            right: 10px;
+            bottom: 4px;
+            left: 4px;
+            right: 4px;
             display: flex;
             justify-content: space-between;
             pointer-events: none;
-            gap: 6px;
+            gap: 3px;
         }
         .cam-status {
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            background: rgba(0,0,0,0.7);
             color: #fff;
-            padding: 4px 12px;
-            border-radius: var(--radius-full);
-            font-size: 0.6rem;
-            font-weight: 500;
+            padding: 1px 6px;
+            border-radius: 8px;
+            font-size: 0.5rem;
             pointer-events: none;
-            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        .cam-status.success { background: rgba(16, 185, 129, 0.8); }
-        .cam-status.error { background: rgba(239, 68, 68, 0.8); }
-        .cam-status.warning { background: rgba(245, 158, 11, 0.8); }
-        
-        /* ===== 2026 BUTTONS ===== */
+        .cam-status.success { background: rgba(16,185,129,0.8); }
+        .cam-status.error { background: rgba(239,68,68,0.8); }
+        .cam-status.warning { background: rgba(245,158,11,0.8); }
+
+        /* Buttons */
         .btn {
-            padding: 8px 18px;
-            border-radius: var(--radius-full);
+            padding: 5px 12px;
+            border-radius: 8px;
             border: none;
-            font-weight: 700;
+            font-weight: 600;
             cursor: pointer;
-            transition: var(--transition-fast);
+            transition: transform 0.1s;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            font-size: 0.75rem;
-            position: relative;
-            overflow: hidden;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
+            gap: 3px;
+            font-size: 0.7rem;
         }
-        .btn::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
-            opacity: 0;
-            transition: var(--transition-fast);
-        }
-        .btn:hover::after { opacity: 1; }
         .btn:active { transform: scale(0.95); }
-        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-        
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--purple)); color: #fff; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3); }
-        .btn-primary:hover { box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4); transform: translateY(-2px); }
-        
-        .btn-success { background: linear-gradient(135deg, var(--success), var(--success-light)); color: #fff; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3); }
-        .btn-success:hover { box-shadow: 0 6px 24px rgba(16, 185, 129, 0.4); transform: translateY(-2px); }
-        
-        .btn-danger { background: linear-gradient(135deg, var(--danger), var(--danger-light)); color: #fff; box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3); }
-        .btn-danger:hover { box-shadow: 0 6px 24px rgba(239, 68, 68, 0.4); transform: translateY(-2px); }
-        
-        .btn-warning { background: linear-gradient(135deg, var(--warning), var(--warning-light)); color: #fff; box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3); }
-        .btn-warning:hover { box-shadow: 0 6px 24px rgba(245, 158, 11, 0.4); transform: translateY(-2px); }
-        
-        .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text-secondary); }
-        .btn-outline:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
-        
-        .btn-sm { padding: 5px 12px; font-size: 0.65rem; }
-        .btn-block { width: 100%; justify-content: center; }
-        
-        /* ===== FORMS - 2026 ===== */
-        .form-group { margin-bottom: 10px; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--purple)); color: #fff; }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-warning { background: var(--warning); color: #fff; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-sm { padding: 3px 8px; font-size: 0.6rem; }
+
+        /* Forms */
+        .form-group { margin-bottom: 6px; }
         .form-group label {
             display: block;
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: var(--text-secondary);
-            margin-bottom: 3px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: var(--text2);
+            margin-bottom: 1px;
         }
         .form-group input, .form-group select {
             width: 100%;
-            padding: 8px 14px;
-            border-radius: var(--radius-sm);
-            border: 2px solid var(--border);
-            font-size: 0.85rem;
+            padding: 5px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-size: 0.75rem;
             background: var(--card-bg);
-            transition: var(--transition-fast);
-            color: var(--text-primary);
         }
         .form-group input:focus, .form-group select:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.08);
+            box-shadow: 0 0 0 2px rgba(99,102,241,0.08);
         }
-        .form-group input::placeholder { color: var(--text-light); }
-        
-        /* ===== TABLES - 2026 ===== */
+
+        /* Tables */
         .table-container {
             overflow-x: auto;
-            max-height: 260px;
+            max-height: 220px;
             overflow-y: auto;
-            scrollbar-width: thin;
         }
-        .table-container::-webkit-scrollbar { width: 4px; height: 4px; }
-        .table-container::-webkit-scrollbar-track { background: var(--bg); border-radius: 10px; }
-        .table-container::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
-        
         .modern-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.75rem;
+            font-size: 0.65rem;
         }
         .modern-table th {
             text-align: left;
-            padding: 6px 10px;
-            background: rgba(99, 102, 241, 0.04);
-            color: var(--text-secondary);
-            font-weight: 700;
-            font-size: 0.6rem;
+            padding: 3px 6px;
+            background: var(--bg);
+            color: var(--text2);
+            font-weight: 600;
+            font-size: 0.5rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
             position: sticky;
             top: 0;
-            z-index: 5;
-            border-bottom: 2px solid var(--border);
+            z-index: 2;
         }
         .modern-table td {
-            padding: 6px 10px;
+            padding: 3px 6px;
             border-bottom: 1px solid var(--border);
         }
-        .modern-table tr:hover td { background: rgba(99, 102, 241, 0.02); }
-        
-        /* ===== STATUS BADGES ===== */
         .status-badge {
-            padding: 2px 12px;
-            border-radius: var(--radius-full);
-            font-size: 0.6rem;
-            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 8px;
+            font-size: 0.55rem;
+            font-weight: 600;
             display: inline-block;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
         }
-        .status-hadir { background: rgba(16, 185, 129, 0.12); color: var(--success); }
-        .status-lewat { background: rgba(245, 158, 11, 0.12); color: var(--warning); }
-        .status-holiday { background: rgba(239, 68, 68, 0.12); color: var(--danger); }
-        .status-teacher { background: rgba(99, 102, 241, 0.12); color: var(--primary); }
-        .status-student { background: rgba(139, 92, 246, 0.12); color: var(--purple); }
-        
-        /* ===== STATS - MODERN ===== */
+        .status-hadir { background: rgba(16,185,129,0.12); color: var(--success); }
+        .status-lewat { background: rgba(245,158,11,0.12); color: var(--warning); }
+        .status-holiday { background: rgba(239,68,68,0.12); color: var(--danger); }
+
+        /* Stats */
         .stats-row {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-bottom: 16px;
+            gap: 6px;
+            margin-bottom: 10px;
         }
-        @media (max-width: 640px) { .stats-row { grid-template-columns: 1fr 1fr; } }
-        
+        @media(max-width:480px){ .stats-row { grid-template-columns: 1fr 1fr; } }
         .stat-box {
             background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            padding: 12px;
-            border-radius: var(--radius-sm);
+            padding: 6px;
+            border-radius: 8px;
             text-align: center;
             border: 1px solid var(--border);
-            transition: var(--transition-fast);
-            box-shadow: var(--shadow);
         }
-        .stat-box:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
         .stat-box .number {
-            font-size: 1.6rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--purple));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            line-height: 1.2;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
         }
         .stat-box .label {
-            font-size: 0.55rem;
-            color: var(--text-secondary);
+            font-size: 0.45rem;
+            color: var(--text2);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 700;
-            margin-top: 2px;
+            letter-spacing: 0.2px;
         }
-        
-        /* ===== USER LIST ===== */
-        .user-list { max-height: 260px; overflow-y: auto; }
+
+        /* User List */
+        .user-list { max-height: 220px; overflow-y: auto; }
         .user-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 6px 8px;
+            padding: 3px 4px;
             border-bottom: 1px solid var(--border);
-            font-size: 0.8rem;
-            transition: var(--transition-fast);
-            border-radius: var(--radius-sm);
+            font-size: 0.7rem;
         }
-        .user-item:hover { background: rgba(99, 102, 241, 0.04); }
         .user-item .info {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 4px;
         }
         .user-item .avatar {
-            width: 34px;
-            height: 34px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--purple));
+            background: var(--bg);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.7rem;
+            font-size: 0.5rem;
             overflow: hidden;
-            border: 2px solid var(--border);
-            color: white;
-            font-weight: 700;
+            border: 1px solid var(--border);
         }
         .user-item .avatar img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        .user-item .name { font-weight: 700; }
-        .user-item .class-tag {
-            font-size: 0.55rem;
-            padding: 1px 8px;
-            border-radius: var(--radius-full);
-            background: var(--bg);
-            color: var(--text-secondary);
-        }
-        
-        /* ===== SEARCH ===== */
+        .user-item .name { font-weight: 600; }
+
         .search-bar {
             display: flex;
-            gap: 8px;
-            margin-bottom: 10px;
+            gap: 4px;
+            margin-bottom: 6px;
             flex-wrap: wrap;
         }
         .search-bar input, .search-bar select {
-            padding: 6px 14px;
-            border-radius: var(--radius-full);
-            border: 2px solid var(--border);
-            font-size: 0.75rem;
-            flex: 1;
-            min-width: 80px;
-            background: var(--card-bg);
-            transition: var(--transition-fast);
-            color: var(--text-primary);
-        }
-        .search-bar input:focus, .search-bar select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.08);
-        }
-        
-        /* ===== HOLIDAYS ===== */
-        .holiday-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-        .holiday-item {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.02));
-            color: var(--danger);
-            padding: 4px 12px;
-            border-radius: var(--radius-full);
-            font-size: 0.7rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            border: 1px solid rgba(239, 68, 68, 0.1);
-            font-weight: 500;
-        }
-        .holiday-item .remove {
-            cursor: pointer;
-            font-weight: 800;
-            color: var(--danger);
-            opacity: 0.6;
-            transition: var(--transition-fast);
-        }
-        .holiday-item .remove:hover { opacity: 1; }
-        
-        /* ===== CHARTS ===== */
-        .chart-container {
-            position: relative;
-            max-height: 140px;
-            min-height: 100px;
-        }
-        .chart-container canvas {
-            max-height: 140px !important;
-            width: 100% !important;
-        }
-        
-        /* ===== TOAST ===== */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            padding: 12px 20px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-lg);
+            padding: 3px 8px;
+            border-radius: 6px;
             border: 1px solid var(--border);
-            max-width: 340px;
-            z-index: 1000;
-            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.85rem;
+            font-size: 0.65rem;
+            flex: 1;
+            min-width: 60px;
+            background: var(--card-bg);
         }
-        .toast.hidden { display: none; }
-        .toast.success { border-left: 4px solid var(--success); }
-        .toast.error { border-left: 4px solid var(--danger); }
-        .toast.warning { border-left: 4px solid var(--warning); }
-        
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        
-        /* ===== TABS ===== */
-        .tab-content { display: none; animation: fadeIn 0.3s ease; }
-        .tab-content.active { display: block; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* ===== VOICE ===== */
-        .voice-indicator {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            background: linear-gradient(135deg, var(--primary), var(--purple));
-            color: #fff;
-            padding: 6px 16px;
-            border-radius: var(--radius-full);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            z-index: 999;
-            font-size: 0.7rem;
-            font-weight: 600;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .voice-indicator.hidden { display: none; }
-        
-        /* ===== REGISTRATION ===== */
+
         .step-indicator {
             display: flex;
             justify-content: center;
-            gap: 24px;
-            margin-bottom: 16px;
+            gap: 12px;
+            margin-bottom: 8px;
         }
         .step {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 1px;
         }
         .step-number {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            border-radius: 20px;
             background: var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 800;
-            font-size: 0.8rem;
-            transition: var(--transition-fast);
+            font-weight: 700;
+            font-size: 0.6rem;
         }
         .step.active .step-number {
             background: linear-gradient(135deg, var(--primary), var(--purple));
             color: #fff;
-            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
         }
         .step.completed .step-number {
             background: var(--success);
             color: #fff;
         }
         .step-label {
-            font-size: 0.6rem;
-            color: var(--text-secondary);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
+            font-size: 0.45rem;
+            color: var(--text2);
         }
-        
+
         .reg-status {
-            margin-top: 8px;
-            padding: 8px 12px;
+            margin-top: 6px;
+            padding: 4px 8px;
             background: var(--bg);
-            border-radius: var(--radius-sm);
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.65rem;
+            color: var(--text2);
         }
         .reg-status.success {
-            background: rgba(16, 185, 129, 0.06);
+            background: rgba(16,185,129,0.08);
             color: var(--success);
-            border-color: rgba(16, 185, 129, 0.2);
         }
         .reg-status.error {
-            background: rgba(239, 68, 68, 0.06);
+            background: rgba(239,68,68,0.08);
             color: var(--danger);
-            border-color: rgba(239, 68, 68, 0.2);
         }
-        
-        .face-preview-container {
-            display: none;
-            margin-top: 8px;
-            text-align: center;
-        }
-        .face-preview-container img {
-            width: 72px;
-            height: 72px;
-            border-radius: var(--radius-sm);
-            border: 3px solid var(--primary);
-            object-fit: cover;
-            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2);
-        }
-        .face-preview-container .label {
-            font-size: 0.6rem;
-            color: var(--text-secondary);
-            display: block;
-            margin-top: 4px;
-            font-weight: 600;
-        }
-        
-        .recognized-list {
-            margin-top: 6px;
-            padding: 6px 10px;
-            background: var(--bg);
-            border-radius: var(--radius-sm);
-            min-height: 30px;
-            font-size: 0.7rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            align-items: center;
-            border: 1px solid var(--border);
-        }
-        
+
         .camera-controls {
             display: flex;
-            gap: 6px;
-            margin-top: 8px;
+            gap: 4px;
+            margin-top: 6px;
             flex-wrap: wrap;
         }
         .camera-controls select {
-            padding: 5px 12px;
-            border-radius: var(--radius-full);
-            border: 2px solid var(--border);
-            font-size: 0.7rem;
+            padding: 3px 6px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-size: 0.65rem;
             flex: 1;
             background: var(--card-bg);
-            color: var(--text-primary);
         }
-        
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 480px) {
-            body { padding: 8px; }
-            .app-header { padding: 10px 14px; }
-            .app-header h1 { font-size: 1rem; }
-            .app-header h1 .badge-2026 { display: none; }
-            .nav-tab { font-size: 0.65rem; padding: 6px 10px; }
-            .stat-box .number { font-size: 1.2rem; }
-            .card { padding: 10px; }
+
+        .recognized-list {
+            margin-top: 4px;
+            padding: 3px 6px;
+            background: var(--bg);
+            border-radius: 6px;
+            min-height: 22px;
+            font-size: 0.6rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            align-items: center;
         }
+
+        .face-preview-container {
+            display: none;
+            margin-top: 6px;
+            text-align: center;
+        }
+        .face-preview-container img {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            border: 2px solid var(--primary);
+            object-fit: cover;
+        }
+        .face-preview-container .label {
+            font-size: 0.5rem;
+            color: var(--text2);
+            display: block;
+            margin-top: 2px;
+        }
+
+        .holiday-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            margin-top: 4px;
+        }
+        .holiday-item {
+            background: rgba(239,68,68,0.08);
+            color: var(--danger);
+            padding: 1px 6px;
+            border-radius: 6px;
+            font-size: 0.6rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .holiday-item .remove { cursor: pointer; font-weight: 700; }
+
+        .chart-container {
+            position: relative;
+            max-height: 120px;
+        }
+        .chart-container canvas {
+            max-height: 120px !important;
+            width: 100% !important;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 14px;
+            right: 14px;
+            background: var(--card-bg);
+            padding: 8px 14px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            max-width: 280px;
+            z-index: 1000;
+            animation: slideUp 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+        }
+        .toast.hidden { display: none; }
+        .toast.success { border-left: 3px solid var(--success); }
+        .toast.error { border-left: 3px solid var(--danger); }
+        .toast.warning { border-left: 3px solid var(--warning); }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .voice-indicator {
+            position: fixed;
+            bottom: 60px;
+            right: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            z-index: 999;
+            font-size: 0.55rem;
+            box-shadow: var(--shadow-lg);
+        }
+        .voice-indicator.hidden { display: none; }
+
+        @media(max-width:480px){ body { padding: 6px; } .app-header h1 { font-size: 0.85rem; } .nav-tab { font-size: 0.6rem; padding: 4px 8px; } .stat-box .number { font-size: 0.95rem; } .card { padding: 8px; } }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- ===== HEADER 2026 ===== -->
+        <!-- Header -->
         <header class="app-header">
-            <h1>
-                <i data-lucide="scan-face" style="width:20px;height:20px;"></i>
-                SmartClass <span class="badge-2026">2026</span>
-            </h1>
+            <h1><i data-lucide="scan-face" style="width:16px;height:16px;"></i>SmartClass Pro</h1>
             <div class="header-controls">
-                <span class="status-badge status-loading" id="modelStatus">
-                    <span class="dot"></span> Loading...
-                </span>
-                <button class="btn btn-sm btn-outline" onclick="toggleCamera()">
-                    <i data-lucide="camera" style="width:12px;height:12px;"></i>
+                <span class="status-badge status-loading" id="modelStatus">Loading...</span>
+                <button class="btn btn-sm btn-primary" onclick="toggleCamera()">
+                    <i data-lucide="camera" style="width:10px;height:10px;"></i>
                     <span id="camToggleText">Start</span>
                 </button>
             </div>
         </header>
 
-        <!-- ===== NAVIGATION ===== -->
+        <!-- Navigation -->
         <nav class="nav-tabs">
-            <button class="nav-tab active" data-tab="attendance">
-                <i data-lucide="clipboard-check"></i><span>Attend</span>
-            </button>
-            <button class="nav-tab" data-tab="register">
-                <i data-lucide="user-plus"></i><span>Register</span>
-            </button>
-            <button class="nav-tab" data-tab="users">
-                <i data-lucide="users"></i><span>Users</span>
-            </button>
-            <button class="nav-tab" data-tab="records">
-                <i data-lucide="clock"></i><span>Records</span>
-            </button>
-            <button class="nav-tab" data-tab="holidays">
-                <i data-lucide="calendar"></i><span>Holidays</span>
-            </button>
-            <button class="nav-tab" data-tab="reports">
-                <i data-lucide="file-text"></i><span>Reports</span>
-            </button>
+            <button class="nav-tab active" data-tab="attendance"><i data-lucide="clipboard-check"></i> Attendance</button>
+            <button class="nav-tab" data-tab="register"><i data-lucide="user-plus"></i> Register</button>
+            <button class="nav-tab" data-tab="users"><i data-lucide="users"></i> Users</button>
+            <button class="nav-tab" data-tab="records"><i data-lucide="clock"></i> Records</button>
+            <button class="nav-tab" data-tab="holidays"><i data-lucide="calendar"></i> Holidays</button>
+            <button class="nav-tab" data-tab="reports"><i data-lucide="file-text"></i> Reports</button>
         </nav>
 
-        <!-- ===== TAB 1: ATTENDANCE ===== -->
+        <!-- ===== ATTENDANCE ===== -->
         <div class="tab-content active" id="tab-attendance">
-            <!-- Stats -->
             <div class="stats-row">
                 <div class="stat-box"><div class="number" id="totalRegistered">0</div><div class="label">Users</div></div>
                 <div class="stat-box"><div class="number" id="todayPresent">0</div><div class="label">Present</div></div>
                 <div class="stat-box"><div class="number" id="todayLate">0</div><div class="label">Late</div></div>
                 <div class="stat-box"><div class="number" id="attendanceRate">0%</div><div class="label">Rate</div></div>
             </div>
-
-            <!-- Camera + Attendance -->
             <div class="grid-2">
                 <div class="card">
-                    <div class="card-title">
-                        <span><i data-lucide="camera" style="width:16px;height:16px;color:var(--primary);"></i> Live Camera</span>
-                        <span class="badge" id="faceCount">👤 0</span>
-                    </div>
+                    <div class="card-title"><span><i data-lucide="camera" style="width:14px;height:14px;color:var(--primary);"></i> Camera</span><span class="badge" id="faceCount">👤 0</span></div>
                     <div class="camera-container">
                         <video id="videoFeed" autoplay playsinline></video>
                         <canvas id="canvasOverlay"></canvas>
-                        <div class="cam-overlay">
-                            <span class="cam-status" id="camStatus">●</span>
-                            <span class="cam-status" id="recogStatus">⏳</span>
-                        </div>
+                        <div class="cam-overlay"><span class="cam-status" id="camStatus">●</span><span class="cam-status" id="recogStatus">⏳</span></div>
                     </div>
                     <div class="camera-controls">
-                        <select id="cameraSelect"><option value="user">📱 Front</option><option value="environment">📷 Back</option></select>
-                        <button class="btn btn-sm btn-primary" onclick="takeAttendance()"><i data-lucide="clipboard-check" style="width:12px;height:12px;"></i> Mark</button>
+                        <select id="cameraSelect"><option value="user">Front</option><option value="environment">Back</option></select>
+                        <button class="btn btn-sm btn-primary" onclick="takeAttendance()"><i data-lucide="clipboard-check" style="width:10px;height:10px;"></i> Mark</button>
                     </div>
                     <div class="recognized-list" id="recognizedList">👤 Waiting for faces...</div>
                 </div>
-
                 <div class="card">
-                    <div class="card-title">
-                        <span><i data-lucide="clipboard-list" style="width:16px;height:16px;color:var(--primary);"></i> Today's Attendance</span>
-                        <span class="badge" id="todayCount">0</span>
-                    </div>
-                    <select id="attendanceClassFilter" style="width:100%;padding:4px 10px;border-radius:var(--radius-full);border:2px solid var(--border);font-size:0.7rem;margin-bottom:6px;background:var(--card-bg);">
-                        <option value="all">All Classes</option>
-                    </select>
+                    <div class="card-title"><span><i data-lucide="clipboard-list" style="width:14px;height:14px;color:var(--primary);"></i> Today</span><span class="badge" id="todayCount">0</span></div>
+                    <select id="attendanceClassFilter" style="width:100%;padding:3px 6px;border-radius:6px;border:1px solid var(--border);font-size:0.65rem;margin-bottom:4px;"><option value="all">All Classes</option></select>
                     <div class="table-container">
-                        <table class="modern-table">
-                            <thead><tr><th>Name</th><th>Class</th><th>Status</th><th>Time</th></tr></thead>
-                            <tbody id="attendanceTableBody"><tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-secondary);font-size:0.7rem;">No records</td></tr></tbody>
-                        </table>
+                        <table class="modern-table"><thead><tr><th>Name</th><th>Class</th><th>Status</th><th>Time</th></tr></thead><tbody id="attendanceTableBody"><tr><td colspan="4" style="text-align:center;padding:12px;color:var(--text2);font-size:0.65rem;">No records</td></tr></tbody></table>
                     </div>
                 </div>
             </div>
-
-            <!-- Charts -->
-            <div class="grid-3" style="margin-top:16px;">
-                <div class="card">
-                    <div class="card-title"><span><i data-lucide="trending-up" style="width:14px;height:14px;color:var(--primary);"></i> Weekly Trend</span></div>
-                    <div class="chart-container"><canvas id="weeklyChart"></canvas></div>
-                </div>
-                <div class="card">
-                    <div class="card-title"><span><i data-lucide="bar-chart-3" style="width:14px;height:14px;color:var(--primary);"></i> Monthly Overview</span></div>
-                    <div class="chart-container"><canvas id="monthlyChart"></canvas></div>
-                </div>
-                <div class="card">
-                    <div class="card-title"><span><i data-lucide="pie-chart" style="width:14px;height:14px;color:var(--primary);"></i> Class Distribution</span></div>
-                    <div class="chart-container"><canvas id="classChart"></canvas></div>
-                </div>
+            <div class="grid-3" style="margin-top:10px;">
+                <div class="card"><div class="card-title"><span><i data-lucide="trending-up" style="width:14px;height:14px;color:var(--primary);"></i> Weekly</span></div><div class="chart-container"><canvas id="weeklyChart"></canvas></div></div>
+                <div class="card"><div class="card-title"><span><i data-lucide="bar-chart-3" style="width:14px;height:14px;color:var(--primary);"></i> Monthly</span></div><div class="chart-container"><canvas id="monthlyChart"></canvas></div></div>
+                <div class="card"><div class="card-title"><span><i data-lucide="pie-chart" style="width:14px;height:14px;color:var(--primary);"></i> Classes</span></div><div class="chart-container"><canvas id="classChart"></canvas></div></div>
             </div>
         </div>
 
-        <!-- ===== TAB 2: REGISTER ===== -->
+        <!-- ===== REGISTER ===== -->
         <div class="tab-content" id="tab-register">
-            <div class="step-indicator">
-                <div class="step active" id="step1"><div class="step-number">1</div><div class="step-label">Info</div></div>
-                <div class="step" id="step2"><div class="step-number">2</div><div class="step-label">Capture</div></div>
-            </div>
+            <div class="step-indicator"><div class="step active" id="step1"><div class="step-number">1</div><div class="step-label">Info</div></div><div class="step" id="step2"><div class="step-number">2</div><div class="step-label">Capture</div></div></div>
             <div class="grid-2">
                 <div class="card">
-                    <div class="card-title"><span><i data-lucide="user-plus" style="width:16px;height:16px;color:var(--primary);"></i> Register New User</span></div>
+                    <div class="card-title"><span><i data-lucide="user-plus" style="width:14px;height:14px;color:var(--primary);"></i> Register</span></div>
                     <form onsubmit="return false;">
-                        <div class="form-group">
-                            <label>Full Name *</label>
-                            <input type="text" id="regName" placeholder="Enter full name">
+                        <div class="form-group"><label>Name *</label><input type="text" id="regName" placeholder="Full name"></div>
+                        <div class="form-group"><label>Role</label><select id="regRole"><option value="student">Student</option><option value="teacher">Teacher</option></select></div>
+                        <div class="form-group"><label>Class *</label><select id="regClass"><option value="">Select</option><option value="5A">5A</option><option value="5B">5B</option><option value="5C">5C</option><option value="4A">4A</option><option value="4B">4B</option><option value="4C">4C</option><option value="3A">3A</option><option value="3B">3B</option><option value="2A">2A</option><option value="2B">2B</option><option value="1A">1A</option><option value="1B">1B</option></select></div>
+                        <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                            <button type="button" class="btn btn-primary" onclick="captureFace()"><i data-lucide="camera" style="width:12px;height:12px;"></i> Capture</button>
+                            <button type="button" class="btn btn-success" id="registerBtn" disabled onclick="registerUser()"><i data-lucide="save" style="width:12px;height:12px;"></i> Save</button>
+                            <button type="button" class="btn btn-outline" onclick="resetReg()"><i data-lucide="refresh-cw" style="width:12px;height:12px;"></i></button>
                         </div>
-                        <div class="form-group">
-                            <label>Role</label>
-                            <select id="regRole">
-                                <option value="student">🎓 Student</option>
-                                <option value="teacher">👩‍🏫 Teacher</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Class *</label>
-                            <select id="regClass">
-                                <option value="">Select Class</option>
-                                <option value="5A">5A</option><option value="5B">5B</option><option value="5C">5C</option>
-                                <option value="4A">4A</option><option value="4B">4B</option><option value="4C">4C</option>
-                                <option value="3A">3A</option><option value="3B">3B</option>
-                                <option value="2A">2A</option><option value="2B">2B</option>
-                                <option value="1A">1A</option><option value="1B">1B</option>
-                            </select>
-                        </div>
-                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                            <button type="button" class="btn btn-primary" onclick="captureFace()"><i data-lucide="camera" style="width:14px;height:14px;"></i> Capture</button>
-                            <button type="button" class="btn btn-success" id="registerBtn" disabled onclick="registerUser()"><i data-lucide="save" style="width:14px;height:14px;"></i> Register</button>
-                            <button type="button" class="btn btn-outline" onclick="resetReg()"><i data-lucide="refresh-cw" style="width:14px;height:14px;"></i></button>
-                        </div>
-                        <div class="face-preview-container" id="facePreviewContainer">
-                            <img id="facePreview">
-                            <span class="label">📸 Face Captured</span>
-                        </div>
-                        <div class="reg-status" id="regStatus">💡 Fill details, then click "Capture Face"</div>
+                        <div class="face-preview-container" id="facePreviewContainer"><img id="facePreview"><span class="label">📸 Face</span></div>
+                        <div class="reg-status" id="regStatus">💡 Fill details, then Capture</div>
                     </form>
                 </div>
                 <div class="card">
-                    <div class="card-title">
-                        <span><i data-lucide="scan" style="width:16px;height:16px;color:var(--primary);"></i> Face Capture</span>
-                        <span id="regPoints">📍 0 pts</span>
-                    </div>
+                    <div class="card-title"><span><i data-lucide="scan" style="width:14px;height:14px;color:var(--primary);"></i> Face Capture</span><span id="regPoints">📍 0</span></div>
                     <div class="camera-container">
                         <video id="regVideo" autoplay playsinline></video>
                         <canvas id="regCanvas"></canvas>
-                        <div class="cam-overlay">
-                            <span class="cam-status" id="regCamStatus">●</span>
-                            <span class="cam-status" id="regConf">0%</span>
-                        </div>
+                        <div class="cam-overlay"><span class="cam-status" id="regCamStatus">●</span><span class="cam-status" id="regConf">0%</span></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ===== TAB 3: USERS ===== -->
+        <!-- ===== USERS ===== -->
         <div class="tab-content" id="tab-users">
             <div class="card">
-                <div class="card-title">
-                    <span><i data-lucide="users" style="width:16px;height:16px;color:var(--primary);"></i> Registered Users</span>
-                    <span class="badge" id="userTotal">0 users</span>
-                </div>
-                <div class="search-bar">
-                    <input type="text" id="userSearch" placeholder="🔍 Search by name...">
-                    <select id="userRoleFilter">
-                        <option value="all">All Roles</option>
-                        <option value="student">🎓 Students</option>
-                        <option value="teacher">👩‍🏫 Teachers</option>
-                    </select>
-                </div>
-                <div class="user-list" id="userList">
-                    <div style="text-align:center;padding:30px;color:var(--text-secondary);font-size:0.8rem;">No users registered</div>
-                </div>
+                <div class="card-title"><span><i data-lucide="users" style="width:14px;height:14px;color:var(--primary);"></i> Users</span><span class="badge" id="userTotal">0</span></div>
+                <div class="search-bar"><input type="text" id="userSearch" placeholder="Search..."><select id="userRoleFilter"><option value="all">All</option><option value="student">Students</option><option value="teacher">Teachers</option></select></div>
+                <div class="user-list" id="userList"><div style="text-align:center;padding:20px;color:var(--text2);font-size:0.75rem;">No users</div></div>
             </div>
         </div>
 
-        <!-- ===== TAB 4: RECORDS ===== -->
+        <!-- ===== RECORDS ===== -->
         <div class="tab-content" id="tab-records">
             <div class="card">
-                <div class="card-title">
-                    <span><i data-lucide="clock" style="width:16px;height:16px;color:var(--primary);"></i> Attendance History</span>
-                    <span class="badge" id="recordTotal">0 records</span>
-                </div>
-                <div class="search-bar">
-                    <input type="date" id="recordDateFilter">
-                    <select id="recordClassFilter">
-                        <option value="all">All Classes</option>
-                    </select>
-                    <button class="btn btn-sm btn-primary" onclick="filterRecords()"><i data-lucide="filter" style="width:12px;height:12px;"></i></button>
-                    <button class="btn btn-sm btn-success" onclick="exportCSV()"><i data-lucide="download" style="width:12px;height:12px;"></i></button>
-                </div>
-                <div class="table-container" style="max-height:300px;">
-                    <table class="modern-table">
-                        <thead><tr><th>Name</th><th>Class</th><th>Status</th><th>Date</th><th>Time</th></tr></thead>
-                        <tbody id="recordsTableBody"><tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-secondary);font-size:0.7rem;">No records</td></tr></tbody>
-                    </table>
+                <div class="card-title"><span><i data-lucide="clock" style="width:14px;height:14px;color:var(--primary);"></i> History</span><span class="badge" id="recordTotal">0</span></div>
+                <div class="search-bar"><input type="date" id="recordDateFilter"><select id="recordClassFilter"><option value="all">All Classes</option></select><button class="btn btn-sm btn-primary" onclick="filterRecords()"><i data-lucide="filter" style="width:10px;height:10px;"></i></button><button class="btn btn-sm btn-success" onclick="exportCSV()"><i data-lucide="download" style="width:10px;height:10px;"></i></button></div>
+                <div class="table-container" style="max-height:260px;">
+                    <table class="modern-table"><thead><tr><th>Name</th><th>Class</th><th>Status</th><th>Date</th><th>Time</th></tr></thead><tbody id="recordsTableBody"><tr><td colspan="5" style="text-align:center;padding:12px;color:var(--text2);font-size:0.65rem;">No records</td></tr></tbody></table>
                 </div>
             </div>
         </div>
 
-        <!-- ===== TAB 5: HOLIDAYS ===== -->
+        <!-- ===== HOLIDAYS ===== -->
         <div class="tab-content" id="tab-holidays">
             <div class="grid-2">
                 <div class="card">
-                    <div class="card-title">
-                        <span><i data-lucide="calendar" style="width:16px;height:16px;color:var(--primary);"></i> School Holidays</span>
-                        <button class="btn btn-sm btn-danger" onclick="clearHolidays()">Clear</button>
-                    </div>
-                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
-                        <input type="date" id="holidayDate" style="flex:1;padding:4px 10px;border-radius:var(--radius-full);border:2px solid var(--border);font-size:0.7rem;background:var(--card-bg);">
-                        <input type="text" id="holidayName" placeholder="Holiday name" style="flex:1;padding:4px 10px;border-radius:var(--radius-full);border:2px solid var(--border);font-size:0.7rem;background:var(--card-bg);">
+                    <div class="card-title"><span><i data-lucide="calendar" style="width:14px;height:14px;color:var(--primary);"></i> Holidays</span><button class="btn btn-sm btn-danger" onclick="clearHolidays()">Clear</button></div>
+                    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px;">
+                        <input type="date" id="holidayDate" style="flex:1;padding:3px 6px;border-radius:6px;border:1px solid var(--border);font-size:0.65rem;">
+                        <input type="text" id="holidayName" placeholder="Name" style="flex:1;padding:3px 6px;border-radius:6px;border:1px solid var(--border);font-size:0.65rem;">
                         <button class="btn btn-sm btn-primary" onclick="addHoliday()">Add</button>
                     </div>
-                    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;">
-                        <button class="btn btn-sm btn-warning" onclick="loadKPMSchedule()">📅 KPM Schedule</button>
+                    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px;">
+                        <button class="btn btn-sm btn-warning" onclick="loadKPMSchedule()">📅 KPM</button>
                         <button class="btn btn-sm btn-success" onclick="loadRamadanHolidays()">🌙 Ramadan</button>
                     </div>
                     <div class="holiday-list" id="holidayList"></div>
-                    <div style="margin-top:6px;font-size:0.6rem;color:var(--text-secondary);">📌 Attendance automatically disabled on holidays</div>
+                    <div style="margin-top:6px;font-size:0.55rem;color:var(--text2);">📌 Attendance disabled on holidays</div>
                 </div>
                 <div class="card">
-                    <div class="card-title"><span><i data-lucide="info" style="width:16px;height:16px;color:var(--primary);"></i> Holiday Information</span></div>
-                    <div style="font-size:0.7rem;color:var(--text-secondary);">
-                        <p><strong>📅 KPM School Holidays 2026:</strong></p>
-                        <ul style="list-style:none;padding:0;margin-top:4px;font-size:0.65rem;">
-                            <li>🎆 1 Jan - New Year</li>
-                            <li>🕌 31 Mar-1 Apr - Hari Raya</li>
-                            <li>🎓 1 May - Labour Day</li>
-                            <li>🌙 12 May - Wesak Day</li>
-                            <li>👑 1 Jun - Agong's Birthday</li>
-                            <li>🕌 6-7 Jun - Hari Raya Haji</li>
-                            <li>🌙 27 Jun - Awal Muharram</li>
-                            <li>🇲🇾 31 Aug - Independence Day</li>
-                            <li>🇲🇾 16 Sep - Malaysia Day</li>
-                            <li>🕌 5 Sep - Maulidur Rasul</li>
+                    <div class="card-title"><span><i data-lucide="info" style="width:14px;height:14px;color:var(--primary);"></i> Info</span></div>
+                    <div style="font-size:0.65rem;color:var(--text2);">
+                        <p><strong>KPM Holidays 2026:</strong></p>
+                        <ul style="list-style:none;padding:0;margin-top:3px;font-size:0.6rem;">
+                            <li>🎆 1 Jan - New Year</li><li>🕌 31 Mar-1 Apr - Raya</li>
+                            <li>🎓 1 May - Labour Day</li><li>🌙 12 May - Wesak</li>
+                            <li>👑 1 Jun - Agong</li><li>🕌 6-7 Jun - Haji</li>
+                            <li>🌙 27 Jun - Muharram</li><li>🇲🇾 31 Aug - Merdeka</li>
+                            <li>🇲🇾 16 Sep - Malaysia Day</li><li>🕌 5 Sep - Maulidur</li>
                             <li>🎄 25 Dec - Christmas</li>
-                        </ul>
-                        <p style="margin-top:6px;"><strong>📚 School Term Breaks:</strong></p>
-                        <ul style="list-style:none;padding:0;font-size:0.65rem;">
-                            <li>🏖️ 16-20 Mar - Mid Term Break</li>
-                            <li>🏖️ 31 May-5 Jun - Mid Year Holidays</li>
-                            <li>🏖️ 13-17 Sep - Mid Term Break</li>
-                            <li>🏖️ 14 Dec-2 Jan - Year End Holidays</li>
                         </ul>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ===== TAB 6: REPORTS ===== -->
+        <!-- ===== REPORTS ===== -->
         <div class="tab-content" id="tab-reports">
             <div class="card">
-                <div class="card-title">
-                    <span><i data-lucide="file-text" style="width:16px;height:16px;color:var(--primary);"></i> Generate Reports</span>
+                <div class="card-title"><span><i data-lucide="file-text" style="width:14px;height:14px;color:var(--primary);"></i> Reports</span></div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px;">
+                    <button class="btn btn-sm btn-primary" onclick="generatePDF('daily')">📄 Daily</button>
+                    <button class="btn btn-sm btn-success" onclick="generatePDF('weekly')">📊 Weekly</button>
+                    <button class="btn btn-sm btn-warning" onclick="generatePDF('monthly')">📈 Monthly</button>
+                    <button class="btn btn-sm btn-danger" onclick="generatePDF('class')">🏫 Class</button>
+                    <button class="btn btn-sm btn-outline" onclick="generatePDF('holiday')">🎉 Holiday</button>
                 </div>
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;">
-                    <button class="btn btn-primary" onclick="generatePDF('daily')"><i data-lucide="file-text" style="width:14px;height:14px;"></i> Daily</button>
-                    <button class="btn btn-success" onclick="generatePDF('weekly')"><i data-lucide="file-text" style="width:14px;height:14px;"></i> Weekly</button>
-                    <button class="btn btn-warning" onclick="generatePDF('monthly')"><i data-lucide="file-text" style="width:14px;height:14px;"></i> Monthly</button>
-                    <button class="btn btn-danger" onclick="generatePDF('class')"><i data-lucide="file-text" style="width:14px;height:14px;"></i> Class</button>
-                    <button class="btn btn-outline" onclick="generatePDF('holiday')"><i data-lucide="calendar" style="width:14px;height:14px;"></i> Holiday</button>
-                </div>
-                <div style="margin-top:12px;padding:12px;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border);">
-                    <div class="grid-3" style="gap:8px;">
+                <div style="margin-top:10px;padding:8px;background:var(--bg);border-radius:6px;">
+                    <div class="grid-3" style="gap:4px;">
                         <div class="stat-box"><div class="number" id="reportTotalUsers">0</div><div class="label">Users</div></div>
                         <div class="stat-box"><div class="number" id="reportTotalAttendance">0</div><div class="label">Attendance</div></div>
                         <div class="stat-box"><div class="number" id="reportAvgRate">0%</div><div class="label">Rate</div></div>
@@ -1094,45 +731,48 @@
         </div>
     </div>
 
-    <!-- ===== TOAST ===== -->
-    <div class="toast hidden" id="toast">
-        <i data-lucide="check-circle" style="width:18px;height:18px;"></i>
-        <span id="toastMsg">Success</span>
-    </div>
-
-    <!-- ===== VOICE INDICATOR ===== -->
-    <div class="voice-indicator hidden" id="voiceIndicator">
-        <i data-lucide="volume-2" style="width:14px;height:14px;"></i>
-        <span id="voiceText">Speaking...</span>
-    </div>
+    <!-- Toast -->
+    <div class="toast hidden" id="toast"><i data-lucide="check-circle" style="width:14px;height:14px;"></i><span id="toastMsg">Success</span></div>
+    <div class="voice-indicator hidden" id="voiceIndicator"><i data-lucide="volume-2" style="width:10px;height:10px;"></i><span id="voiceText">...</span></div>
 
     <!-- ============================================================ -->
-    <!-- ===== JAVASCRIPT - 2026 OPTIMIZED ===== -->
+    <!-- JAVASCRIPT - FIXED CAMERA ISSUES -->
     <!-- ============================================================ -->
     <script>
         // ================================================================
-        // 1. STATE - Minimal & Fast
+        // STATE - Separate streams for each camera
         // ================================================================
-        let ready = false,
-            cam = false,
-            stream = null,
-            detectInt = null,
-            regInt = null;
-        let users = [],
-            attendance = [],
-            currentFace = null,
-            holidays = [],
-            audioCtx = null,
-            lastAtt = {};
-        let charts = { weekly: null, monthly: null, class: null },
-            lastStranger = 0;
+        let ready = false;
+        let modelsLoaded = false;
+        
+        // Attendance Camera
+        let camActive = false;
+        let camStream = null;
+        let detectInterval = null;
+        
+        // Registration Camera
+        let regCamActive = false;
+        let regStream = null;
+        let regDetectInterval = null;
+        
+        // Data
+        let users = [];
+        let attendance = [];
+        let currentFace = null;
+        let holidays = [];
+        let audioCtx = null;
+        let lastAtt = {};
+        let lastStranger = 0;
+        
+        // Charts
+        let charts = { weekly: null, monthly: null, class: null };
 
         // ================================================================
-        // 2. LOAD MODELS - Fast 2026
+        // LOAD MODELS
         // ================================================================
         async function loadModels() {
             try {
-                updateStatus('modelStatus', 'Loading', 'status-loading');
+                updateStatus('modelStatus', 'Loading...', 'status-loading');
                 await loadFaceAPI();
 
                 const url = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
@@ -1143,75 +783,145 @@
                 ]);
 
                 ready = true;
-                updateStatus('modelStatus', 'Online', 'status-online');
+                modelsLoaded = true;
+                updateStatus('modelStatus', '✅ Ready', 'status-online');
+                
                 loadData();
-                setTimeout(startCamera, 200);
-                showToast('🚀 System Ready 2026!', 'success');
+                setTimeout(startAttendanceCamera, 300);
+                setTimeout(startRegisterCamera, 500);
+                
+                showToast('✅ System Ready!', 'success');
 
             } catch (e) {
                 console.error('Model error:', e);
-                updateStatus('modelStatus', 'Error', 'status-offline');
-                showToast('⚠️ Please refresh and try again', 'error');
+                updateStatus('modelStatus', '❌ Error', 'status-offline');
+                showToast('Please refresh', 'error');
             }
         }
 
         function updateStatus(id, txt, cls) {
             const el = document.getElementById(id);
             if (el) {
-                el.innerHTML = txt;
+                el.textContent = txt;
                 el.className = `status-badge ${cls}`;
-                if (cls === 'status-online' || cls === 'status-loading') {
-                    el.innerHTML = `<span class="dot"></span> ${txt}`;
-                }
             }
         }
 
         // ================================================================
-        // 3. CAMERA - 2026 Optimized
+        // ATTENDANCE CAMERA
         // ================================================================
-        async function startCamera() {
+        async function startAttendanceCamera() {
             try {
-                if (stream) stream.getTracks().forEach(t => t.stop());
+                if (camStream) {
+                    camStream.getTracks().forEach(t => t.stop());
+                    camStream = null;
+                }
+
                 const facing = document.getElementById('cameraSelect').value || 'user';
-                const s = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: facing, width: { ideal: 480 }, height: { ideal: 360 }, frameRate: { ideal: 20 } }
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        facingMode: facing, 
+                        width: { ideal: 480 }, 
+                        height: { ideal: 360 }, 
+                        frameRate: { ideal: 20 } 
+                    }
                 });
-                stream = s;
+
+                camStream = stream;
                 const video = document.getElementById('videoFeed');
-                video.srcObject = s;
+                video.srcObject = stream;
                 await video.play();
-                cam = true;
+
+                camActive = true;
                 document.getElementById('camToggleText').textContent = 'Stop';
-                if (detectInt) clearInterval(detectInt);
-                detectInt = setInterval(detectFaces, 150);
-                startRegCamera();
+
+                if (detectInterval) clearInterval(detectInterval);
+                detectInterval = setInterval(detectFaces, 150);
+
             } catch (e) {
-                console.error('Camera error:', e);
+                console.error('Attendance camera error:', e);
                 showToast('📷 Please allow camera access', 'error');
             }
         }
 
-        function stopCamera() {
-            if (stream) { stream.getTracks().forEach(t => t.stop());
-                stream = null; }
-            if (detectInt) { clearInterval(detectInt);
-                detectInt = null; }
-            cam = false;
+        function stopAttendanceCamera() {
+            if (camStream) {
+                camStream.getTracks().forEach(t => t.stop());
+                camStream = null;
+            }
+            if (detectInterval) {
+                clearInterval(detectInterval);
+                detectInterval = null;
+            }
+            camActive = false;
             document.getElementById('camToggleText').textContent = 'Start';
             document.getElementById('camStatus').textContent = '⏸';
             document.getElementById('camStatus').className = 'cam-status';
         }
 
-        function toggleCamera() {
-            if (cam) { stopCamera();
-                stopRegCamera(); } else startCamera();
+        // ================================================================
+        // REGISTRATION CAMERA
+        // ================================================================
+        async function startRegisterCamera() {
+            try {
+                if (regStream) {
+                    regStream.getTracks().forEach(t => t.stop());
+                    regStream = null;
+                }
+
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        facingMode: 'user', 
+                        width: { ideal: 480 }, 
+                        height: { ideal: 360 } 
+                    }
+                });
+
+                regStream = stream;
+                const video = document.getElementById('regVideo');
+                video.srcObject = stream;
+                await video.play();
+
+                regCamActive = true;
+
+                if (regDetectInterval) clearInterval(regDetectInterval);
+                regDetectInterval = setInterval(detectRegFace, 150);
+
+            } catch (e) {
+                console.error('Registration camera error:', e);
+            }
+        }
+
+        function stopRegisterCamera() {
+            if (regStream) {
+                regStream.getTracks().forEach(t => t.stop());
+                regStream = null;
+            }
+            if (regDetectInterval) {
+                clearInterval(regDetectInterval);
+                regDetectInterval = null;
+            }
+            regCamActive = false;
+            document.getElementById('regCamStatus').textContent = '⏸';
+            document.getElementById('regCamStatus').className = 'cam-status';
         }
 
         // ================================================================
-        // 4. FACE DETECTION - Fast & Smooth
+        // TOGGLE CAMERA - Now controls only attendance camera
+        // ================================================================
+        function toggleCamera() {
+            if (camActive) {
+                stopAttendanceCamera();
+            } else {
+                startAttendanceCamera();
+            }
+        }
+
+        // ================================================================
+        // FACE DETECTION - Attendance
         // ================================================================
         async function detectFaces() {
-            if (!ready || !cam) return;
+            if (!ready || !camActive || !modelsLoaded) return;
 
             const video = document.getElementById('videoFeed');
             const canvas = document.getElementById('canvasOverlay');
@@ -1316,116 +1026,8 @@
         }
 
         // ================================================================
-        // 5. AUTO ATTENDANCE - 2026
+        // REGISTRATION FACE DETECTION
         // ================================================================
-        function autoAttendance(user) {
-            const today = new Date().toISOString().split('T')[0];
-            if (isHoliday(today)) return;
-
-            const session = new Date().getHours() < 13 ? 'pagi' : 'petang';
-            const key = `${user.id}_${today}_${session}`;
-            if (lastAtt[key] && Date.now() - lastAtt[key] < 15000) return;
-
-            const exists = attendance.find(r => r.userId === user.id && r.date === today && r.session === session);
-            if (exists) return;
-
-            const mins = new Date().getHours() * 60 + new Date().getMinutes();
-            let status = "Hadir";
-            if (session === 'pagi' && mins > 510) status = "Lewat";
-            if (session === 'petang' && mins > 810) status = "Lewat";
-
-            const record = {
-                id: Date.now().toString(),
-                userId: user.id,
-                name: user.name,
-                role: user.role,
-                className: user.className,
-                status: status,
-                session: session,
-                sessionName: session === 'pagi' ? 'Morning' : 'Afternoon',
-                time: new Date().toLocaleTimeString('ms-MY'),
-                date: today,
-                timestamp: Date.now(),
-                method: 'AI Face Recognition 2026'
-            };
-
-            attendance.push(record);
-            lastAtt[key] = Date.now();
-            saveAttendance();
-            updateUI();
-            renderCharts();
-            playBeep();
-            speak(`${user.name} is ${status === 'Hadir' ? 'present' : 'late'}`);
-            showToast(`✅ ${user.name} - ${status}`, 'success');
-        }
-
-        // ================================================================
-        // 6. STRANGER ALERT - 2026
-        // ================================================================
-        function reportStranger() {
-            playAlertBeep();
-            speak('⚠️ Warning! Stranger detected!');
-            
-            Swal.fire({
-                title: '⚠️ Security Alert!',
-                text: `Stranger detected at ${new Date().toLocaleTimeString('ms-MY')}`,
-                icon: 'warning',
-                confirmButtonColor: '#ef4444',
-                timer: 3000,
-                timerProgressBar: true,
-                background: 'var(--card-bg)',
-                backdrop: 'rgba(0,0,0,0.4)',
-                customClass: {
-                    popup: 'rounded-2xl',
-                    confirmButton: 'btn btn-danger'
-                }
-            });
-        }
-
-        function playAlertBeep() {
-            try {
-                if (!audioCtx) audioCtx = new(window.AudioContext || window.webkitAudioContext)();
-                for (let i = 0; i < 3; i++) {
-                    setTimeout(() => {
-                        const o = audioCtx.createOscillator(),
-                            g = audioCtx.createGain();
-                        o.connect(g);
-                        g.connect(audioCtx.destination);
-                        o.frequency.value = 880;
-                        g.gain.value = 0.15;
-                        o.start();
-                        g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.15);
-                        setTimeout(() => o.stop(), 150);
-                    }, i * 200);
-                }
-            } catch (_) {}
-            if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
-        }
-
-        // ================================================================
-        // 7. REGISTRATION - 2026
-        // ================================================================
-        async function startRegCamera() {
-            try {
-                const s = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 360 } }
-                });
-                const video = document.getElementById('regVideo');
-                video.srcObject = s;
-                await video.play();
-                if (regInt) clearInterval(regInt);
-                regInt = setInterval(detectRegFace, 150);
-            } catch (e) { console.error('Reg camera error:', e); }
-        }
-
-        function stopRegCamera() {
-            const video = document.getElementById('regVideo');
-            if (video.srcObject) { video.srcObject.getTracks().forEach(t => t.stop());
-                video.srcObject = null; }
-            if (regInt) { clearInterval(regInt);
-                regInt = null; }
-        }
-
         function captureFaceImage() {
             const video = document.getElementById('regVideo');
             const canvas = document.createElement('canvas');
@@ -1437,7 +1039,7 @@
         }
 
         async function detectRegFace() {
-            if (!ready) return;
+            if (!ready || !regCamActive || !modelsLoaded) return;
 
             const video = document.getElementById('regVideo');
             const canvas = document.getElementById('regCanvas');
@@ -1466,7 +1068,7 @@
             const box = d.detection.box;
             const pos = d.landmarks.positions;
 
-            // Draw face
+            // Draw face box
             ctx.beginPath();
             ctx.rect(box.x, box.y, box.width, box.height);
             ctx.strokeStyle = '#10b981';
@@ -1491,6 +1093,28 @@
                 ctx.fillStyle = color;
                 ctx.fill();
             });
+
+            // Draw face connections
+            ctx.strokeStyle = 'rgba(99,102,241,0.15)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 16; i++) {
+                ctx.beginPath();
+                ctx.moveTo(pos[i].x, pos[i].y);
+                ctx.lineTo(pos[i + 1].x, pos[i + 1].y);
+                ctx.stroke();
+            }
+            for (let i = 17; i < 21; i++) {
+                ctx.beginPath();
+                ctx.moveTo(pos[i].x, pos[i].y);
+                ctx.lineTo(pos[i + 1].x, pos[i + 1].y);
+                ctx.stroke();
+            }
+            for (let i = 22; i < 26; i++) {
+                ctx.beginPath();
+                ctx.moveTo(pos[i].x, pos[i].y);
+                ctx.lineTo(pos[i + 1].x, pos[i + 1].y);
+                ctx.stroke();
+            }
 
             // Capture image
             const imgData = captureFaceImage();
@@ -1529,6 +1153,90 @@
             }
         }
 
+        // ================================================================
+        // AUTO ATTENDANCE
+        // ================================================================
+        function autoAttendance(user) {
+            const today = new Date().toISOString().split('T')[0];
+            if (isHoliday(today)) return;
+
+            const session = new Date().getHours() < 13 ? 'pagi' : 'petang';
+            const key = `${user.id}_${today}_${session}`;
+            if (lastAtt[key] && Date.now() - lastAtt[key] < 15000) return;
+
+            const exists = attendance.find(r => r.userId === user.id && r.date === today && r.session === session);
+            if (exists) return;
+
+            const mins = new Date().getHours() * 60 + new Date().getMinutes();
+            let status = "Hadir";
+            if (session === 'pagi' && mins > 510) status = "Lewat";
+            if (session === 'petang' && mins > 810) status = "Lewat";
+
+            const record = {
+                id: Date.now().toString(),
+                userId: user.id,
+                name: user.name,
+                role: user.role,
+                className: user.className,
+                status: status,
+                session: session,
+                sessionName: session === 'pagi' ? 'Morning' : 'Afternoon',
+                time: new Date().toLocaleTimeString('ms-MY'),
+                date: today,
+                timestamp: Date.now(),
+                method: 'Face Recognition'
+            };
+
+            attendance.push(record);
+            lastAtt[key] = Date.now();
+            saveAttendance();
+            updateUI();
+            renderCharts();
+            playBeep();
+            speak(`${user.name} is ${status === 'Hadir' ? 'present' : 'late'}`);
+            showToast(`✅ ${user.name} - ${status}`, 'success');
+        }
+
+        // ================================================================
+        // STRANGER ALERT
+        // ================================================================
+        function reportStranger() {
+            playAlertBeep();
+            speak('⚠️ Warning! Stranger detected!');
+            
+            Swal.fire({
+                title: '⚠️ Security Alert!',
+                text: `Stranger detected at ${new Date().toLocaleTimeString('ms-MY')}`,
+                icon: 'warning',
+                confirmButtonColor: '#ef4444',
+                timer: 3000,
+                timerProgressBar: true
+            });
+        }
+
+        function playAlertBeep() {
+            try {
+                if (!audioCtx) audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        const o = audioCtx.createOscillator(),
+                            g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.frequency.value = 880;
+                        g.gain.value = 0.15;
+                        o.start();
+                        g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.15);
+                        setTimeout(() => o.stop(), 150);
+                    }, i * 200);
+                }
+            } catch (_) {}
+            if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+        }
+
+        // ================================================================
+        // REGISTRATION FUNCTIONS
+        // ================================================================
         function captureFace() {
             if (!currentFace) { showToast('No face detected', 'warning'); return; }
             const name = document.getElementById('regName').value.trim();
@@ -1567,7 +1275,6 @@
             renderUsers();
             updateUI();
 
-            // Reset
             document.getElementById('regName').value = '';
             document.getElementById('regClass').value = '';
             document.getElementById('registerBtn').disabled = true;
@@ -1606,7 +1313,7 @@
         }
 
         // ================================================================
-        // 8. DATA MANAGEMENT
+        // DATA MANAGEMENT
         // ================================================================
         function saveUsers() {
             try { localStorage.setItem('smart_users_2026', JSON.stringify(users.map(u => ({ ...u, faceImage: u.faceImage ||
@@ -1644,7 +1351,7 @@
             renderCharts(); }
 
         // ================================================================
-        // 9. HOLIDAYS - KPM 2026
+        // HOLIDAYS - KPM 2026
         // ================================================================
         const KPM_HOLIDAYS_2026 = {
             '2026-01-01': 'New Year Day',
@@ -1664,7 +1371,6 @@
             '2026-09-16': 'Malaysia Day',
             '2026-10-20': 'Deepavali',
             '2026-12-25': 'Christmas',
-            // School breaks
             '2026-03-16': 'Mid Term Break',
             '2026-03-17': 'Mid Term Break',
             '2026-03-18': 'Mid Term Break',
@@ -1770,7 +1476,7 @@
         function renderHolidays() {
             const container = document.getElementById('holidayList');
             if (holidays.length === 0) {
-                container.innerHTML = '<span style="color:var(--text-secondary);font-size:0.7rem;">No holidays set</span>';
+                container.innerHTML = '<span style="color:var(--text2);font-size:0.7rem;">No holidays set</span>';
                 return;
             }
             const sorted = [...holidays].sort((a, b) => a.date.localeCompare(b.date));
@@ -1805,7 +1511,7 @@
         }
 
         // ================================================================
-        // 10. CHARTS - 2026
+        // CHARTS
         // ================================================================
         function renderCharts() {
             const today = new Date();
@@ -1926,7 +1632,7 @@
         }
 
         // ================================================================
-        // 11. UI RENDER
+        // UI RENDER
         // ================================================================
         function renderUsers() {
             const container = document.getElementById('userList');
@@ -1941,7 +1647,7 @@
 
             if (filtered.length === 0) {
                 container.innerHTML =
-                    `<div style="text-align:center;padding:30px;color:var(--text-secondary);font-size:0.8rem;">${users.length === 0 ? 'No users registered' : 'No matching users'}</div>`;
+                    `<div style="text-align:center;padding:20px;color:var(--text2);font-size:0.75rem;">${users.length === 0 ? 'No users registered' : 'No matching users'}</div>`;
                 return;
             }
 
@@ -1953,12 +1659,12 @@
                         </div>
                         <div>
                             <span class="name">${u.name}</span>
-                            <span class="class-tag">${u.className}</span>
-                            <span class="status-badge ${u.role === 'teacher' ? 'status-teacher' : 'status-student'}">${u.role}</span>
-                            <span style="font-size:0.5rem;color:var(--text-light);margin-left:4px;">${u.biometricPoints || 0} pts</span>
+                            <span style="font-size:0.55rem;color:var(--text2);margin-left:4px;">${u.className}</span>
+                            <span class="status-badge ${u.role === 'teacher' ? 'status-teacher' : 'status-student'}" style="font-size:0.45rem;padding:0 4px;">${u.role}</span>
+                            <span style="font-size:0.45rem;color:var(--text2);margin-left:4px;">${u.biometricPoints || 0} pts</span>
                         </div>
                     </div>
-                    <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id}')" style="padding:2px 10px;font-size:0.6rem;">✕</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id}')" style="padding:0 6px;font-size:0.55rem;">✕</button>
                 </div>
             `).join('');
         }
@@ -2009,10 +1715,10 @@
                 const hName = getHolidayName(today);
                 if (isHolidayToday) {
                     tbody.innerHTML =
-                        `<tr><td colspan="4" style="text-align:center;padding:15px;color:var(--warning);font-size:0.7rem;">🎉 ${hName || 'Holiday'} - No attendance</td></tr>`;
+                        `<tr><td colspan="4" style="text-align:center;padding:12px;color:var(--warning);font-size:0.65rem;">🎉 ${hName || 'Holiday'} - No attendance</td></tr>`;
                 } else {
                     tbody.innerHTML =
-                        `<tr><td colspan="4" style="text-align:center;padding:15px;color:var(--text-secondary);font-size:0.7rem;">No records</td></tr>`;
+                        `<tr><td colspan="4" style="text-align:center;padding:12px;color:var(--text2);font-size:0.65rem;">No records</td></tr>`;
                 }
                 return;
             }
@@ -2054,7 +1760,7 @@
             const tbody = document.getElementById('recordsTableBody');
             if (filtered.length === 0) {
                 tbody.innerHTML =
-                    `<tr><td colspan="5" style="text-align:center;padding:15px;color:var(--text-secondary);font-size:0.7rem;">No records</td></tr>`;
+                    `<tr><td colspan="5" style="text-align:center;padding:12px;color:var(--text2);font-size:0.65rem;">No records</td></tr>`;
                 return;
             }
 
@@ -2073,7 +1779,7 @@
             showToast('Filtered', 'success'); }
 
         // ================================================================
-        // 12. EXPORT
+        // EXPORT
         // ================================================================
         function exportCSV() {
             if (attendance.length === 0) { showToast('No records', 'warning'); return; }
@@ -2092,7 +1798,7 @@
         }
 
         // ================================================================
-        // 13. PDF REPORTS - 2026
+        // PDF REPORTS
         // ================================================================
         async function generatePDF(type) {
             await loadPDF();
@@ -2106,10 +1812,9 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
 
-            // Header - 2026 Style
-            doc.setFontSize(20);
+            doc.setFontSize(18);
             doc.setTextColor(99, 102, 241);
-            doc.text('🚀 SmartClass Pro 2026', 14, 22);
+            doc.text('📚 SmartClass Pro 2026', 14, 22);
 
             doc.setFontSize(10);
             doc.setTextColor(50);
@@ -2118,7 +1823,6 @@
             doc.text(`Date: ${new Date().toLocaleString('ms-MY')}`, 14, 36);
             doc.text(`Total Users: ${users.length}`, 14, 42);
 
-            // Holiday check
             if (isHoliday(today)) {
                 doc.setTextColor(239, 68, 68);
                 doc.text(`🎉 ${getHolidayName(today) || 'Holiday'} - No attendance`, 14, 48);
@@ -2198,7 +1902,7 @@
         }
 
         // ================================================================
-        // 14. HELPERS
+        // HELPERS
         // ================================================================
         function showToast(msg, type = 'success') {
             const t = document.getElementById('toast');
@@ -2264,7 +1968,7 @@
         }
 
         // ================================================================
-        // 15. INIT - 2026
+        // INIT
         // ================================================================
         document.addEventListener('DOMContentLoaded', () => {
             // Navigation
@@ -2277,8 +1981,8 @@
             document.getElementById('userSearch')?.addEventListener('input', renderUsers);
             document.getElementById('userRoleFilter')?.addEventListener('change', renderUsers);
             document.getElementById('cameraSelect')?.addEventListener('change', () => {
-                if (cam) { stopCamera();
-                    setTimeout(startCamera, 300); }
+                if (camActive) { stopAttendanceCamera();
+                    setTimeout(startAttendanceCamera, 300); }
             });
             document.getElementById('regName')?.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') captureFace();
@@ -2289,8 +1993,8 @@
             lucide.createIcons();
 
             console.log('🚀 SmartClass Pro 2026');
+            console.log('📸 Camera: Attendance & Register both active');
             console.log(`📚 ${users.length} users, 📋 ${attendance.length} records`);
-            console.log(`📅 ${holidays.length} holidays`);
         });
 
         // Expose global functions
