@@ -3,17 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>SmartClass Pro – Complete System</title>
+    <title>SmartClass Pro 2026 - AI Face Recognition</title>
 
-    <!-- Libraries -->
-    <script src="https://unpkg.com/lucide@latest" async defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" async defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" async defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" async defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js" async defer></script>
+    <!-- ===== 2026 TECH STACK ===== -->
+    <!-- Fast, Modern, Optimized -->
     
-    <!-- Face API - Lazy Load -->
+    <!-- Modern UI Icons -->
+    <script src="https://unpkg.com/lucide@latest" defer></script>
+    
+    <!-- Better Alerts - Modern -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+    
+    <!-- Charts 4.0 - Faster -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+    
+    <!-- Face API - Latest 2026 -->
     <script>
+        // Modern lazy loading with priority hints
         let faceAPILoaded = false;
         let faceAPIPromise = null;
         
@@ -22,8 +28,10 @@
             
             faceAPIPromise = new Promise((resolve, reject) => {
                 const script = document.createElement('script');
+                // Latest 2026 version with improved models
                 script.src = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.min.js';
                 script.async = true;
+                script.fetchPriority = 'high';
                 script.onload = () => {
                     faceAPILoaded = true;
                     resolve();
@@ -35,169 +43,248 @@
         }
     </script>
 
+    <!-- ===== MODERN 2026 STYLES ===== -->
     <style>
+        /* ===== 2026 DESIGN SYSTEM ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+        
+        /* Modern Color Palette 2026 */
         :root {
             --primary: #6366f1;
-            --purple: #8b5cf6;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
             --success: #10b981;
+            --success-light: #34d399;
             --danger: #ef4444;
+            --danger-light: #f87171;
             --warning: #f59e0b;
-            --bg: #f1f5f9;
-            --card-bg: #ffffff;
+            --warning-light: #fbbf24;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --cyan: #06b6d4;
+            
+            --bg: #f0f4ff;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-bg-dark: rgba(30, 41, 59, 0.9);
+            
             --text-primary: #0f172a;
             --text-secondary: #475569;
-            --border: #e2e8f0;
-            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08);
-            --radius: 16px;
+            --text-light: #94a3b8;
+            
+            --border: rgba(226, 232, 240, 0.6);
+            --border-dark: rgba(51, 65, 85, 0.6);
+            
+            --shadow: 0 4px 24px rgba(99, 102, 241, 0.08);
+            --shadow-lg: 0 8px 40px rgba(99, 102, 241, 0.15);
+            --shadow-glow: 0 0 60px rgba(99, 102, 241, 0.1);
+            
+            --radius: 20px;
+            --radius-sm: 12px;
+            --radius-full: 9999px;
+            
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
         }
+        
+        /* Dark Mode Support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0f172a;
+                --card-bg: rgba(30, 41, 59, 0.9);
+                --text-primary: #f1f5f9;
+                --text-secondary: #94a3b8;
+                --border: rgba(51, 65, 85, 0.6);
+                --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+                --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
+                --glass-bg: rgba(30, 41, 59, 0.3);
+            }
+        }
+        
+        /* Global */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, system-ui, sans-serif;
             background: var(--bg);
             color: var(--text-primary);
             min-height: 100vh;
-            padding: 12px;
-            font-size: 14px;
+            padding: 16px;
+            transition: var(--transition);
+            background-image: radial-gradient(ellipse at 50% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
         }
         .container {
-            max-width: 1400px;
+            max-width: 1440px;
             margin: 0 auto;
         }
-
-        /* Header */
+        
+        /* ===== GLASSMORPHISM HEADER ===== */
         .app-header {
             background: var(--card-bg);
-            padding: 12px 16px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
             border-radius: var(--radius);
+            padding: 14px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 10px;
             box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            margin-bottom: 12px;
+            margin-bottom: 16px;
+            transition: var(--transition);
+        }
+        .app-header:hover {
+            box-shadow: var(--shadow-lg);
         }
         .app-header h1 {
-            font-size: 1.1rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary), var(--purple));
+            font-size: 1.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--purple), var(--pink));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+        }
+        .app-header h1 .badge-2026 {
+            font-size: 0.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: white;
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
         .app-header h1 i {
             background: linear-gradient(135deg, var(--primary), var(--purple));
-            padding: 6px;
-            border-radius: 10px;
+            padding: 8px;
+            border-radius: var(--radius-sm);
             color: white;
-            width: 28px;
-            height: 28px;
+            width: 34px;
+            height: 34px;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
         .header-controls {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             flex-wrap: wrap;
         }
+        
+        /* ===== MODERN BADGES ===== */
         .status-badge {
-            padding: 4px 10px;
-            border-radius: 20px;
+            padding: 5px 14px;
+            border-radius: var(--radius-full);
             font-size: 0.6rem;
-            font-weight: 600;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            transition: var(--transition-fast);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
-        .status-online {
-            background: rgba(16, 185, 129, 0.12);
-            color: var(--success);
+        .status-badge .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse-dot 2s infinite;
         }
-        .status-loading {
-            background: rgba(245, 158, 11, 0.12);
-            color: var(--warning);
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
         }
-        .status-offline {
-            background: rgba(239, 68, 68, 0.12);
-            color: var(--danger);
-        }
-
-        /* Navigation */
+        .status-online { background: rgba(16, 185, 129, 0.12); color: var(--success); }
+        .status-online .dot { background: var(--success); }
+        .status-loading { background: rgba(245, 158, 11, 0.12); color: var(--warning); }
+        .status-loading .dot { background: var(--warning); }
+        .status-offline { background: rgba(239, 68, 68, 0.12); color: var(--danger); }
+        .status-offline .dot { background: var(--danger); }
+        
+        /* ===== MODERN NAV ===== */
         .nav-tabs {
             display: flex;
             gap: 4px;
             background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-radius: var(--radius);
-            padding: 4px;
+            padding: 6px;
             border: 1px solid var(--border);
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             overflow-x: auto;
+            scrollbar-width: none;
             -webkit-overflow-scrolling: touch;
+            box-shadow: var(--shadow);
         }
+        .nav-tabs::-webkit-scrollbar { display: none; }
         .nav-tab {
-            padding: 6px 14px;
-            border-radius: 10px;
+            padding: 8px 18px;
+            border-radius: var(--radius-sm);
             border: none;
             background: none;
             cursor: pointer;
             font-weight: 600;
             font-size: 0.75rem;
-            transition: all 0.2s;
+            transition: var(--transition-fast);
             color: var(--text-secondary);
             white-space: nowrap;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
             flex: 1;
             justify-content: center;
+            position: relative;
         }
-        .nav-tab.active {
+        .nav-tab::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: var(--radius-sm);
             background: linear-gradient(135deg, var(--primary), var(--purple));
-            color: #fff;
-            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+            opacity: 0;
+            transition: var(--transition-fast);
+            z-index: -1;
         }
-        .nav-tab i {
-            width: 14px;
-            height: 14px;
-        }
-
-        /* Grid */
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        .grid-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 12px;
-        }
-        @media (max-width: 768px) {
-            .grid-2, .grid-3 {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Cards */
+        .nav-tab:hover { color: var(--text-primary); background: rgba(99, 102, 241, 0.05); }
+        .nav-tab.active { color: white; }
+        .nav-tab.active::before { opacity: 1; }
+        .nav-tab i { width: 16px; height: 16px; position: relative; z-index: 1; }
+        .nav-tab span { position: relative; z-index: 1; }
+        
+        /* ===== GLASS CARDS ===== */
         .card {
             background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 14px;
-            box-shadow: var(--shadow);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
         }
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+        .card:active { transform: scale(0.99); }
         .card-title {
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 10px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -205,20 +292,28 @@
         }
         .card-title .badge {
             font-size: 0.6rem;
-            font-weight: 500;
-            padding: 2px 8px;
-            border-radius: 12px;
-            background: var(--bg);
-            color: var(--text-secondary);
+            font-weight: 600;
+            padding: 3px 12px;
+            border-radius: var(--radius-full);
+            background: rgba(99, 102, 241, 0.08);
+            color: var(--primary);
         }
-
-        /* Camera */
+        
+        /* ===== GRID LAYOUT ===== */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+        @media (max-width: 1024px) { .grid-4 { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 768px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+        
+        /* ===== CAMERA - 2026 STYLE ===== */
         .camera-container {
             position: relative;
             background: #0a0a0a;
-            border-radius: 12px;
+            border-radius: var(--radius-sm);
             overflow: hidden;
             aspect-ratio: 4/3;
+            box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.5);
         }
         #videoFeed, #regVideo {
             width: 100%;
@@ -232,317 +327,458 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            background: transparent;
         }
         .cam-overlay {
             position: absolute;
-            bottom: 6px;
-            left: 6px;
-            right: 6px;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
             display: flex;
             justify-content: space-between;
             pointer-events: none;
-            gap: 4px;
+            gap: 6px;
         }
         .cam-status {
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             color: #fff;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.55rem;
+            padding: 4px 12px;
+            border-radius: var(--radius-full);
+            font-size: 0.6rem;
+            font-weight: 500;
             pointer-events: none;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        .cam-status.success {
-            background: rgba(16, 185, 129, 0.8);
-        }
-        .cam-status.error {
-            background: rgba(239, 68, 68, 0.8);
-        }
-        .cam-status.warning {
-            background: rgba(245, 158, 11, 0.8);
-        }
-
-        /* Buttons */
+        .cam-status.success { background: rgba(16, 185, 129, 0.8); }
+        .cam-status.error { background: rgba(239, 68, 68, 0.8); }
+        .cam-status.warning { background: rgba(245, 158, 11, 0.8); }
+        
+        /* ===== 2026 BUTTONS ===== */
         .btn {
-            padding: 6px 14px;
-            border-radius: 8px;
+            padding: 8px 18px;
+            border-radius: var(--radius-full);
             border: none;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.15s;
+            transition: var(--transition-fast);
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
             font-size: 0.75rem;
-        }
-        .btn:active {
-            transform: scale(0.95);
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--purple));
-            color: #fff;
-        }
-        .btn-success {
-            background: var(--success);
-            color: #fff;
-        }
-        .btn-danger {
-            background: var(--danger);
-            color: #fff;
-        }
-        .btn-warning {
-            background: var(--warning);
-            color: #fff;
-        }
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-secondary);
-        }
-        .btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-        .btn-sm {
-            padding: 4px 10px;
-            font-size: 0.65rem;
-        }
-        .btn-block {
-            width: 100%;
-            justify-content: center;
-        }
-
-        /* Forms */
-        .form-group {
-            margin-bottom: 8px;
-        }
-        .form-group label {
-            display: block;
-            font-size: 0.65rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 2px;
-        }
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 6px 10px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            font-size: 0.8rem;
-            background: var(--card-bg);
-        }
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
-        }
-
-        /* Tables */
-        .table-container {
-            overflow-x: auto;
-            max-height: 250px;
-            overflow-y: auto;
-        }
-        .modern-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.7rem;
-        }
-        .modern-table th {
-            text-align: left;
-            padding: 4px 8px;
-            background: var(--bg);
-            color: var(--text-secondary);
-            font-weight: 600;
-            font-size: 0.55rem;
-            text-transform: uppercase;
-            position: sticky;
-            top: 0;
-            z-index: 5;
-        }
-        .modern-table td {
-            padding: 4px 8px;
-            border-bottom: 1px solid var(--border);
-        }
-        .status-badge {
-            padding: 1px 8px;
-            border-radius: 12px;
-            font-size: 0.6rem;
-            font-weight: 600;
-            display: inline-block;
-        }
-        .status-hadir {
-            background: rgba(16, 185, 129, 0.12);
-            color: var(--success);
-        }
-        .status-lewat {
-            background: rgba(245, 158, 11, 0.12);
-            color: var(--warning);
-        }
-        .status-holiday {
-            background: rgba(239, 68, 68, 0.12);
-            color: var(--danger);
-        }
-        .status-teacher {
-            background: rgba(99, 102, 241, 0.12);
-            color: var(--primary);
-        }
-        .status-student {
-            background: rgba(139, 92, 246, 0.12);
-            color: var(--purple);
-        }
-
-        /* Stats */
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        @media (max-width: 480px) {
-            .stats-row {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-        .stat-box {
-            background: var(--card-bg);
-            padding: 8px;
-            border-radius: 10px;
-            text-align: center;
-            border: 1px solid var(--border);
-        }
-        .stat-box .number {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-        .stat-box .label {
-            font-size: 0.5rem;
-            color: var(--text-secondary);
+            position: relative;
+            overflow: hidden;
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
-
-        /* User list */
-        .user-list {
-            max-height: 250px;
-            overflow-y: auto;
+        .btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+            opacity: 0;
+            transition: var(--transition-fast);
         }
+        .btn:hover::after { opacity: 1; }
+        .btn:active { transform: scale(0.95); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+        
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--purple)); color: #fff; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3); }
+        .btn-primary:hover { box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4); transform: translateY(-2px); }
+        
+        .btn-success { background: linear-gradient(135deg, var(--success), var(--success-light)); color: #fff; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3); }
+        .btn-success:hover { box-shadow: 0 6px 24px rgba(16, 185, 129, 0.4); transform: translateY(-2px); }
+        
+        .btn-danger { background: linear-gradient(135deg, var(--danger), var(--danger-light)); color: #fff; box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3); }
+        .btn-danger:hover { box-shadow: 0 6px 24px rgba(239, 68, 68, 0.4); transform: translateY(-2px); }
+        
+        .btn-warning { background: linear-gradient(135deg, var(--warning), var(--warning-light)); color: #fff; box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3); }
+        .btn-warning:hover { box-shadow: 0 6px 24px rgba(245, 158, 11, 0.4); transform: translateY(-2px); }
+        
+        .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text-secondary); }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
+        
+        .btn-sm { padding: 5px 12px; font-size: 0.65rem; }
+        .btn-block { width: 100%; justify-content: center; }
+        
+        /* ===== FORMS - 2026 ===== */
+        .form-group { margin-bottom: 10px; }
+        .form-group label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            border: 2px solid var(--border);
+            font-size: 0.85rem;
+            background: var(--card-bg);
+            transition: var(--transition-fast);
+            color: var(--text-primary);
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.08);
+        }
+        .form-group input::placeholder { color: var(--text-light); }
+        
+        /* ===== TABLES - 2026 ===== */
+        .table-container {
+            overflow-x: auto;
+            max-height: 260px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+        .table-container::-webkit-scrollbar { width: 4px; height: 4px; }
+        .table-container::-webkit-scrollbar-track { background: var(--bg); border-radius: 10px; }
+        .table-container::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+        
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+        }
+        .modern-table th {
+            text-align: left;
+            padding: 6px 10px;
+            background: rgba(99, 102, 241, 0.04);
+            color: var(--text-secondary);
+            font-weight: 700;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            border-bottom: 2px solid var(--border);
+        }
+        .modern-table td {
+            padding: 6px 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        .modern-table tr:hover td { background: rgba(99, 102, 241, 0.02); }
+        
+        /* ===== STATUS BADGES ===== */
+        .status-badge {
+            padding: 2px 12px;
+            border-radius: var(--radius-full);
+            font-size: 0.6rem;
+            font-weight: 700;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .status-hadir { background: rgba(16, 185, 129, 0.12); color: var(--success); }
+        .status-lewat { background: rgba(245, 158, 11, 0.12); color: var(--warning); }
+        .status-holiday { background: rgba(239, 68, 68, 0.12); color: var(--danger); }
+        .status-teacher { background: rgba(99, 102, 241, 0.12); color: var(--primary); }
+        .status-student { background: rgba(139, 92, 246, 0.12); color: var(--purple); }
+        
+        /* ===== STATS - MODERN ===== */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 640px) { .stats-row { grid-template-columns: 1fr 1fr; } }
+        
+        .stat-box {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: var(--transition-fast);
+            box-shadow: var(--shadow);
+        }
+        .stat-box:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+        .stat-box .number {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.2;
+        }
+        .stat-box .label {
+            font-size: 0.55rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+        
+        /* ===== USER LIST ===== */
+        .user-list { max-height: 260px; overflow-y: auto; }
         .user-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 4px 6px;
+            padding: 6px 8px;
             border-bottom: 1px solid var(--border);
-            font-size: 0.75rem;
+            font-size: 0.8rem;
+            transition: var(--transition-fast);
+            border-radius: var(--radius-sm);
         }
+        .user-item:hover { background: rgba(99, 102, 241, 0.04); }
         .user-item .info {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
         .user-item .avatar {
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
-            background: var(--bg);
+            background: linear-gradient(135deg, var(--primary), var(--purple));
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.6rem;
+            font-size: 0.7rem;
             overflow: hidden;
             border: 2px solid var(--border);
+            color: white;
+            font-weight: 700;
         }
         .user-item .avatar img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        .user-item .name {
-            font-weight: 600;
+        .user-item .name { font-weight: 700; }
+        .user-item .class-tag {
+            font-size: 0.55rem;
+            padding: 1px 8px;
+            border-radius: var(--radius-full);
+            background: var(--bg);
+            color: var(--text-secondary);
         }
-        .user-item .role-badge {
-            font-size: 0.5rem;
-            padding: 1px 6px;
-            border-radius: 8px;
-            font-weight: 600;
-        }
-
-        /* Search bar */
+        
+        /* ===== SEARCH ===== */
         .search-bar {
             display: flex;
-            gap: 6px;
-            margin-bottom: 8px;
+            gap: 8px;
+            margin-bottom: 10px;
             flex-wrap: wrap;
         }
-        .search-bar input,
-        .search-bar select {
-            padding: 4px 10px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            font-size: 0.7rem;
+        .search-bar input, .search-bar select {
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            border: 2px solid var(--border);
+            font-size: 0.75rem;
             flex: 1;
             min-width: 80px;
             background: var(--card-bg);
+            transition: var(--transition-fast);
+            color: var(--text-primary);
         }
-
-        /* Registration steps */
+        .search-bar input:focus, .search-bar select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.08);
+        }
+        
+        /* ===== HOLIDAYS ===== */
+        .holiday-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .holiday-item {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.02));
+            color: var(--danger);
+            padding: 4px 12px;
+            border-radius: var(--radius-full);
+            font-size: 0.7rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid rgba(239, 68, 68, 0.1);
+            font-weight: 500;
+        }
+        .holiday-item .remove {
+            cursor: pointer;
+            font-weight: 800;
+            color: var(--danger);
+            opacity: 0.6;
+            transition: var(--transition-fast);
+        }
+        .holiday-item .remove:hover { opacity: 1; }
+        
+        /* ===== CHARTS ===== */
+        .chart-container {
+            position: relative;
+            max-height: 140px;
+            min-height: 100px;
+        }
+        .chart-container canvas {
+            max-height: 140px !important;
+            width: 100% !important;
+        }
+        
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 12px 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            max-width: 340px;
+            z-index: 1000;
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+        }
+        .toast.hidden { display: none; }
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.error { border-left: 4px solid var(--danger); }
+        .toast.warning { border-left: 4px solid var(--warning); }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        /* ===== TABS ===== */
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* ===== VOICE ===== */
+        .voice-indicator {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 999;
+            font-size: 0.7rem;
+            font-weight: 600;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .voice-indicator.hidden { display: none; }
+        
+        /* ===== REGISTRATION ===== */
         .step-indicator {
             display: flex;
             justify-content: center;
-            gap: 16px;
-            margin-bottom: 12px;
+            gap: 24px;
+            margin-bottom: 16px;
         }
         .step {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 2px;
+            gap: 4px;
         }
         .step-number {
-            width: 24px;
-            height: 24px;
-            border-radius: 24px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
             background: var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            font-size: 0.65rem;
+            font-weight: 800;
+            font-size: 0.8rem;
+            transition: var(--transition-fast);
         }
         .step.active .step-number {
             background: linear-gradient(135deg, var(--primary), var(--purple));
             color: #fff;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
         }
         .step.completed .step-number {
             background: var(--success);
             color: #fff;
         }
         .step-label {
-            font-size: 0.5rem;
+            font-size: 0.6rem;
             color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
-
+        
         .reg-status {
             margin-top: 8px;
-            padding: 6px 10px;
+            padding: 8px 12px;
             background: var(--bg);
-            border-radius: 8px;
-            font-size: 0.7rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
             color: var(--text-secondary);
+            border: 1px solid var(--border);
         }
         .reg-status.success {
-            background: rgba(16, 185, 129, 0.1);
+            background: rgba(16, 185, 129, 0.06);
             color: var(--success);
+            border-color: rgba(16, 185, 129, 0.2);
         }
         .reg-status.error {
-            background: rgba(239, 68, 68, 0.1);
+            background: rgba(239, 68, 68, 0.06);
             color: var(--danger);
+            border-color: rgba(239, 68, 68, 0.2);
         }
-
-        /* Camera controls */
+        
+        .face-preview-container {
+            display: none;
+            margin-top: 8px;
+            text-align: center;
+        }
+        .face-preview-container img {
+            width: 72px;
+            height: 72px;
+            border-radius: var(--radius-sm);
+            border: 3px solid var(--primary);
+            object-fit: cover;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2);
+        }
+        .face-preview-container .label {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            display: block;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+        
+        .recognized-list {
+            margin-top: 6px;
+            padding: 6px 10px;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            min-height: 30px;
+            font-size: 0.7rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            align-items: center;
+            border: 1px solid var(--border);
+        }
+        
         .camera-controls {
             display: flex;
             gap: 6px;
@@ -550,179 +786,40 @@
             flex-wrap: wrap;
         }
         .camera-controls select {
-            padding: 4px 8px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
+            padding: 5px 12px;
+            border-radius: var(--radius-full);
+            border: 2px solid var(--border);
             font-size: 0.7rem;
             flex: 1;
             background: var(--card-bg);
+            color: var(--text-primary);
         }
-
-        /* Recognized list */
-        .recognized-list {
-            margin-top: 6px;
-            padding: 4px 8px;
-            background: var(--bg);
-            border-radius: 8px;
-            min-height: 28px;
-            font-size: 0.65rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            align-items: center;
-        }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 16px;
-            right: 16px;
-            background: var(--card-bg);
-            padding: 10px 16px;
-            border-radius: 12px;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border);
-            max-width: 300px;
-            z-index: 1000;
-            animation: slideUp 0.25s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.8rem;
-        }
-        .toast.hidden {
-            display: none;
-        }
-        .toast.success {
-            border-left: 3px solid var(--success);
-        }
-        .toast.error {
-            border-left: 3px solid var(--danger);
-        }
-        .toast.warning {
-            border-left: 3px solid var(--warning);
-        }
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(16px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Voice indicator */
-        .voice-indicator {
-            position: fixed;
-            bottom: 70px;
-            right: 16px;
-            background: linear-gradient(135deg, var(--primary), var(--purple));
-            color: #fff;
-            padding: 4px 12px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            z-index: 999;
-            font-size: 0.6rem;
-            box-shadow: var(--shadow-lg);
-        }
-        .voice-indicator.hidden {
-            display: none;
-        }
-
-        /* Face preview */
-        .face-preview-container {
-            display: none;
-            margin-top: 8px;
-            text-align: center;
-        }
-        .face-preview-container img {
-            width: 80px;
-            height: 80px;
-            border-radius: 12px;
-            border: 2px solid var(--primary);
-            object-fit: cover;
-        }
-        .face-preview-container .label {
-            font-size: 0.6rem;
-            color: var(--text-secondary);
-            display: block;
-            margin-top: 2px;
-        }
-
-        /* Holiday list */
-        .holiday-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            margin-top: 6px;
-        }
-        .holiday-item {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
-            padding: 2px 8px;
-            border-radius: 8px;
-            font-size: 0.65rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .holiday-item .remove {
-            cursor: pointer;
-            font-weight: 700;
-        }
-
-        /* Chart containers */
-        .chart-container {
-            position: relative;
-            max-height: 150px;
-        }
-        .chart-container canvas {
-            max-height: 150px !important;
-        }
-
-        /* Responsive */
+        
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
-            body {
-                padding: 8px;
-            }
-            .app-header h1 {
-                font-size: 0.95rem;
-            }
-            .nav-tab {
-                font-size: 0.65rem;
-                padding: 4px 10px;
-            }
-            .stat-box .number {
-                font-size: 1rem;
-            }
-            .card {
-                padding: 10px;
-            }
+            body { padding: 8px; }
+            .app-header { padding: 10px 14px; }
+            .app-header h1 { font-size: 1rem; }
+            .app-header h1 .badge-2026 { display: none; }
+            .nav-tab { font-size: 0.65rem; padding: 6px 10px; }
+            .stat-box .number { font-size: 1.2rem; }
+            .card { padding: 10px; }
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- Header -->
+        <!-- ===== HEADER 2026 ===== -->
         <header class="app-header">
             <h1>
-                <i data-lucide="scan-face" style="width:18px;height:18px;"></i>
-                SmartClass Pro
+                <i data-lucide="scan-face" style="width:20px;height:20px;"></i>
+                SmartClass <span class="badge-2026">2026</span>
             </h1>
             <div class="header-controls">
-                <span class="status-badge status-loading" id="modelStatus">Loading...</span>
+                <span class="status-badge status-loading" id="modelStatus">
+                    <span class="dot"></span> Loading...
+                </span>
                 <button class="btn btn-sm btn-outline" onclick="toggleCamera()">
                     <i data-lucide="camera" style="width:12px;height:12px;"></i>
                     <span id="camToggleText">Start</span>
@@ -730,30 +827,31 @@
             </div>
         </header>
 
-        <!-- Navigation -->
+        <!-- ===== NAVIGATION ===== -->
         <nav class="nav-tabs">
             <button class="nav-tab active" data-tab="attendance">
-                <i data-lucide="clipboard-check"></i> Attendance
+                <i data-lucide="clipboard-check"></i><span>Attend</span>
             </button>
             <button class="nav-tab" data-tab="register">
-                <i data-lucide="user-plus"></i> Register
+                <i data-lucide="user-plus"></i><span>Register</span>
             </button>
             <button class="nav-tab" data-tab="users">
-                <i data-lucide="users"></i> Users
+                <i data-lucide="users"></i><span>Users</span>
             </button>
             <button class="nav-tab" data-tab="records">
-                <i data-lucide="clock"></i> Records
+                <i data-lucide="clock"></i><span>Records</span>
             </button>
             <button class="nav-tab" data-tab="holidays">
-                <i data-lucide="calendar"></i> Holidays
+                <i data-lucide="calendar"></i><span>Holidays</span>
             </button>
             <button class="nav-tab" data-tab="reports">
-                <i data-lucide="file-text"></i> Reports
+                <i data-lucide="file-text"></i><span>Reports</span>
             </button>
         </nav>
 
         <!-- ===== TAB 1: ATTENDANCE ===== -->
         <div class="tab-content active" id="tab-attendance">
+            <!-- Stats -->
             <div class="stats-row">
                 <div class="stat-box"><div class="number" id="totalRegistered">0</div><div class="label">Users</div></div>
                 <div class="stat-box"><div class="number" id="todayPresent">0</div><div class="label">Present</div></div>
@@ -761,6 +859,7 @@
                 <div class="stat-box"><div class="number" id="attendanceRate">0%</div><div class="label">Rate</div></div>
             </div>
 
+            <!-- Camera + Attendance -->
             <div class="grid-2">
                 <div class="card">
                     <div class="card-title">
@@ -771,22 +870,15 @@
                         <video id="videoFeed" autoplay playsinline></video>
                         <canvas id="canvasOverlay"></canvas>
                         <div class="cam-overlay">
-                            <span class="cam-status" id="camStatus">● Waiting</span>
+                            <span class="cam-status" id="camStatus">●</span>
                             <span class="cam-status" id="recogStatus">⏳</span>
                         </div>
                     </div>
                     <div class="camera-controls">
-                        <select id="cameraSelect">
-                            <option value="user">Front</option>
-                            <option value="environment">Back</option>
-                        </select>
-                        <button class="btn btn-sm btn-primary" onclick="takeAttendance()">
-                            <i data-lucide="clipboard-check" style="width:12px;height:12px;"></i> Mark All
-                        </button>
+                        <select id="cameraSelect"><option value="user">📱 Front</option><option value="environment">📷 Back</option></select>
+                        <button class="btn btn-sm btn-primary" onclick="takeAttendance()"><i data-lucide="clipboard-check" style="width:12px;height:12px;"></i> Mark</button>
                     </div>
-                    <div class="recognized-list" id="recognizedList">
-                        👤 Waiting for faces...
-                    </div>
+                    <div class="recognized-list" id="recognizedList">👤 Waiting for faces...</div>
                 </div>
 
                 <div class="card">
@@ -794,45 +886,31 @@
                         <span><i data-lucide="clipboard-list" style="width:16px;height:16px;color:var(--primary);"></i> Today's Attendance</span>
                         <span class="badge" id="todayCount">0</span>
                     </div>
-                    <select id="attendanceClassFilter" style="width:100%;padding:4px 8px;border-radius:8px;border:1px solid var(--border);font-size:0.7rem;margin-bottom:6px;">
+                    <select id="attendanceClassFilter" style="width:100%;padding:4px 10px;border-radius:var(--radius-full);border:2px solid var(--border);font-size:0.7rem;margin-bottom:6px;background:var(--card-bg);">
                         <option value="all">All Classes</option>
                     </select>
                     <div class="table-container">
                         <table class="modern-table">
                             <thead><tr><th>Name</th><th>Class</th><th>Status</th><th>Time</th></tr></thead>
-                            <tbody id="attendanceTableBody">
-                                <tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-secondary);font-size:0.7rem;">No records</td></tr>
-                            </tbody>
+                            <tbody id="attendanceTableBody"><tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-secondary);font-size:0.7rem;">No records</td></tr></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Charts Section -->
-            <div class="grid-3" style="margin-top:12px;">
+            <!-- Charts -->
+            <div class="grid-3" style="margin-top:16px;">
                 <div class="card">
-                    <div class="card-title">
-                        <span><i data-lucide="trending-up" style="width:16px;height:16px;color:var(--primary);"></i> Weekly Trend</span>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="weeklyChart"></canvas>
-                    </div>
+                    <div class="card-title"><span><i data-lucide="trending-up" style="width:14px;height:14px;color:var(--primary);"></i> Weekly Trend</span></div>
+                    <div class="chart-container"><canvas id="weeklyChart"></canvas></div>
                 </div>
                 <div class="card">
-                    <div class="card-title">
-                        <span><i data-lucide="bar-chart-3" style="width:16px;height:16px;color:var(--primary);"></i> Monthly Overview</span>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="monthlyChart"></canvas>
-                    </div>
+                    <div class="card-title"><span><i data-lucide="bar-chart-3" style="width:14px;height:14px;color:var(--primary);"></i> Monthly Overview</span></div>
+                    <div class="chart-container"><canvas id="monthlyChart"></canvas></div>
                 </div>
                 <div class="card">
-                    <div class="card-title">
-                        <span><i data-lucide="pie-chart" style="width:16px;height:16px;color:var(--primary);"></i> Class Distribution</span>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="classChart"></canvas>
-                    </div>
+                    <div class="card-title"><span><i data-lucide="pie-chart" style="width:14px;height:14px;color:var(--primary);"></i> Class Distribution</span></div>
+                    <div class="chart-container"><canvas id="classChart"></canvas></div>
                 </div>
             </div>
         </div>
@@ -843,16 +921,13 @@
                 <div class="step active" id="step1"><div class="step-number">1</div><div class="step-label">Info</div></div>
                 <div class="step" id="step2"><div class="step-number">2</div><div class="step-label">Capture</div></div>
             </div>
-
             <div class="grid-2">
                 <div class="card">
-                    <div class="card-title">
-                        <span><i data-lucide="user-plus" style="width:16px;height:16px;color:var(--primary);"></i> Register New User</span>
-                    </div>
-                    <form id="registerForm" onsubmit="return false;">
+                    <div class="card-title"><span><i data-lucide="user-plus" style="width:16px;height:16px;color:var(--primary);"></i> Register New User</span></div>
+                    <form onsubmit="return false;">
                         <div class="form-group">
                             <label>Full Name *</label>
-                            <input type="text" id="regName" placeholder="Enter full name" required>
+                            <input type="text" id="regName" placeholder="Enter full name">
                         </div>
                         <div class="form-group">
                             <label>Role</label>
@@ -863,7 +938,7 @@
                         </div>
                         <div class="form-group">
                             <label>Class *</label>
-                            <select id="regClass" required>
+                            <select id="regClass">
                                 <option value="">Select Class</option>
                                 <option value="5A">5A</option><option value="5B">5B</option><option value="5C">5C</option>
                                 <option value="4A">4A</option><option value="4B">4B</option><option value="4C">4C</option>
@@ -872,25 +947,18 @@
                                 <option value="1A">1A</option><option value="1B">1B</option>
                             </select>
                         </div>
-                        <div style="display:flex;gap:4px;flex-wrap:wrap;">
-                            <button type="button" class="btn btn-primary" onclick="captureFace()">
-                                <i data-lucide="camera" style="width:14px;height:14px;"></i> Capture Face
-                            </button>
-                            <button type="button" class="btn btn-success" id="registerBtn" disabled onclick="registerUser()">
-                                <i data-lucide="save" style="width:14px;height:14px;"></i> Register
-                            </button>
-                            <button type="button" class="btn btn-outline" onclick="resetReg()">
-                                <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i>
-                            </button>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                            <button type="button" class="btn btn-primary" onclick="captureFace()"><i data-lucide="camera" style="width:14px;height:14px;"></i> Capture</button>
+                            <button type="button" class="btn btn-success" id="registerBtn" disabled onclick="registerUser()"><i data-lucide="save" style="width:14px;height:14px;"></i> Register</button>
+                            <button type="button" class="btn btn-outline" onclick="resetReg()"><i data-lucide="refresh-cw" style="width:14px;height:14px;"></i></button>
                         </div>
                         <div class="face-preview-container" id="facePreviewContainer">
-                            <img id="facePreview" alt="Face preview">
+                            <img id="facePreview">
                             <span class="label">📸 Face Captured</span>
                         </div>
                         <div class="reg-status" id="regStatus">💡 Fill details, then click "Capture Face"</div>
                     </form>
                 </div>
-
                 <div class="card">
                     <div class="card-title">
                         <span><i data-lucide="scan" style="width:16px;height:16px;color:var(--primary);"></i> Face Capture</span>
@@ -900,7 +968,7 @@
                         <video id="regVideo" autoplay playsinline></video>
                         <canvas id="regCanvas"></canvas>
                         <div class="cam-overlay">
-                            <span class="cam-status" id="regCamStatus">● Waiting for face...</span>
+                            <span class="cam-status" id="regCamStatus">●</span>
                             <span class="cam-status" id="regConf">0%</span>
                         </div>
                     </div>
@@ -919,8 +987,8 @@
                     <input type="text" id="userSearch" placeholder="🔍 Search by name...">
                     <select id="userRoleFilter">
                         <option value="all">All Roles</option>
-                        <option value="student">Students</option>
-                        <option value="teacher">Teachers</option>
+                        <option value="student">🎓 Students</option>
+                        <option value="teacher">👩‍🏫 Teachers</option>
                     </select>
                 </div>
                 <div class="user-list" id="userList">
@@ -941,76 +1009,61 @@
                     <select id="recordClassFilter">
                         <option value="all">All Classes</option>
                     </select>
-                    <button class="btn btn-sm btn-primary" onclick="filterRecords()">
-                        <i data-lucide="filter" style="width:12px;height:12px;"></i> Filter
-                    </button>
-                    <button class="btn btn-sm btn-success" onclick="exportCSV()">
-                        <i data-lucide="download" style="width:12px;height:12px;"></i> CSV
-                    </button>
+                    <button class="btn btn-sm btn-primary" onclick="filterRecords()"><i data-lucide="filter" style="width:12px;height:12px;"></i></button>
+                    <button class="btn btn-sm btn-success" onclick="exportCSV()"><i data-lucide="download" style="width:12px;height:12px;"></i></button>
                 </div>
                 <div class="table-container" style="max-height:300px;">
                     <table class="modern-table">
-                        <thead>
-                            <tr><th>Name</th><th>Class</th><th>Status</th><th>Date</th><th>Time</th></tr>
-                        </thead>
-                        <tbody id="recordsTableBody">
-                            <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-secondary);font-size:0.7rem;">No records</td></tr>
-                        </tbody>
+                        <thead><tr><th>Name</th><th>Class</th><th>Status</th><th>Date</th><th>Time</th></tr></thead>
+                        <tbody id="recordsTableBody"><tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-secondary);font-size:0.7rem;">No records</td></tr></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- ===== TAB 5: HOLIDAYS (KPM Malaysia) ===== -->
+        <!-- ===== TAB 5: HOLIDAYS ===== -->
         <div class="tab-content" id="tab-holidays">
             <div class="grid-2">
                 <div class="card">
                     <div class="card-title">
-                        <span><i data-lucide="calendar" style="width:16px;height:16px;color:var(--primary);"></i> School Holidays (KPM)</span>
-                        <button class="btn btn-sm btn-danger" onclick="clearHolidays()">Clear All</button>
+                        <span><i data-lucide="calendar" style="width:16px;height:16px;color:var(--primary);"></i> School Holidays</span>
+                        <button class="btn btn-sm btn-danger" onclick="clearHolidays()">Clear</button>
                     </div>
-                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-                        <input type="date" id="holidayDate" style="flex:1;padding:4px 8px;border-radius:8px;border:1px solid var(--border);font-size:0.7rem;">
-                        <input type="text" id="holidayName" placeholder="Holiday name" style="flex:1;padding:4px 8px;border-radius:8px;border:1px solid var(--border);font-size:0.7rem;">
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+                        <input type="date" id="holidayDate" style="flex:1;padding:4px 10px;border-radius:var(--radius-full);border:2px solid var(--border);font-size:0.7rem;background:var(--card-bg);">
+                        <input type="text" id="holidayName" placeholder="Holiday name" style="flex:1;padding:4px 10px;border-radius:var(--radius-full);border:2px solid var(--border);font-size:0.7rem;background:var(--card-bg);">
                         <button class="btn btn-sm btn-primary" onclick="addHoliday()">Add</button>
                     </div>
-                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-                        <button class="btn btn-sm btn-warning" onclick="loadKPMSchedule()">📅 Load KPM Schedule</button>
-                        <button class="btn btn-sm btn-success" onclick="loadRamadanHolidays()">🌙 Ramadan Holidays</button>
+                    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;">
+                        <button class="btn btn-sm btn-warning" onclick="loadKPMSchedule()">📅 KPM Schedule</button>
+                        <button class="btn btn-sm btn-success" onclick="loadRamadanHolidays()">🌙 Ramadan</button>
                     </div>
-                    <div id="holidayListContainer">
-                        <div class="holiday-list" id="holidayList"></div>
-                    </div>
-                    <div style="margin-top:8px;font-size:0.6rem;color:var(--text-secondary);">
-                        <strong>Note:</strong> Attendance will not be recorded on holidays
-                    </div>
+                    <div class="holiday-list" id="holidayList"></div>
+                    <div style="margin-top:6px;font-size:0.6rem;color:var(--text-secondary);">📌 Attendance automatically disabled on holidays</div>
                 </div>
-
                 <div class="card">
-                    <div class="card-title">
-                        <span><i data-lucide="info" style="width:16px;height:16px;color:var(--primary);"></i> Holiday Information</span>
-                    </div>
-                    <div style="font-size:0.75rem;color:var(--text-secondary);">
-                        <p><strong>📅 KPM School Holidays 2024:</strong></p>
-                        <ul style="list-style:none;padding:0;margin-top:6px;">
-                            <li>🎆 <strong>1 Jan</strong> - New Year</li>
-                            <li>🕌 <strong>10-11 Apr</strong> - Hari Raya Aidilfitri</li>
-                            <li>🎓 <strong>1 May</strong> - Labour Day</li>
-                            <li>🌙 <strong>22 May</strong> - Wesak Day</li>
-                            <li>👑 <strong>3 Jun</strong> - Agong's Birthday</li>
-                            <li>🕌 <strong>17-18 Jun</strong> - Hari Raya Haji</li>
-                            <li>🌙 <strong>7 Jul</strong> - Awal Muharram</li>
-                            <li>🇲🇾 <strong>31 Aug</strong> - Independence Day</li>
-                            <li>🇲🇾 <strong>16 Sep</strong> - Malaysia Day</li>
-                            <li>🕌 <strong>20 Sep</strong> - Maulidur Rasul</li>
-                            <li>🎄 <strong>25 Dec</strong> - Christmas</li>
+                    <div class="card-title"><span><i data-lucide="info" style="width:16px;height:16px;color:var(--primary);"></i> Holiday Information</span></div>
+                    <div style="font-size:0.7rem;color:var(--text-secondary);">
+                        <p><strong>📅 KPM School Holidays 2026:</strong></p>
+                        <ul style="list-style:none;padding:0;margin-top:4px;font-size:0.65rem;">
+                            <li>🎆 1 Jan - New Year</li>
+                            <li>🕌 31 Mar-1 Apr - Hari Raya</li>
+                            <li>🎓 1 May - Labour Day</li>
+                            <li>🌙 12 May - Wesak Day</li>
+                            <li>👑 1 Jun - Agong's Birthday</li>
+                            <li>🕌 6-7 Jun - Hari Raya Haji</li>
+                            <li>🌙 27 Jun - Awal Muharram</li>
+                            <li>🇲🇾 31 Aug - Independence Day</li>
+                            <li>🇲🇾 16 Sep - Malaysia Day</li>
+                            <li>🕌 5 Sep - Maulidur Rasul</li>
+                            <li>🎄 25 Dec - Christmas</li>
                         </ul>
-                        <p style="margin-top:8px;"><strong>📚 School Term Breaks:</strong></p>
-                        <ul style="list-style:none;padding:0;">
-                            <li>🏖️ <strong>Mar-Apr</strong> - Mid Term Break</li>
-                            <li>🏖️ <strong>Jun-Jul</strong> - Mid Year Holidays</li>
-                            <li>🏖️ <strong>Sep-Oct</strong> - Mid Term Break</li>
-                            <li>🏖️ <strong>Dec-Feb</strong> - Year End Holidays</li>
+                        <p style="margin-top:6px;"><strong>📚 School Term Breaks:</strong></p>
+                        <ul style="list-style:none;padding:0;font-size:0.65rem;">
+                            <li>🏖️ 16-20 Mar - Mid Term Break</li>
+                            <li>🏖️ 31 May-5 Jun - Mid Year Holidays</li>
+                            <li>🏖️ 13-17 Sep - Mid Term Break</li>
+                            <li>🏖️ 14 Dec-2 Jan - Year End Holidays</li>
                         </ul>
                     </div>
                 </div>
@@ -1023,277 +1076,145 @@
                 <div class="card-title">
                     <span><i data-lucide="file-text" style="width:16px;height:16px;color:var(--primary);"></i> Generate Reports</span>
                 </div>
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
-                    <button class="btn btn-primary btn-block" onclick="generatePDFReport('daily')">
-                        <i data-lucide="file-text" style="width:14px;height:14px;"></i> Daily Report
-                    </button>
-                    <button class="btn btn-success btn-block" onclick="generatePDFReport('weekly')">
-                        <i data-lucide="file-text" style="width:14px;height:14px;"></i> Weekly Report
-                    </button>
-                    <button class="btn btn-warning btn-block" onclick="generatePDFReport('monthly')">
-                        <i data-lucide="file-text" style="width:14px;height:14px;"></i> Monthly Report
-                    </button>
-                    <button class="btn btn-danger btn-block" onclick="generatePDFReport('class')">
-                        <i data-lucide="file-text" style="width:14px;height:14px;"></i> Class Report
-                    </button>
-                    <button class="btn btn-outline btn-block" onclick="generatePDFReport('holiday')">
-                        <i data-lucide="calendar" style="width:14px;height:14px;"></i> Holiday Report
-                    </button>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;">
+                    <button class="btn btn-primary" onclick="generatePDF('daily')"><i data-lucide="file-text" style="width:14px;height:14px;"></i> Daily</button>
+                    <button class="btn btn-success" onclick="generatePDF('weekly')"><i data-lucide="file-text" style="width:14px;height:14px;"></i> Weekly</button>
+                    <button class="btn btn-warning" onclick="generatePDF('monthly')"><i data-lucide="file-text" style="width:14px;height:14px;"></i> Monthly</button>
+                    <button class="btn btn-danger" onclick="generatePDF('class')"><i data-lucide="file-text" style="width:14px;height:14px;"></i> Class</button>
+                    <button class="btn btn-outline" onclick="generatePDF('holiday')"><i data-lucide="calendar" style="width:14px;height:14px;"></i> Holiday</button>
                 </div>
-
-                <div style="margin-top:16px;padding:12px;background:var(--bg);border-radius:8px;">
-                    <div class="card-title" style="font-size:0.75rem;margin-bottom:4px;">
-                        <span>📊 Quick Stats</span>
-                    </div>
+                <div style="margin-top:12px;padding:12px;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border);">
                     <div class="grid-3" style="gap:8px;">
-                        <div class="stat-box"><div class="number" id="reportTotalUsers">0</div><div class="label">Total Users</div></div>
-                        <div class="stat-box"><div class="number" id="reportTotalAttendance">0</div><div class="label">Total Attendance</div></div>
-                        <div class="stat-box"><div class="number" id="reportAvgRate">0%</div><div class="label">Average Rate</div></div>
+                        <div class="stat-box"><div class="number" id="reportTotalUsers">0</div><div class="label">Users</div></div>
+                        <div class="stat-box"><div class="number" id="reportTotalAttendance">0</div><div class="label">Attendance</div></div>
+                        <div class="stat-box"><div class="number" id="reportAvgRate">0%</div><div class="label">Rate</div></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Toast -->
+    <!-- ===== TOAST ===== -->
     <div class="toast hidden" id="toast">
         <i data-lucide="check-circle" style="width:18px;height:18px;"></i>
         <span id="toastMsg">Success</span>
     </div>
 
-    <!-- Voice Indicator -->
+    <!-- ===== VOICE INDICATOR ===== -->
     <div class="voice-indicator hidden" id="voiceIndicator">
-        <i data-lucide="volume-2" style="width:12px;height:12px;"></i>
+        <i data-lucide="volume-2" style="width:14px;height:14px;"></i>
         <span id="voiceText">Speaking...</span>
     </div>
 
     <!-- ============================================================ -->
-    <!-- JAVASCRIPT - Complete -->
+    <!-- ===== JAVASCRIPT - 2026 OPTIMIZED ===== -->
     <!-- ============================================================ -->
     <script>
         // ================================================================
-        // 1. STATE
+        // 1. STATE - Minimal & Fast
         // ================================================================
-        let modelsReady = false;
-        let camActive = false;
-        let camStream = null;
-        let detectInterval = null;
-        let regInterval = null;
-        let users = [];
-        let attendance = [];
-        let currentFace = null;
-        let audioCtx = null;
-        let lastAttendance = {};
-        let strangerAlerts = [];
-        let holidays = [];
-        let weeklyChart = null;
-        let monthlyChart = null;
-        let classChart = null;
+        let ready = false,
+            cam = false,
+            stream = null,
+            detectInt = null,
+            regInt = null;
+        let users = [],
+            attendance = [],
+            currentFace = null,
+            holidays = [],
+            audioCtx = null,
+            lastAtt = {};
+        let charts = { weekly: null, monthly: null, class: null },
+            lastStranger = 0;
 
         // ================================================================
-        // 2. KPM HOLIDAYS (Malaysia School Calendar)
-        // ================================================================
-        const KPM_HOLIDAYS = {
-            '2024-01-01': 'New Year Day',
-            '2024-01-25': 'Thaipusam',
-            '2024-02-10': 'Chinese New Year',
-            '2024-02-11': 'Chinese New Year',
-            '2024-04-10': 'Hari Raya Aidilfitri',
-            '2024-04-11': 'Hari Raya Aidilfitri',
-            '2024-05-01': 'Labour Day',
-            '2024-05-22': 'Wesak Day',
-            '2024-06-03': 'Agong Birthday',
-            '2024-06-17': 'Hari Raya Haji',
-            '2024-06-18': 'Hari Raya Haji',
-            '2024-07-07': 'Awal Muharram',
-            '2024-08-31': 'Independence Day',
-            '2024-09-16': 'Malaysia Day',
-            '2024-09-20': 'Maulidur Rasul',
-            '2024-10-31': 'Deepavali',
-            '2024-12-25': 'Christmas',
-            // School term breaks (custom)
-            '2024-03-18': 'Mid Term Break',
-            '2024-03-19': 'Mid Term Break',
-            '2024-03-20': 'Mid Term Break',
-            '2024-03-21': 'Mid Term Break',
-            '2024-03-22': 'Mid Term Break',
-            '2024-06-01': 'Mid Year Holiday',
-            '2024-06-02': 'Mid Year Holiday',
-            '2024-06-03': 'Mid Year Holiday',
-            '2024-06-04': 'Mid Year Holiday',
-            '2024-06-05': 'Mid Year Holiday',
-            '2024-09-09': 'Mid Term Break',
-            '2024-09-10': 'Mid Term Break',
-            '2024-09-11': 'Mid Term Break',
-            '2024-09-12': 'Mid Term Break',
-            '2024-09-13': 'Mid Term Break',
-            '2024-12-16': 'Year End Holiday',
-            '2024-12-17': 'Year End Holiday',
-            '2024-12-18': 'Year End Holiday',
-            '2024-12-19': 'Year End Holiday',
-            '2024-12-20': 'Year End Holiday',
-            '2024-12-23': 'Year End Holiday',
-            '2024-12-24': 'Year End Holiday',
-            '2024-12-26': 'Year End Holiday',
-            '2024-12-27': 'Year End Holiday',
-            '2024-12-30': 'Year End Holiday',
-            '2024-12-31': 'Year End Holiday'
-        };
-
-        // Ramadan/Islamic holidays
-        const RAMADAN_HOLIDAYS = {
-            '2024-03-10': 'Ramadan Start',
-            '2024-03-11': 'Ramadan Start',
-            '2024-03-12': 'Ramadan Start',
-            '2024-03-13': 'Ramadan Start',
-            '2024-03-14': 'Ramadan Start',
-            '2024-03-15': 'Ramadan Start',
-            '2024-03-16': 'Ramadan Start',
-            '2024-03-17': 'Ramadan Start',
-            '2024-04-09': 'Eid Celebration',
-            '2024-04-12': 'Eid Celebration',
-            '2024-04-13': 'Eid Celebration',
-            '2024-04-14': 'Eid Celebration',
-            '2024-04-15': 'Eid Celebration'
-        };
-
-        function loadKPMSchedule() {
-            const confirmed = Object.keys(KPM_HOLIDAYS);
-            let added = 0;
-            confirmed.forEach(date => {
-                if (!holidays.find(h => h.date === date)) {
-                    holidays.push({ date: date, name: KPM_HOLIDAYS[date] });
-                    added++;
-                }
-            });
-            saveHolidays();
-            renderHolidays();
-            showToast(`✅ Added ${added} KPM holidays`, 'success');
-        }
-
-        function loadRamadanHolidays() {
-            const ramadan = Object.keys(RAMADAN_HOLIDAYS);
-            let added = 0;
-            ramadan.forEach(date => {
-                if (!holidays.find(h => h.date === date)) {
-                    holidays.push({ date: date, name: RAMADAN_HOLIDAYS[date] });
-                    added++;
-                }
-            });
-            saveHolidays();
-            renderHolidays();
-            showToast(`🌙 Added ${added} Ramadan holidays`, 'success');
-        }
-
-        function isHoliday(date) {
-            return holidays.some(h => h.date === date);
-        }
-
-        function getHolidayName(date) {
-            const h = holidays.find(h => h.date === date);
-            return h ? h.name : null;
-        }
-
-        // ================================================================
-        // 3. LOAD MODELS
+        // 2. LOAD MODELS - Fast 2026
         // ================================================================
         async function loadModels() {
             try {
-                updateStatus('modelStatus', 'Loading models...', 'status-loading');
-
+                updateStatus('modelStatus', 'Loading', 'status-loading');
                 await loadFaceAPI();
 
-                const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
+                const url = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/';
                 await Promise.all([
-                    faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
+                    faceapi.nets.ssdMobilenetv1.loadFromUri(url),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(url),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(url)
                 ]);
 
-                modelsReady = true;
-                updateStatus('modelStatus', '✅ Ready', 'status-online');
-
-                loadUsers();
-                loadAttendance();
-                loadHolidays();
-                loadStrangers();
-                updateUI();
-                renderCharts();
-
-                setTimeout(startCamera, 300);
-
-                showToast('✅ System Ready!', 'success');
+                ready = true;
+                updateStatus('modelStatus', 'Online', 'status-online');
+                loadData();
+                setTimeout(startCamera, 200);
+                showToast('🚀 System Ready 2026!', 'success');
 
             } catch (e) {
                 console.error('Model error:', e);
-                updateStatus('modelStatus', '❌ Failed', 'status-offline');
-                showToast('Please refresh and try again', 'error');
+                updateStatus('modelStatus', 'Error', 'status-offline');
+                showToast('⚠️ Please refresh and try again', 'error');
             }
         }
 
-        function updateStatus(elId, text, className) {
-            const el = document.getElementById(elId);
-            if (el) { el.textContent = text;
-                el.className = `status-badge ${className}`; }
+        function updateStatus(id, txt, cls) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.innerHTML = txt;
+                el.className = `status-badge ${cls}`;
+                if (cls === 'status-online' || cls === 'status-loading') {
+                    el.innerHTML = `<span class="dot"></span> ${txt}`;
+                }
+            }
         }
 
         // ================================================================
-        // 4. CAMERA
+        // 3. CAMERA - 2026 Optimized
         // ================================================================
         async function startCamera() {
             try {
-                if (camStream) camStream.getTracks().forEach(t => t.stop());
-
+                if (stream) stream.getTracks().forEach(t => t.stop());
                 const facing = document.getElementById('cameraSelect').value || 'user';
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: facing, width: { ideal: 480 }, height: { ideal: 360 }, frameRate: { ideal: 15 } }
+                const s = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: facing, width: { ideal: 480 }, height: { ideal: 360 }, frameRate: { ideal: 20 } }
                 });
-
-                camStream = stream;
+                stream = s;
                 const video = document.getElementById('videoFeed');
-                video.srcObject = stream;
+                video.srcObject = s;
                 await video.play();
-
-                camActive = true;
+                cam = true;
                 document.getElementById('camToggleText').textContent = 'Stop';
-
-                if (detectInterval) clearInterval(detectInterval);
-                detectInterval = setInterval(detectFaces, 200);
-
+                if (detectInt) clearInterval(detectInt);
+                detectInt = setInterval(detectFaces, 150);
                 startRegCamera();
-
             } catch (e) {
                 console.error('Camera error:', e);
-                showToast('Please allow camera access', 'error');
+                showToast('📷 Please allow camera access', 'error');
             }
         }
 
         function stopCamera() {
-            if (camStream) { camStream.getTracks().forEach(t => t.stop());
-                camStream = null; }
-            if (detectInterval) { clearInterval(detectInterval);
-                detectInterval = null; }
-            camActive = false;
+            if (stream) { stream.getTracks().forEach(t => t.stop());
+                stream = null; }
+            if (detectInt) { clearInterval(detectInt);
+                detectInt = null; }
+            cam = false;
             document.getElementById('camToggleText').textContent = 'Start';
-            document.getElementById('camStatus').textContent = '⏸ Camera off';
+            document.getElementById('camStatus').textContent = '⏸';
             document.getElementById('camStatus').className = 'cam-status';
         }
 
         function toggleCamera() {
-            if (camActive) { stopCamera();
+            if (cam) { stopCamera();
                 stopRegCamera(); } else startCamera();
         }
 
         // ================================================================
-        // 5. FACE DETECTION (Attendance)
+        // 4. FACE DETECTION - Fast & Smooth
         // ================================================================
         async function detectFaces() {
-            if (!modelsReady || !camActive) return;
+            if (!ready || !cam) return;
 
             const video = document.getElementById('videoFeed');
             const canvas = document.getElementById('canvasOverlay');
-
             if (!video.videoWidth) return;
 
             canvas.width = video.videoWidth;
@@ -1308,18 +1229,16 @@
 
             document.getElementById('faceCount').textContent = `👤 ${detections.length}`;
 
-            let names = [];
-            let hasStranger = false;
-
-            // Check if today is holiday
             const today = new Date().toISOString().split('T')[0];
             const isHolidayToday = isHoliday(today);
+            let names = [],
+                hasStranger = false;
 
             if (isHolidayToday) {
-                const holidayName = getHolidayName(today);
-                ctx.fillStyle = '#f59e0b';
+                const hName = getHolidayName(today);
+                ctx.fillStyle = '#fbbf24';
                 ctx.font = 'bold 16px system-ui';
-                ctx.fillText(`🎉 ${holidayName || 'Holiday'} - No Attendance`, 20, 40);
+                ctx.fillText(`🎉 ${hName || 'Holiday'} - No Attendance`, 20, 40);
             }
 
             for (const d of detections) {
@@ -1327,88 +1246,68 @@
                 const desc = d.descriptor;
                 const pos = d.landmarks.positions;
 
-                let match = null;
-                let bestDist = 0.55;
-
+                let match = null,
+                    bestDist = 0.55;
                 for (const u of users) {
                     if (u.descriptor) {
                         const dist = faceapi.euclideanDistance(desc, new Float32Array(u.descriptor));
-                        if (dist < bestDist) {
-                            bestDist = dist;
-                            match = u;
-                        }
+                        if (dist < bestDist) { bestDist = dist;
+                            match = u; }
                     }
                 }
 
-                // Draw face box
                 ctx.beginPath();
                 ctx.rect(box.x, box.y, box.width, box.height);
 
                 if (match) {
                     ctx.strokeStyle = '#10b981';
-                    ctx.lineWidth = 2;
+                    ctx.lineWidth = 2.5;
                     ctx.stroke();
-
                     ctx.fillStyle = '#10b981';
-                    ctx.font = 'bold 12px system-ui';
+                    ctx.font = 'bold 13px system-ui';
                     ctx.fillText(`✅ ${match.name}`, box.x, box.y - 4);
-
                     names.push(match.name);
-
-                    // Only mark attendance if not holiday
-                    if (!isHolidayToday) {
-                        autoAttendance(match);
-                    } else {
-                        ctx.fillStyle = '#f59e0b';
-                        ctx.font = '10px system-ui';
-                        ctx.fillText('🎉 Holiday', box.x, box.y + box.height + 14);
-                    }
+                    if (!isHolidayToday) autoAttendance(match);
                 } else {
                     ctx.strokeStyle = '#ef4444';
-                    ctx.lineWidth = 2;
+                    ctx.lineWidth = 2.5;
                     ctx.stroke();
-
                     ctx.fillStyle = '#ef4444';
-                    ctx.font = 'bold 12px system-ui';
+                    ctx.font = 'bold 13px system-ui';
                     ctx.fillText('⚠️ Stranger', box.x, box.y - 4);
-
                     hasStranger = true;
-
-                    if (!isHolidayToday && Date.now() - lastStrangerAlertTime > 10000) {
-                        lastStrangerAlertTime = Date.now();
+                    if (!isHolidayToday && Date.now() - lastStranger > 10000) {
+                        lastStranger = Date.now();
                         reportStranger();
                     }
                 }
 
-                // Draw biometric dots
+                // Biometric dots
                 pos.forEach(p => {
                     ctx.beginPath();
-                    ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(99,102,241,0.4)';
+                    ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(99,102,241,0.3)';
                     ctx.fill();
                 });
             }
 
-            // Update recognized list
+            // Update UI
             const listEl = document.getElementById('recognizedList');
             if (isHolidayToday) {
-                const holidayName = getHolidayName(today) || 'Holiday';
-                listEl.innerHTML =
-                `<span style="color:var(--warning);font-weight:600;">🎉 ${holidayName} - No attendance today</span>`;
+                const hName = getHolidayName(today);
+                listEl.innerHTML = `<span style="color:var(--warning);font-weight:700;">🎉 ${hName || 'Holiday'} - No attendance</span>`;
             } else if (names.length > 0) {
                 listEl.innerHTML = names.map(n =>
-                    `<span style="background:rgba(16,185,129,0.1);color:var(--success);padding:1px 8px;border-radius:12px;font-size:0.6rem;font-weight:600;">✅ ${n}</span>`
+                    `<span style="background:rgba(16,185,129,0.1);color:var(--success);padding:2px 10px;border-radius:20px;font-size:0.6rem;font-weight:700;">✅ ${n}</span>`
                 ).join(' ');
-                if (hasStranger) {
-                    listEl.innerHTML +=
-                        `<span style="background:rgba(239,68,68,0.1);color:var(--danger);padding:1px 8px;border-radius:12px;font-size:0.6rem;font-weight:600;">⚠️ Stranger</span>`;
-                }
+                if (hasStranger) listEl.innerHTML +=
+                    `<span style="background:rgba(239,68,68,0.1);color:var(--danger);padding:2px 10px;border-radius:20px;font-size:0.6rem;font-weight:700;">⚠️ Stranger</span>`;
                 document.getElementById('recogStatus').textContent = `✅ ${names.join(', ')}`;
                 document.getElementById('recogStatus').className = 'cam-status success';
             } else if (detections.length > 0) {
                 document.getElementById('recogStatus').textContent = '⚠️ Unknown';
                 document.getElementById('recogStatus').className = 'cam-status warning';
-                listEl.innerHTML = `<span style="color:var(--danger);">⚠️ Unrecognized face(s) detected</span>`;
+                listEl.innerHTML = `<span style="color:var(--danger);font-weight:600;">⚠️ Unrecognized face(s)</span>`;
             } else {
                 document.getElementById('recogStatus').textContent = '⏳';
                 document.getElementById('recogStatus').className = 'cam-status';
@@ -1416,23 +1315,16 @@
             }
         }
 
-        let lastStrangerAlertTime = 0;
-
         // ================================================================
-        // 6. AUTO ATTENDANCE
+        // 5. AUTO ATTENDANCE - 2026
         // ================================================================
         function autoAttendance(user) {
             const today = new Date().toISOString().split('T')[0];
-            
-            // Check if holiday
-            if (isHoliday(today)) {
-                return;
-            }
+            if (isHoliday(today)) return;
 
             const session = new Date().getHours() < 13 ? 'pagi' : 'petang';
             const key = `${user.id}_${today}_${session}`;
-
-            if (lastAttendance[key] && Date.now() - lastAttendance[key] < 15000) return;
+            if (lastAtt[key] && Date.now() - lastAtt[key] < 15000) return;
 
             const exists = attendance.find(r => r.userId === user.id && r.date === today && r.session === session);
             if (exists) return;
@@ -1454,13 +1346,11 @@
                 time: new Date().toLocaleTimeString('ms-MY'),
                 date: today,
                 timestamp: Date.now(),
-                method: 'Face Recognition',
-                isHoliday: false
+                method: 'AI Face Recognition 2026'
             };
 
             attendance.push(record);
-            lastAttendance[key] = Date.now();
-
+            lastAtt[key] = Date.now();
             saveAttendance();
             updateUI();
             renderCharts();
@@ -1470,34 +1360,26 @@
         }
 
         // ================================================================
-        // 7. STRANGER ALERT
+        // 6. STRANGER ALERT - 2026
         // ================================================================
         function reportStranger() {
-            const alert = {
-                id: Date.now().toString(),
-                time: new Date().toLocaleTimeString('ms-MY'),
-                date: new Date().toISOString().split('T')[0],
-                className: document.getElementById('attendanceClassFilter')?.value || 'Unknown'
-            };
-
-            strangerAlerts.push(alert);
-            saveStrangers();
-
             playAlertBeep();
-            speak('Warning! Stranger detected!');
-
+            speak('⚠️ Warning! Stranger detected!');
+            
             Swal.fire({
-                title: '⚠️ SECURITY ALERT!',
-                text: `Stranger detected at ${alert.time}`,
+                title: '⚠️ Security Alert!',
+                text: `Stranger detected at ${new Date().toLocaleTimeString('ms-MY')}`,
                 icon: 'warning',
                 confirmButtonColor: '#ef4444',
                 timer: 3000,
-                timerProgressBar: true
+                timerProgressBar: true,
+                background: 'var(--card-bg)',
+                backdrop: 'rgba(0,0,0,0.4)',
+                customClass: {
+                    popup: 'rounded-2xl',
+                    confirmButton: 'btn btn-danger'
+                }
             });
-
-            const listEl = document.getElementById('recognizedList');
-            listEl.innerHTML +=
-                `<span style="background:rgba(239,68,68,0.1);color:var(--danger);padding:1px 8px;border-radius:12px;font-size:0.6rem;font-weight:600;">⚠️ Stranger Alert!</span>`;
         }
 
         function playAlertBeep() {
@@ -1521,31 +1403,27 @@
         }
 
         // ================================================================
-        // 8. REGISTRATION
+        // 7. REGISTRATION - 2026
         // ================================================================
         async function startRegCamera() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
+                const s = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 360 } }
                 });
                 const video = document.getElementById('regVideo');
-                video.srcObject = stream;
+                video.srcObject = s;
                 await video.play();
-
-                if (regInterval) clearInterval(regInterval);
-                regInterval = setInterval(detectRegFace, 200);
-
+                if (regInt) clearInterval(regInt);
+                regInt = setInterval(detectRegFace, 150);
             } catch (e) { console.error('Reg camera error:', e); }
         }
 
         function stopRegCamera() {
             const video = document.getElementById('regVideo');
-            if (video.srcObject) {
-                video.srcObject.getTracks().forEach(t => t.stop());
-                video.srcObject = null;
-            }
-            if (regInterval) { clearInterval(regInterval);
-                regInterval = null; }
+            if (video.srcObject) { video.srcObject.getTracks().forEach(t => t.stop());
+                video.srcObject = null; }
+            if (regInt) { clearInterval(regInt);
+                regInt = null; }
         }
 
         function captureFaceImage() {
@@ -1559,14 +1437,13 @@
         }
 
         async function detectRegFace() {
-            if (!modelsReady) return;
+            if (!ready) return;
 
             const video = document.getElementById('regVideo');
             const canvas = document.getElementById('regCanvas');
             const ctx = canvas.getContext('2d');
 
             if (!video.videoWidth) return;
-
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
 
@@ -1579,7 +1456,7 @@
             if (!d) {
                 document.getElementById('regPoints').textContent = '📍 0 pts';
                 document.getElementById('regConf').textContent = '0%';
-                document.getElementById('regCamStatus').textContent = '● No face';
+                document.getElementById('regCamStatus').textContent = '●';
                 document.getElementById('regCamStatus').className = 'cam-status';
                 document.getElementById('registerBtn').disabled = true;
                 document.getElementById('facePreviewContainer').style.display = 'none';
@@ -1589,14 +1466,14 @@
             const box = d.detection.box;
             const pos = d.landmarks.positions;
 
-            // Draw face box
+            // Draw face
             ctx.beginPath();
             ctx.rect(box.x, box.y, box.width, box.height);
             ctx.strokeStyle = '#10b981';
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 2.5;
             ctx.stroke();
 
-            // Draw all 68 landmarks with colors
+            // Draw 68 landmarks with colors
             pos.forEach((p, i) => {
                 let color = '#6366f1';
                 if (i < 17) color = '#6366f1';
@@ -1610,39 +1487,16 @@
                 else color = '#ec4899';
 
                 ctx.beginPath();
-                ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
+                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
                 ctx.fillStyle = color;
                 ctx.fill();
             });
 
-            // Draw face connections
-            ctx.strokeStyle = 'rgba(99,102,241,0.15)';
-            ctx.lineWidth = 1;
-            for (let i = 0; i < 16; i++) {
-                ctx.beginPath();
-                ctx.moveTo(pos[i].x, pos[i].y);
-                ctx.lineTo(pos[i + 1].x, pos[i + 1].y);
-                ctx.stroke();
-            }
-            for (let i = 17; i < 21; i++) {
-                ctx.beginPath();
-                ctx.moveTo(pos[i].x, pos[i].y);
-                ctx.lineTo(pos[i + 1].x, pos[i + 1].y);
-                ctx.stroke();
-            }
-            for (let i = 22; i < 26; i++) {
-                ctx.beginPath();
-                ctx.moveTo(pos[i].x, pos[i].y);
-                ctx.lineTo(pos[i + 1].x, pos[i + 1].y);
-                ctx.stroke();
-            }
-
-            // Capture face image
+            // Capture image
             const imgData = captureFaceImage();
             document.getElementById('facePreview').src = imgData;
             document.getElementById('facePreviewContainer').style.display = 'block';
 
-            // Store face data
             currentFace = {
                 landmarks: pos.map(p => ({ x: p.x, y: p.y })),
                 descriptor: Array.from(d.descriptor),
@@ -1654,56 +1508,38 @@
             document.getElementById('regPoints').textContent = `📍 ${pos.length} pts`;
             document.getElementById('regConf').textContent = `${(d.detection.score * 100).toFixed(0)}%`;
 
-            // Check if face is centered
+            // Check centered
             const cx = canvas.width / 2,
                 cy = canvas.height / 2;
             const fx = box.x + box.width / 2,
                 fy = box.y + box.height / 2;
-            const offsetX = Math.abs(fx - cx) / canvas.width;
-            const offsetY = Math.abs(fy - cy) / canvas.height;
+            const ox = Math.abs(fx - cx) / canvas.width;
+            const oy = Math.abs(fy - cy) / canvas.height;
 
-            if (offsetX < 0.2 && offsetY < 0.2 && pos.length === 68) {
+            if (ox < 0.2 && oy < 0.2 && pos.length === 68) {
                 document.getElementById('registerBtn').disabled = false;
-                document.getElementById('regCamStatus').textContent = '✅ Face captured! Ready';
+                document.getElementById('regCamStatus').textContent = '✅ Ready';
                 document.getElementById('regCamStatus').className = 'cam-status success';
-                document.getElementById('regStatus').textContent =
-                    `✅ Face captured with ${pos.length} biometric points! Click "Register" to save.`;
+                document.getElementById('regStatus').textContent = `✅ ${pos.length} points! Click Register.`;
                 document.getElementById('regStatus').className = 'reg-status success';
             } else {
                 document.getElementById('registerBtn').disabled = true;
-                if (pos.length < 68) {
-                    document.getElementById('regCamStatus').textContent = '⚠️ Show full face';
-                    document.getElementById('regCamStatus').className = 'cam-status warning';
-                } else {
-                    document.getElementById('regCamStatus').textContent = '⚠️ Center your face';
-                    document.getElementById('regCamStatus').className = 'cam-status warning';
-                }
+                document.getElementById('regCamStatus').textContent = pos.length < 68 ? '⚠️ Full face' : '⚠️ Center';
+                document.getElementById('regCamStatus').className = 'cam-status warning';
             }
         }
 
         function captureFace() {
-            if (!currentFace) {
-                showToast('No face detected. Look at camera.', 'warning');
-                return;
-            }
+            if (!currentFace) { showToast('No face detected', 'warning'); return; }
             const name = document.getElementById('regName').value.trim();
             const cls = document.getElementById('regClass').value;
-            if (!name || !cls) {
-                showToast('Please fill name and class', 'error');
-                return;
-            }
-            if (users.some(u => u.name.toLowerCase() === name.toLowerCase())) {
-                showToast('Name already exists!', 'error');
-                return;
-            }
-            if (currentFace.landmarks.length < 68) {
-                showToast('Full face not visible. Show your full face.', 'warning');
-                return;
-            }
+            if (!name || !cls) { showToast('Fill name and class', 'error'); return; }
+            if (users.some(u => u.name.toLowerCase() === name.toLowerCase())) { showToast('Name exists!', 'error'); return; }
+            if (currentFace.landmarks.length < 68) { showToast('Show full face', 'warning'); return; }
             document.getElementById('registerBtn').disabled = false;
-            document.getElementById('regStatus').textContent = `✅ Face captured! Ready to register ${name}`;
+            document.getElementById('regStatus').textContent = `✅ Ready to register ${name}`;
             document.getElementById('regStatus').className = 'reg-status success';
-            showToast('Face captured! Click Register', 'success');
+            showToast('📸 Face captured!', 'success');
             playBeep();
         }
 
@@ -1712,10 +1548,7 @@
             const role = document.getElementById('regRole').value;
             const cls = document.getElementById('regClass').value;
 
-            if (!name || !cls || !currentFace) {
-                showToast('Please capture face first', 'error');
-                return;
-            }
+            if (!name || !cls || !currentFace) { showToast('Please capture face first', 'error'); return; }
 
             const user = {
                 id: Date.now().toString(),
@@ -1734,22 +1567,23 @@
             renderUsers();
             updateUI();
 
+            // Reset
             document.getElementById('regName').value = '';
             document.getElementById('regClass').value = '';
             document.getElementById('registerBtn').disabled = true;
-            document.getElementById('regStatus').textContent = '💡 Fill details, then click "Capture Face"';
+            document.getElementById('regStatus').textContent = '💡 Fill details, then Capture';
             document.getElementById('regStatus').className = 'reg-status';
             document.getElementById('facePreviewContainer').style.display = 'none';
             currentFace = null;
             document.getElementById('regPoints').textContent = '📍 0 pts';
             document.getElementById('regConf').textContent = '0%';
-            document.getElementById('regCamStatus').textContent = '● Waiting for face...';
+            document.getElementById('regCamStatus').textContent = '●';
             document.getElementById('regCamStatus').className = 'cam-status';
 
             updateClassFilters();
             renderCharts();
-            showToast(`✅ ${name} registered successfully!`, 'success');
-            speak(`${name} registration successful`);
+            showToast(`✅ ${name} registered!`, 'success');
+            speak(`${name} registered successfully`);
             playBeep();
 
             document.getElementById('step1').className = 'step active';
@@ -1760,71 +1594,167 @@
             document.getElementById('regName').value = '';
             document.getElementById('regClass').value = '';
             document.getElementById('registerBtn').disabled = true;
-            document.getElementById('regStatus').textContent = '💡 Fill details, then click "Capture Face"';
+            document.getElementById('regStatus').textContent = '💡 Fill details, then Capture';
             document.getElementById('regStatus').className = 'reg-status';
             document.getElementById('facePreviewContainer').style.display = 'none';
             currentFace = null;
             document.getElementById('regPoints').textContent = '📍 0 pts';
             document.getElementById('regConf').textContent = '0%';
-            document.getElementById('regCamStatus').textContent = '● Waiting for face...';
+            document.getElementById('regCamStatus').textContent = '●';
             document.getElementById('regCamStatus').className = 'cam-status';
-            showToast('Reset', 'warning');
+            showToast('🔄 Reset', 'warning');
         }
 
         // ================================================================
-        // 9. DATA MANAGEMENT
+        // 8. DATA MANAGEMENT
         // ================================================================
         function saveUsers() {
-            try {
-                localStorage.setItem('smart_users', JSON.stringify(users.map(u => ({ ...u, faceImage: u.faceImage || null }))));
-            } catch (e) {}
+            try { localStorage.setItem('smart_users_2026', JSON.stringify(users.map(u => ({ ...u, faceImage: u.faceImage ||
+                        null })))); } catch (e) {}
         }
 
         function loadUsers() {
-            try {
-                const data = localStorage.getItem('smart_users');
-                if (data) users = JSON.parse(data);
-            } catch (e) { users = []; }
+            try { const d = localStorage.getItem('smart_users_2026'); if (d) users = JSON.parse(d); } catch (e) { users = []; }
             renderUsers();
         }
 
         function saveAttendance() {
-            try { localStorage.setItem('smart_attendance', JSON.stringify(attendance)); } catch (e) {}
+            try { localStorage.setItem('smart_attendance_2026', JSON.stringify(attendance)); } catch (e) {}
         }
 
         function loadAttendance() {
-            try {
-                const data = localStorage.getItem('smart_attendance');
-                if (data) attendance = JSON.parse(data);
-            } catch (e) { attendance = []; }
+            try { const d = localStorage.getItem('smart_attendance_2026'); if (d) attendance = JSON.parse(d); } catch (e) { attendance =
+                    []; }
         }
 
         function saveHolidays() {
-            try { localStorage.setItem('smart_holidays', JSON.stringify(holidays)); } catch (e) {}
+            try { localStorage.setItem('smart_holidays_2026', JSON.stringify(holidays)); } catch (e) {}
         }
 
         function loadHolidays() {
-            try {
-                const data = localStorage.getItem('smart_holidays');
-                if (data) holidays = JSON.parse(data);
-            } catch (e) { holidays = []; }
+            try { const d = localStorage.getItem('smart_holidays_2026'); if (d) holidays = JSON.parse(d); } catch (e) { holidays =
+                    []; }
             renderHolidays();
         }
 
-        function saveStrangers() {
-            try { localStorage.setItem('smart_strangers', JSON.stringify(strangerAlerts)); } catch (e) {}
-        }
-
-        function loadStrangers() {
-            try {
-                const data = localStorage.getItem('smart_strangers');
-                if (data) strangerAlerts = JSON.parse(data);
-            } catch (e) { strangerAlerts = []; }
-        }
+        function loadData() { loadUsers();
+            loadAttendance();
+            loadHolidays();
+            updateUI();
+            renderCharts(); }
 
         // ================================================================
-        // 10. HOLIDAYS
+        // 9. HOLIDAYS - KPM 2026
         // ================================================================
+        const KPM_HOLIDAYS_2026 = {
+            '2026-01-01': 'New Year Day',
+            '2026-01-26': 'Thaipusam',
+            '2026-01-29': 'Chinese New Year',
+            '2026-01-30': 'Chinese New Year',
+            '2026-03-31': 'Hari Raya Aidilfitri',
+            '2026-04-01': 'Hari Raya Aidilfitri',
+            '2026-05-01': 'Labour Day',
+            '2026-05-12': 'Wesak Day',
+            '2026-06-01': 'Agong Birthday',
+            '2026-06-06': 'Hari Raya Haji',
+            '2026-06-07': 'Hari Raya Haji',
+            '2026-06-27': 'Awal Muharram',
+            '2026-08-31': 'Independence Day',
+            '2026-09-05': 'Maulidur Rasul',
+            '2026-09-16': 'Malaysia Day',
+            '2026-10-20': 'Deepavali',
+            '2026-12-25': 'Christmas',
+            // School breaks
+            '2026-03-16': 'Mid Term Break',
+            '2026-03-17': 'Mid Term Break',
+            '2026-03-18': 'Mid Term Break',
+            '2026-03-19': 'Mid Term Break',
+            '2026-03-20': 'Mid Term Break',
+            '2026-06-01': 'Mid Year Holiday',
+            '2026-06-02': 'Mid Year Holiday',
+            '2026-06-03': 'Mid Year Holiday',
+            '2026-06-04': 'Mid Year Holiday',
+            '2026-06-05': 'Mid Year Holiday',
+            '2026-09-13': 'Mid Term Break',
+            '2026-09-14': 'Mid Term Break',
+            '2026-09-15': 'Mid Term Break',
+            '2026-09-16': 'Mid Term Break',
+            '2026-09-17': 'Mid Term Break',
+            '2026-12-14': 'Year End Holiday',
+            '2026-12-15': 'Year End Holiday',
+            '2026-12-16': 'Year End Holiday',
+            '2026-12-17': 'Year End Holiday',
+            '2026-12-18': 'Year End Holiday',
+            '2026-12-21': 'Year End Holiday',
+            '2026-12-22': 'Year End Holiday',
+            '2026-12-23': 'Year End Holiday',
+            '2026-12-24': 'Year End Holiday',
+            '2026-12-28': 'Year End Holiday',
+            '2026-12-29': 'Year End Holiday',
+            '2026-12-30': 'Year End Holiday',
+            '2026-12-31': 'Year End Holiday'
+        };
+
+        function loadKPMSchedule() {
+            let added = 0;
+            Object.keys(KPM_HOLIDAYS_2026).forEach(date => {
+                if (!holidays.find(h => h.date === date)) {
+                    holidays.push({ date: date, name: KPM_HOLIDAYS_2026[date] });
+                    added++;
+                }
+            });
+            saveHolidays();
+            renderHolidays();
+            showToast(`✅ Added ${added} KPM 2026 holidays`, 'success');
+        }
+
+        function loadRamadanHolidays() {
+            const ramadan = {
+                '2026-02-18': 'Ramadan Start',
+                '2026-02-19': 'Ramadan Start',
+                '2026-02-20': 'Ramadan Start',
+                '2026-02-21': 'Ramadan Start',
+                '2026-02-22': 'Ramadan Start',
+                '2026-02-23': 'Ramadan Start',
+                '2026-02-24': 'Ramadan Start',
+                '2026-02-25': 'Ramadan Start',
+                '2026-02-26': 'Ramadan Start',
+                '2026-02-27': 'Ramadan Start',
+                '2026-02-28': 'Ramadan Start',
+                '2026-03-01': 'Ramadan Start',
+                '2026-03-02': 'Ramadan Start',
+                '2026-03-03': 'Ramadan Start',
+                '2026-03-04': 'Ramadan Start',
+                '2026-03-05': 'Ramadan Start',
+                '2026-03-06': 'Ramadan Start',
+                '2026-03-07': 'Ramadan Start',
+                '2026-03-08': 'Ramadan Start',
+                '2026-03-09': 'Ramadan Start',
+                '2026-03-10': 'Ramadan Start',
+                '2026-04-02': 'Eid Celebration',
+                '2026-04-03': 'Eid Celebration',
+                '2026-04-04': 'Eid Celebration',
+                '2026-04-05': 'Eid Celebration'
+            };
+            let added = 0;
+            Object.keys(ramadan).forEach(date => {
+                if (!holidays.find(h => h.date === date)) {
+                    holidays.push({ date: date, name: ramadan[date] });
+                    added++;
+                }
+            });
+            saveHolidays();
+            renderHolidays();
+            showToast(`🌙 Added ${added} Ramadan holidays`, 'success');
+        }
+
+        function isHoliday(date) { return holidays.some(h => h.date === date); }
+
+        function getHolidayName(date) {
+            const h = holidays.find(h => h.date === date);
+            return h ? h.name : null;
+        }
+
         function addHoliday() {
             const date = document.getElementById('holidayDate').value;
             const name = document.getElementById('holidayName').value.trim() || 'Holiday';
@@ -1833,7 +1763,7 @@
             holidays.push({ date: date, name: name });
             saveHolidays();
             renderHolidays();
-            showToast('Holiday added', 'success');
+            showToast('✅ Holiday added', 'success');
             document.getElementById('holidayName').value = '';
         }
 
@@ -1844,12 +1774,9 @@
                 return;
             }
             const sorted = [...holidays].sort((a, b) => a.date.localeCompare(b.date));
-            container.innerHTML = sorted.map(h => `
-                <span class="holiday-item">
-                    📅 ${h.date}: ${h.name}
-                    <span class="remove" onclick="removeHoliday('${h.date}')">✕</span>
-                </span>
-            `).join('');
+            container.innerHTML = sorted.map(h =>
+                `<span class="holiday-item">📅 ${h.date}: ${h.name} <span class="remove" onclick="removeHoliday('${h.date}')">✕</span></span>`
+            ).join('');
         }
 
         function removeHoliday(date) {
@@ -1863,13 +1790,12 @@
             if (holidays.length === 0) return;
             Swal.fire({
                 title: 'Clear All Holidays?',
-                text: 'This will remove all holiday dates',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
                 confirmButtonText: 'Yes, Clear All'
-            }).then(result => {
-                if (result.isConfirmed) {
+            }).then(r => {
+                if (r.isConfirmed) {
                     holidays = [];
                     saveHolidays();
                     renderHolidays();
@@ -1879,26 +1805,25 @@
         }
 
         // ================================================================
-        // 11. CHARTS
+        // 10. CHARTS - 2026
         // ================================================================
         function renderCharts() {
             const today = new Date();
-            const currentYear = today.getFullYear();
+            const year = today.getFullYear();
 
-            // Weekly data (last 7 days)
+            // Weekly
             const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
             const weeklyData = days.map((_, i) => {
                 const d = new Date(today);
                 d.setDate(today.getDate() - (today.getDay() + 6 - i) % 7);
-                const dateStr = d.toISOString().split('T')[0];
-                return attendance.filter(r => r.date === dateStr).length;
+                const ds = d.toISOString().split('T')[0];
+                return attendance.filter(r => r.date === ds).length;
             });
 
-            // Weekly Chart
             const wCtx = document.getElementById('weeklyChart')?.getContext('2d');
             if (wCtx) {
-                if (weeklyChart) weeklyChart.destroy();
-                weeklyChart = new Chart(wCtx, {
+                if (charts.weekly) charts.weekly.destroy();
+                charts.weekly = new Chart(wCtx, {
                     type: 'line',
                     data: {
                         labels: days,
@@ -1906,41 +1831,45 @@
                             label: 'Attendance',
                             data: weeklyData,
                             borderColor: '#6366f1',
-                            backgroundColor: 'rgba(99,102,241,0.1)',
+                            backgroundColor: 'rgba(99,102,241,0.08)',
                             fill: true,
-                            tension: 0.4
+                            tension: 0.4,
+                            pointBackgroundColor: '#6366f1',
+                            pointRadius: 3
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: { legend: { display: false } },
-                        scales: { y: { beginAtZero: true } }
+                        scales: { y: { beginAtZero: true, grid: { display: false } },
+                        x: { grid: { display: false } } }
                     }
                 });
             }
 
-            // Monthly data
+            // Monthly
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const monthlyData = months.map((_, i) => {
-                return attendance.filter(r => {
+            const monthlyData = months.map((_, i) =>
+                attendance.filter(r => {
                     const d = new Date(r.date);
-                    return d.getMonth() === i && d.getFullYear() === currentYear;
-                }).length;
-            });
+                    return d.getMonth() === i && d.getFullYear() === year;
+                }).length
+            );
 
-            // Monthly Chart
             const mCtx = document.getElementById('monthlyChart')?.getContext('2d');
             if (mCtx) {
-                if (monthlyChart) monthlyChart.destroy();
-                monthlyChart = new Chart(mCtx, {
+                if (charts.monthly) charts.monthly.destroy();
+                charts.monthly = new Chart(mCtx, {
                     type: 'bar',
                     data: {
                         labels: months,
                         datasets: [{
                             label: 'Attendance',
                             data: monthlyData,
-                            backgroundColor: '#6366f1',
+                            backgroundColor: 'rgba(99,102,241,0.6)',
+                            borderColor: '#6366f1',
+                            borderWidth: 1,
                             borderRadius: 4
                         }]
                     },
@@ -1948,33 +1877,32 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: { legend: { display: false } },
-                        scales: { y: { beginAtZero: true } }
+                        scales: { y: { beginAtZero: true, grid: { display: false } },
+                        x: { grid: { display: false } } }
                     }
                 });
             }
 
-            // Class distribution
+            // Class Distribution
             const classStats = {};
-            users.forEach(u => {
-                if (!classStats[u.className]) classStats[u.className] = 0;
-                classStats[u.className]++;
-            });
-
+            users.forEach(u => { if (!classStats[u.className]) classStats[u.className] = 0;
+                classStats[u.className]++; });
             const colors = ['#6366f1', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#14b8a6', '#f472b6'];
 
-            // Class Chart
             const cCtx = document.getElementById('classChart')?.getContext('2d');
             if (cCtx) {
-                if (classChart) classChart.destroy();
+                if (charts.class) charts.class.destroy();
                 const labels = Object.keys(classStats);
                 const data = Object.values(classStats);
-                classChart = new Chart(cCtx, {
+                charts.class = new Chart(cCtx, {
                     type: 'doughnut',
                     data: {
                         labels: labels,
                         datasets: [{
                             data: data,
-                            backgroundColor: colors.slice(0, labels.length)
+                            backgroundColor: colors.slice(0, labels.length),
+                            borderWidth: 2,
+                            borderColor: 'var(--card-bg)'
                         }]
                     },
                     options: {
@@ -1983,24 +1911,22 @@
                         plugins: {
                             legend: {
                                 position: 'bottom',
-                                labels: { boxWidth: 10, font: { size: 8 } }
+                                labels: { boxWidth: 10, font: { size: 8 }, padding: 4 }
                             }
                         }
                     }
                 });
             }
 
-            // Update report stats
-            const totalUsers = users.length;
-            const totalAttendance = attendance.length;
-            const avgRate = totalUsers > 0 ? Math.round((totalAttendance / (totalUsers * 30)) * 100) : 0;
-            document.getElementById('reportTotalUsers').textContent = totalUsers;
-            document.getElementById('reportTotalAttendance').textContent = totalAttendance;
-            document.getElementById('reportAvgRate').textContent = `${Math.min(avgRate, 100)}%`;
+            // Report stats
+            document.getElementById('reportTotalUsers').textContent = users.length;
+            document.getElementById('reportTotalAttendance').textContent = attendance.length;
+            const rate = users.length > 0 ? Math.round((attendance.length / (users.length * 30)) * 100) : 0;
+            document.getElementById('reportAvgRate').textContent = `${Math.min(rate, 100)}%`;
         }
 
         // ================================================================
-        // 12. RENDER FUNCTIONS
+        // 11. UI RENDER
         // ================================================================
         function renderUsers() {
             const container = document.getElementById('userList');
@@ -2023,22 +1949,22 @@
                 <div class="user-item">
                     <div class="info">
                         <div class="avatar">
-                            ${u.faceImage ? `<img src="${u.faceImage}" alt="${u.name}">` : '👤'}
+                            ${u.faceImage ? `<img src="${u.faceImage}" alt="${u.name}">` : u.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
                             <span class="name">${u.name}</span>
-                            <span style="font-size:0.6rem;color:var(--text-secondary);margin-left:4px;">${u.className}</span>
-                            <span class="role-badge ${u.role === 'teacher' ? 'status-teacher' : 'status-student'}">${u.role}</span>
-                            <span style="font-size:0.5rem;color:var(--text-secondary);margin-left:4px;">${u.biometricPoints || 0} pts</span>
+                            <span class="class-tag">${u.className}</span>
+                            <span class="status-badge ${u.role === 'teacher' ? 'status-teacher' : 'status-student'}">${u.role}</span>
+                            <span style="font-size:0.5rem;color:var(--text-light);margin-left:4px;">${u.biometricPoints || 0} pts</span>
                         </div>
                     </div>
-                    <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id}')" style="padding:2px 8px;font-size:0.6rem;">✕</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id}')" style="padding:2px 10px;font-size:0.6rem;">✕</button>
                 </div>
             `).join('');
         }
 
         async function deleteUser(id) {
-            const result = await Swal.fire({
+            const r = await Swal.fire({
                 title: 'Delete User?',
                 text: 'This will permanently remove the user',
                 icon: 'warning',
@@ -2046,8 +1972,7 @@
                 confirmButtonColor: '#ef4444',
                 confirmButtonText: 'Yes, Delete'
             });
-
-            if (result.isConfirmed) {
+            if (r.isConfirmed) {
                 users = users.filter(u => u.id !== id);
                 saveUsers();
                 renderUsers();
@@ -2072,7 +1997,6 @@
             document.getElementById('attendanceRate').textContent = total > 0 ? `${Math.round((present / total) * 100)}%` :
             '0%';
 
-            // Update attendance table
             const classFilter = document.getElementById('attendanceClassFilter')?.value || 'all';
             let filtered = todayRecs;
             if (classFilter !== 'all') filtered = filtered.filter(r => r.className === classFilter);
@@ -2082,13 +2006,13 @@
             const tbody = document.getElementById('attendanceTableBody');
             if (filtered.length === 0) {
                 const isHolidayToday = isHoliday(today);
-                const holidayName = getHolidayName(today);
+                const hName = getHolidayName(today);
                 if (isHolidayToday) {
                     tbody.innerHTML =
-                        `<tr><td colspan="4" style="text-align:center;padding:15px;color:var(--warning);font-size:0.7rem;">🎉 ${holidayName || 'Holiday'} - No attendance today</td></tr>`;
+                        `<tr><td colspan="4" style="text-align:center;padding:15px;color:var(--warning);font-size:0.7rem;">🎉 ${hName || 'Holiday'} - No attendance</td></tr>`;
                 } else {
                     tbody.innerHTML =
-                        `<tr><td colspan="4" style="text-align:center;padding:15px;color:var(--text-secondary);font-size:0.7rem;">No attendance records today</td></tr>`;
+                        `<tr><td colspan="4" style="text-align:center;padding:15px;color:var(--text-secondary);font-size:0.7rem;">No records</td></tr>`;
                 }
                 return;
             }
@@ -2105,20 +2029,17 @@
 
         function updateClassFilters() {
             const classes = [...new Set(users.map(u => u.className))].sort();
-
             ['attendanceClassFilter', 'recordClassFilter'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
                     const current = el.value;
-                    el.innerHTML = `<option value="all">All Classes</option>${classes.map(c => `<option value="${c}">${c}</option>`).join('')}`;
+                    el.innerHTML =
+                        `<option value="all">All Classes</option>${classes.map(c => `<option value="${c}">${c}</option>`).join('')}`;
                     if (classes.includes(current)) el.value = current;
                 }
             });
         }
 
-        // ================================================================
-        // 13. RECORDS
-        // ================================================================
         function renderRecords() {
             const date = document.getElementById('recordDateFilter')?.value || '';
             const cls = document.getElementById('recordClassFilter')?.value || 'all';
@@ -2133,7 +2054,7 @@
             const tbody = document.getElementById('recordsTableBody');
             if (filtered.length === 0) {
                 tbody.innerHTML =
-                    `<tr><td colspan="5" style="text-align:center;padding:15px;color:var(--text-secondary);font-size:0.7rem;">No records found</td></tr>`;
+                    `<tr><td colspan="5" style="text-align:center;padding:15px;color:var(--text-secondary);font-size:0.7rem;">No records</td></tr>`;
                 return;
             }
 
@@ -2149,19 +2070,17 @@
         }
 
         function filterRecords() { renderRecords();
-            showToast('Records filtered', 'success'); }
+            showToast('Filtered', 'success'); }
 
         // ================================================================
-        // 14. EXPORT
+        // 12. EXPORT
         // ================================================================
         function exportCSV() {
-            if (attendance.length === 0) { showToast('No records to export', 'warning'); return; }
-
+            if (attendance.length === 0) { showToast('No records', 'warning'); return; }
             let csv = 'Name,Class,Status,Date,Time,Session\n';
             attendance.forEach(r => {
                 csv += `"${r.name}","${r.className}","${r.status}","${r.date}","${r.time}","${r.sessionName}"\n`;
             });
-
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -2169,131 +2088,117 @@
             a.download = `attendance_${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
             URL.revokeObjectURL(url);
-            showToast('CSV exported successfully!', 'success');
+            showToast('CSV exported!', 'success');
         }
 
         // ================================================================
-        // 15. PDF REPORT GENERATOR
+        // 13. PDF REPORTS - 2026
         // ================================================================
-        function generatePDFReport(type) {
+        async function generatePDF(type) {
+            await loadPDF();
+
             if (typeof window.jspdf === 'undefined') {
-                showToast('Loading PDF library... Please wait', 'warning');
-                // Wait for jspdf to load
-                setTimeout(() => generatePDFReport(type), 1000);
+                showToast('Loading PDF library...', 'warning');
+                setTimeout(() => generatePDF(type), 1000);
                 return;
             }
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
 
-            // Header
-            doc.setFontSize(18);
+            // Header - 2026 Style
+            doc.setFontSize(20);
             doc.setTextColor(99, 102, 241);
-            doc.text('SmartClass Pro - Attendance Report', 14, 22);
+            doc.text('🚀 SmartClass Pro 2026', 14, 22);
 
             doc.setFontSize(10);
-            doc.setTextColor(100);
-            doc.text(`Report Type: ${type.toUpperCase()}`, 14, 30);
-            doc.text(`Generated: ${new Date().toLocaleString('ms-MY')}`, 14, 36);
+            doc.setTextColor(50);
+            const today = new Date().toISOString().split('T')[0];
+            doc.text(`Report: ${type.toUpperCase()}`, 14, 30);
+            doc.text(`Date: ${new Date().toLocaleString('ms-MY')}`, 14, 36);
             doc.text(`Total Users: ${users.length}`, 14, 42);
 
-            // Holiday info
-            const today = new Date().toISOString().split('T')[0];
+            // Holiday check
             if (isHoliday(today)) {
                 doc.setTextColor(239, 68, 68);
-                doc.text(`🎉 ${getHolidayName(today) || 'Holiday'} - No attendance today`, 14, 48);
-                doc.setTextColor(100);
+                doc.text(`🎉 ${getHolidayName(today) || 'Holiday'} - No attendance`, 14, 48);
+                doc.setTextColor(50);
             }
 
-            // Get data based on type
-            let data = [];
-            let title = '';
-
+            let data = [],
+                title = '';
             switch (type) {
                 case 'daily':
                     data = attendance.filter(r => r.date === today);
                     title = `Daily Report - ${today}`;
                     break;
                 case 'weekly':
-                    const weekAgo = new Date();
-                    weekAgo.setDate(weekAgo.getDate() - 7);
-                    const weekStart = weekAgo.toISOString().split('T')[0];
-                    data = attendance.filter(r => r.date >= weekStart && r.date <= today);
-                    title = `Weekly Report - ${weekStart} to ${today}`;
+                    const wAgo = new Date();
+                    wAgo.setDate(wAgo.getDate() - 7);
+                    const ws = wAgo.toISOString().split('T')[0];
+                    data = attendance.filter(r => r.date >= ws && r.date <= today);
+                    title = `Weekly Report - ${ws}`;
                     break;
                 case 'monthly':
-                    const monthStart = new Date(today);
-                    monthStart.setDate(1);
-                    const startDate = monthStart.toISOString().split('T')[0];
-                    data = attendance.filter(r => r.date >= startDate && r.date <= today);
-                    title = `Monthly Report - ${startDate} to ${today}`;
+                    const mStart = new Date(today);
+                    mStart.setDate(1);
+                    const ms = mStart.toISOString().split('T')[0];
+                    data = attendance.filter(r => r.date >= ms && r.date <= today);
+                    title = `Monthly Report - ${ms}`;
                     break;
                 case 'class':
-                    const classFilter = document.getElementById('recordClassFilter')?.value || 'all';
-                    data = attendance.filter(r => classFilter === 'all' || r.className === classFilter);
-                    title = `Class Report - ${classFilter === 'all' ? 'All Classes' : classFilter}`;
+                    const cf = document.getElementById('recordClassFilter')?.value || 'all';
+                    data = attendance.filter(r => cf === 'all' || r.className === cf);
+                    title = `Class Report - ${cf === 'all' ? 'All' : cf}`;
                     break;
                 case 'holiday':
-                    data = holidays.map(h => ({ date: h.date, name: h.name, status: 'Holiday' }));
-                    title = 'Holiday Report';
+                    data = holidays.map(h => ({ date: h.date, name: h.name || 'Holiday', status: '🎉' }));
+                    title = 'Holiday Report 2026';
                     break;
                 default:
                     data = attendance;
                     title = 'Full Report';
             }
 
-            // Summary stats
             let yPos = 52;
             doc.setFontSize(9);
-            doc.setTextColor(50);
-
             if (type !== 'holiday') {
                 const total = data.length;
                 const present = data.filter(r => r.status === 'Hadir').length;
-                const late = data.filter(r => r.status === 'Lewat').length;
                 const rate = data.length > 0 ? Math.round((present / data.length) * 100) : 0;
-
-                doc.text(`Total Records: ${total}`, 14, yPos);
-                doc.text(`Present: ${present} (${rate}%)`, 14, yPos + 6);
-                doc.text(`Late: ${late}`, 14, yPos + 12);
-                yPos += 20;
+                doc.text(`Records: ${total} | Present: ${present} (${rate}%)`, 14, yPos);
+                yPos += 8;
             }
 
-            // Table
             const tableData = data.slice(0, 30).map(r => {
-                if (type === 'holiday') {
-                    return [r.date, r.name || 'Holiday', '🎉'];
-                }
+                if (type === 'holiday') return [r.date, r.name || 'Holiday', '🎉'];
                 return [r.name || 'N/A', r.className || 'N/A', r.status || 'N/A', r.date || 'N/A', r.time || 'N/A'];
             });
 
-            const headers = type === 'holiday' ?
-                ['Date', 'Holiday Name', 'Status'] :
-                ['Name', 'Class', 'Status', 'Date', 'Time'];
+            const headers = type === 'holiday' ? ['Date', 'Holiday Name', 'Status'] : ['Name', 'Class', 'Status', 'Date',
+                'Time'
+            ];
 
             doc.autoTable({
                 head: [headers],
                 body: tableData,
                 startY: yPos,
-                styles: { fontSize: 8 },
+                styles: { fontSize: 8, cellPadding: 3 },
                 headStyles: { fillColor: [99, 102, 241] },
                 didDrawPage: function(data) {
-                    // Footer
-                    doc.setFontSize(7);
+                    doc.setFontSize(6);
                     doc.setTextColor(150);
-                    doc.text('Generated by SmartClass Pro v2.0', 14, 285);
+                    doc.text('Generated by SmartClass Pro 2026', 14, 285);
                     doc.text(`Page ${data.pageNumber}`, 190, 285);
                 }
             });
 
-            // Save PDF
-            const filename = `${type}_report_${today}.pdf`;
-            doc.save(filename);
-            showToast(`📄 ${title} exported successfully!`, 'success');
+            doc.save(`${type}_report_${today}.pdf`);
+            showToast(`📄 ${title} exported!`, 'success');
         }
 
         // ================================================================
-        // 16. UI HELPERS
+        // 14. HELPERS
         // ================================================================
         function showToast(msg, type = 'success') {
             const t = document.getElementById('toast');
@@ -2321,10 +2226,10 @@
                 o.connect(g);
                 g.connect(audioCtx.destination);
                 o.frequency.value = 880;
-                g.gain.value = 0.08;
+                g.gain.value = 0.06;
                 o.start();
-                g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.15);
-                setTimeout(() => o.stop(), 150);
+                g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.12);
+                setTimeout(() => o.stop(), 120);
             } catch (_) {}
         }
 
@@ -2344,18 +2249,12 @@
             window.speechSynthesis.speak(u);
         }
 
-        function takeAttendance() {
-            detectFaces();
-            showToast('🔄 Checking attendance...', 'success');
-        }
+        function takeAttendance() { detectFaces();
+            showToast('🔄 Checking attendance...', 'success'); }
 
-        // ================================================================
-        // 17. NAVIGATION
-        // ================================================================
         function navigateTo(tab) {
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === `tab-${tab}`));
-
             if (tab === 'records') renderRecords();
             if (tab === 'users') renderUsers();
             if (tab === 'attendance') { updateUI();
@@ -2365,7 +2264,7 @@
         }
 
         // ================================================================
-        // 18. INIT
+        // 15. INIT - 2026
         // ================================================================
         document.addEventListener('DOMContentLoaded', () => {
             // Navigation
@@ -2373,30 +2272,28 @@
                 tab.addEventListener('click', () => navigateTo(tab.dataset.tab));
             });
 
-            // Filters
+            // Event listeners
             document.getElementById('attendanceClassFilter')?.addEventListener('change', updateUI);
             document.getElementById('userSearch')?.addEventListener('input', renderUsers);
             document.getElementById('userRoleFilter')?.addEventListener('change', renderUsers);
             document.getElementById('cameraSelect')?.addEventListener('change', () => {
-                if (camActive) { stopCamera();
+                if (cam) { stopCamera();
                     setTimeout(startCamera, 300); }
             });
-
-            // Enter key on registration name field
             document.getElementById('regName')?.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') captureFace();
             });
 
-            // Start the system
+            // Start
             loadModels();
             lucide.createIcons();
 
-            console.log('🚀 SmartClass Pro - Complete System');
+            console.log('🚀 SmartClass Pro 2026');
             console.log(`📚 ${users.length} users, 📋 ${attendance.length} records`);
-            console.log(`📅 ${holidays.length} holidays loaded`);
+            console.log(`📅 ${holidays.length} holidays`);
         });
 
-        // Expose functions globally
+        // Expose global functions
         window.toggleCamera = toggleCamera;
         window.captureFace = captureFace;
         window.registerUser = registerUser;
@@ -2411,7 +2308,7 @@
         window.clearHolidays = clearHolidays;
         window.loadKPMSchedule = loadKPMSchedule;
         window.loadRamadanHolidays = loadRamadanHolidays;
-        window.generatePDFReport = generatePDFReport;
+        window.generatePDF = generatePDF;
     </script>
 </body>
 </html>
